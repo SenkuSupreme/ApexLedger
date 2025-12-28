@@ -75,6 +75,17 @@ const StrategySchema = new mongoose.Schema({
     rotation: Number,
     zIndex: Number,
   }],
+  // Dynamic Notion-like Blocks
+  blocks: [{
+    id: String,
+    type: { 
+        type: String, 
+        enum: ['h1', 'h2', 'h3', 'text', 'todo', 'callout', 'divider', 'image', 'quote', 'bullet', 'code'] 
+    },
+    content: String,
+    checked: Boolean, // for todo
+    metadata: mongoose.Schema.Types.Mixed // for any additional block data
+  }],
   isTemplate: {
     type: Boolean,
     default: false,

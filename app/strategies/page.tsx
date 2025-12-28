@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Layers, Plus, Search, Trash2, Edit3, Grid, List as ListIcon, MoreVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotionStrategyEditor from '@/components/NotionStrategyEditor';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 interface Strategy {
   _id: string;
@@ -13,7 +14,9 @@ interface Strategy {
       marketFocus: string[];
       instrumentFocus: string[];
   };
-  createdAt: string; isTemplate?: boolean;
+  blocks?: any[];
+  isTemplate?: boolean;
+  createdAt: string;
 }
 
 export default function StrategiesPage() {
@@ -21,14 +24,18 @@ export default function StrategiesPage() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [editingId, setEditingId] = useState<string | null | 'new'>(null);
-  const [searchQuery, setSearchQuery] = useState(''); const [showTemplates, setShowTemplates] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [initialIsTemplate, setInitialIsTemplate] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [strategyToDelete, setStrategyToDelete] = useState<string | null>(null);
 
   const fetchStrategies = async () => {
     setLoading(true);
     try {
         const res = await fetch('/api/strategies');
         const data = await res.json();
-        setStrategies(data);
+        setStrategies(Array.isArray(data) ? data : []);
     } catch (err) {
         console.error(err);
     } finally {
@@ -41,23 +48,31 @@ export default function StrategiesPage() {
   }, []);
 
   const handleDelete = async (id: string) => {
-      if (!confirm('Are you sure you want to delete this strategy?')) return;
+      setStrategyToDelete(id);
+      setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+      if (!strategyToDelete) return;
       try {
-          await fetch(`/api/strategies?id=${id}`, { method: 'DELETE' });
+          await fetch(`/api/strategies?id=${strategyToDelete}`, { method: 'DELETE' });
           fetchStrategies();
       } catch (err) {
           console.error(err);
+      } finally {
+          setStrategyToDelete(null);
       }
   };
 
   const filteredStrategies = strategies.filter(s => 
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) && (showTemplates ? s.isTemplate : !s.isTemplate)
+      s.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (editingId) {
       return (
           <NotionStrategyEditor 
               strategyId={editingId === 'new' ? undefined : editingId} 
+              initialIsTemplate={initialIsTemplate}
               onBack={() => {
                   setEditingId(null);
                   fetchStrategies();
@@ -81,9 +96,6 @@ export default function StrategiesPage() {
 
         <div className="flex items-center gap-4">
             <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
-                <button onClick={() => setShowTemplates(false)} className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${!showTemplates ? "bg-white/10 text-white shadow-xl" : "text-white/40 hover:text-white/60"}`}>Systems</button>
-                <button onClick={() => setShowTemplates(true)} className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${showTemplates ? "bg-white/10 text-white shadow-xl" : "text-white/40 hover:text-white/60"}`}>Blueprints</button>
-
                 <button 
                     onClick={() => setView('grid')}
                     className={`p-2 rounded-lg transition-all ${view === 'grid' ? 'bg-white/10 text-white shadow-xl' : 'text-white/40 hover:text-white/60'}`}
@@ -98,11 +110,22 @@ export default function StrategiesPage() {
                 </button>
             </div>
             <button 
-                onClick={() => setEditingId('new')}
-                className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                onClick={() => {
+                    setInitialIsTemplate(true);
+                    setEditingId('new');
+                }} 
+                className="px-6 py-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-500 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)] flex items-center gap-2"
             >
-                <Plus size={16} strokeWidth={3} />
-                Build {showTemplates ? 'Blueprint' : 'System'}
+                <Plus size={18} /> New Blueprint
+            </button>
+            <button 
+                onClick={() => {
+                    setInitialIsTemplate(false);
+                    setEditingId('new');
+                }} 
+                className="px-6 py-3 bg-sky-600 hover:bg-sky-500 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-2xl shadow-sky-500/20 flex items-center gap-2"
+            >
+                <Plus size={18} /> New Strategy
             </button>
         </div>
       </header>
@@ -121,13 +144,13 @@ export default function StrategiesPage() {
           </div>
           <div className="hidden lg:flex items-center gap-8 px-8 shrink-0">
                 <div className="text-center">
-                    <p className="text-[10px] text-white/60 font-black uppercase tracking-widest mb-1">Active Systems</p>
-                    <p className="text-xl font-black text-white">{strategies.length}</p>
+                    <p className="text-[10px] text-white/60 font-black uppercase tracking-widest mb-1">Total Strategies</p>
+                    <p className="text-xl font-black text-white">{filteredStrategies.length}</p>
                 </div>
                 <div className="w-[1px] h-8 bg-white/5" />
                 <div className="text-center">
-                    <p className="text-[10px] text-white/60 font-black uppercase tracking-widest mb-1">Avg Grade</p>
-                    <p className="text-xl font-black text-emerald-500">A-</p>
+                    <p className="text-[10px] text-white/60 font-black uppercase tracking-widest mb-1">Grade</p>
+                    <p className="text-xl font-black text-emerald-500">A+</p>
                 </div>
           </div>
       </div>
@@ -169,16 +192,24 @@ export default function StrategiesPage() {
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap gap-2 pt-2">
-                                {strategy.coreInfo?.marketFocus.map((m, i) => (
-                                    <span key={i} className="px-3 py-1 bg-sky-500/5 border border-sky-500/10 rounded-full text-[9px] font-black text-sky-500 uppercase tracking-widest">
-                                        {m}
-                                    </span>
-                                ))}
+                            <div className="space-y-2">
+                                {strategy.blocks && strategy.blocks.length > 0 ? (
+                                    strategy.blocks.slice(0, 3).map((b: any, i: number) => (
+                                        <p key={i} className="text-[11px] text-white/40 line-clamp-1 font-medium italic">{b.content || '...'}</p>
+                                    ))
+                                ) : (
+                                    <div className="flex flex-wrap gap-2 pt-2">
+                                        {strategy.coreInfo?.marketFocus.map((m, i) => (
+                                            <span key={i} className="px-3 py-1 bg-sky-500/5 border border-sky-500/10 rounded-full text-[9px] font-black text-sky-500 uppercase tracking-widest">
+                                                {m}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="pt-6 border-t border-white/5 flex items-center justify-between text-white/60">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em]">Institutional Core</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em]">{strategy.isTemplate ? 'Institutional Blueprint' : 'Execution System'}</p>
                                 <MoreVertical size={16} />
                             </div>
                         </div>
@@ -191,7 +222,7 @@ export default function StrategiesPage() {
                             </div>
                             <div>
                                 <h3 className="text-base font-black text-white group-hover:text-sky-500 transition-colors">{strategy.name}</h3>
-                                <p className="text-[10px] text-white/60 font-black uppercase tracking-widest">{strategy.coreInfo?.marketFocus.join(' • ')}</p>
+                                <p className="text-[10px] text-white/60 font-black uppercase tracking-widest">{strategy.isTemplate ? 'Blueprint' : 'System'}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-6">
@@ -214,17 +245,31 @@ export default function StrategiesPage() {
              <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
                  <Layers size={32} className="text-white/10" />
              </div>
-             <h3 className="text-xl font-black text-white mb-2 uppercase tracking-widest">Your Playbook is Empty</h3>
+             <h3 className="text-xl font-black text-white mb-2 uppercase tracking-widest">No {showTemplates ? 'Blueprints' : 'Systems'} Found</h3>
              <p className="text-white/60 text-sm max-w-sm mx-auto mb-8 font-medium">Ready to architect your edge? Start by building your first institutional trading framework.</p>
              <button 
-                onClick={() => setEditingId('new')}
+                onClick={() => {
+                  setEditingId('new');
+                  setInitialIsTemplate(showTemplates);
+                }}
                 className="px-8 py-3 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all shadow-2xl"
              >
-                Create Strategy 01
+                Create {showTemplates ? 'Blueprint' : 'System'} 01
              </button>
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={confirmDelete}
+        title="Delete Strategy?"
+        description="This will permanently delete this strategy. This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }
