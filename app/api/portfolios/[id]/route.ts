@@ -6,16 +6,57 @@ import dbConnect from '@/lib/db';
 import Portfolio from '@/lib/models/Portfolio';
 import Trade from '@/lib/models/Trade';
 
-export async function DELETE(
+export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
+  const { name, initialBalance } = await req.json();
+
+  await dbConnect();
+  // @ts-ignore
+  const userId = session.user.id;
+
+  try {
+    // Ensure the portfolio belongs to the user
+    const portfolio = await Portfolio.findOne({ _id: id, userId });
+    
+    if (!portfolio) {
+      return NextResponse.json({ message: 'Portfolio not found' }, { status: 404 });
+    }
+
+    // Update portfolio
+    const updatedPortfolio = await Portfolio.findOneAndUpdate(
+      { _id: id, userId },
+      { 
+        ...(name && { name }),
+        ...(initialBalance !== undefined && { initialBalance })
+      },
+      { new: true }
+    );
+
+    return NextResponse.json(updatedPortfolio);
+  } catch (error) {
+    console.error('Failed to update portfolio:', error);
+    return NextResponse.json({ message: 'Error updating portfolio' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = await params;
 
   await dbConnect();
   // @ts-ignore

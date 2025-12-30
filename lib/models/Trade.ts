@@ -12,7 +12,7 @@ const TradeSchema = new mongoose.Schema({
   },
   assetType: {
     type: String,
-    enum: ['stock', 'forex', 'crypto'],
+    enum: ['stock', 'forex', 'crypto', 'cfd', 'futures', 'indices'],
     required: true,
   },
   exchange: String,
@@ -38,6 +38,10 @@ const TradeSchema = new mongoose.Schema({
     enum: ['long', 'short'],
     required: true,
   },
+  leverage: {
+    type: String,
+    default: '1:1',
+  },
   fees: {
     type: Number,
     default: 0,
@@ -52,6 +56,19 @@ const TradeSchema = new mongoose.Schema({
     type: String,
     enum: ['$', 'pips'],
     default: '$'
+  },
+  // Risk Management & Calculations
+  accountRisk: {
+    type: Number, // Percentage of account risked
+    default: 0
+  },
+  riskAmount: {
+    type: Number, // Dollar amount at risk
+    default: 0
+  },
+  portfolioBalance: {
+    type: Number, // Portfolio balance at time of trade
+    default: 0
   },
   rMultiple: Number,
   
@@ -101,6 +118,10 @@ const TradeSchema = new mongoose.Schema({
     type: Number, // 1=D, 2=C, 3=B, 4=A, 5=A+
     min: 1,
     max: 5
+  },
+  emotion: {
+    type: String,
+    enum: ['confident', 'nervous', 'excited', 'frustrated', 'calm', 'greedy', 'fearful', 'neutral']
   },
   mistakes: String,
   description: String,
