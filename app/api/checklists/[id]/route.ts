@@ -80,19 +80,10 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, description, strategy, items, isActive } = body;
-
-    if (!name || !strategy || !items || items.length === 0) {
-      return NextResponse.json(
-        { error: "Name, strategy, and items are required" },
-        { status: 400 }
-      );
-    }
-
     await dbConnect();
 
     // If this checklist is set as active, deactivate others
-    if (isActive) {
+    if (body.isActive) {
       await Checklist.updateMany(
         { userId: session.user.email, _id: { $ne: id } },
         { isActive: false }
@@ -102,15 +93,7 @@ export async function PUT(
     const checklist = await Checklist.findOneAndUpdate(
       { _id: id, userId: session.user.email },
       {
-        name,
-        description: description || "",
-        strategy,
-        items: items.map((item: any) => ({
-          id: item.id || Date.now().toString(),
-          text: item.text,
-          completed: false,
-        })),
-        isActive: isActive || false,
+        ...body,
         updatedAt: new Date(),
       },
       { new: true }

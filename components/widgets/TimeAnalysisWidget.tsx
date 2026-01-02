@@ -90,11 +90,11 @@ export default function TimeAnalysisWidget({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-white">Time Analysis</h3>
-          <p className="text-xs text-white/60 font-mono uppercase tracking-widest">
+          <p className="text-xs text-foreground/80 dark:text-muted-foreground font-mono uppercase tracking-widest">
             Performance by Hour
           </p>
         </div>
-        <Clock size={20} className="text-white/60" />
+        <Clock size={20} className="text-foreground/80 dark:text-muted-foreground" />
       </div>
 
       <div className="h-48">
@@ -141,32 +141,32 @@ export default function TimeAnalysisWidget({
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-3">
-        <div className="p-3 bg-white/5 rounded-lg text-center">
+        <div className="p-3 bg-foreground/5 rounded-lg text-center">
           <div className="text-lg font-bold text-green-400">
             {bestHour.hour !== "N/A" ? bestHour.hour : "--"}
           </div>
-          <div className="text-xs text-white/60">Best Hour</div>
+          <div className="text-xs text-foreground/80 dark:text-muted-foreground">Best Hour</div>
           <div className="text-xs text-green-400/60">
             {bestHour.pnl > -Infinity ? `$${bestHour.pnl.toFixed(2)}` : "--"}
           </div>
         </div>
-        <div className="p-3 bg-white/5 rounded-lg text-center">
+        <div className="p-3 bg-foreground/5 rounded-lg text-center">
           <div className="text-lg font-bold text-red-400">
             {worstHour.hour !== "N/A" ? worstHour.hour : "--"}
           </div>
-          <div className="text-xs text-white/60">Worst Hour</div>
+          <div className="text-xs text-foreground/80 dark:text-muted-foreground">Worst Hour</div>
           <div className="text-xs text-red-400/60">
             {worstHour.pnl < Infinity ? `$${worstHour.pnl.toFixed(2)}` : "--"}
           </div>
         </div>
-        <div className="p-3 bg-white/5 rounded-lg text-center">
+        <div className="p-3 bg-foreground/5 rounded-lg text-center">
           <div className="text-lg font-bold text-white">
             {timeData.length > 0
               ? timeData.reduce((sum, h) => sum + h.trades, 0)
               : 0}
           </div>
-          <div className="text-xs text-white/60">Total Trades</div>
-          <div className="text-xs text-white/40">
+          <div className="text-xs text-foreground/80 dark:text-muted-foreground">Total Trades</div>
+          <div className="text-xs text-foreground/60 dark:text-muted-foreground">
             {timeData.length} hours active
           </div>
         </div>

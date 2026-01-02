@@ -2,20 +2,44 @@
 
 import React, { useEffect, useRef } from "react";
 
+import { useTheme } from "next-themes";
+
 const TVWidget = ({ scriptSrc, config, id }: { scriptSrc: string, config: any, id: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme } = useTheme();
+  const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
 
   useEffect(() => {
     if (!containerRef.current) return;
     containerRef.current.innerHTML = "";
+    
+    // Create the script element
     const script = document.createElement("script");
     script.src = scriptSrc;
     script.async = true;
-    script.innerHTML = JSON.stringify(config);
-    containerRef.current.appendChild(script);
-  }, [config, scriptSrc]);
+    
+    // Merge theme and transparency into the config
+    const finalConfig = {
+      ...config,
+      colorTheme: theme,
+      isTransparent: true,
+      container_id: id,
+      width: "100%",
+      height: "100%"
+    };
 
-  return <div id={id} ref={containerRef} className="w-full h-full min-h-[200px]" />;
+    script.innerHTML = JSON.stringify(finalConfig);
+    containerRef.current.appendChild(script);
+  }, [config, scriptSrc, theme, id]);
+
+  return (
+    <div 
+      id={id} 
+      ref={containerRef} 
+      className="w-full h-full bg-transparent overflow-hidden" 
+      style={{ colorScheme: theme }}
+    />
+  );
 };
 
 export const TVTechnicalAnalysisWidget = ({ symbol = "FX:EURUSD" }) => (
@@ -29,8 +53,7 @@ export const TVTechnicalAnalysisWidget = ({ symbol = "FX:EURUSD" }) => (
       "height": "100%",
       "symbol": symbol,
       "showIntervalTabs": true,
-      "locale": "en",
-      "colorTheme": "dark"
+      "locale": "en"
     }}
   />
 );
@@ -44,7 +67,6 @@ export const TVForexHeatMapWidget = () => (
       "height": "100%",
       "currencies": ["EUR", "USD", "JPY", "GBP", "CHF", "AUD", "CAD", "NZD"],
       "isTransparent": true,
-      "colorTheme": "dark",
       "locale": "en"
     }}
   />
@@ -71,24 +93,8 @@ export const TVMarketQuotesWidget = () => (
         }
       ],
       "showSymbolLogo": true,
-      "colorTheme": "dark",
       "isTransparent": true,
       "locale": "en"
-    }}
-  />
-);
-
-export const TVEconomicCalendarWidget = () => (
-  <TVWidget 
-    id="tv-economic-calendar"
-    scriptSrc="https://s3.tradingview.com/external-embedding/embed-widget-events.js"
-    config={{
-      "colorTheme": "dark",
-      "isTransparent": true,
-      "width": "100%",
-      "height": "100%",
-      "locale": "en",
-      "importanceFilter": "-1,0,1"
     }}
   />
 );
@@ -104,9 +110,70 @@ export const TVTickerTapeWidget = () => (
         { "proName": "BITSTAMP:BTCUSD", "title": "BTC/USD" }
       ],
       "showSymbolLogo": true,
-      "colorTheme": "dark",
       "isTransparent": true,
       "displayMode": "adaptive",
+      "locale": "en"
+    }}
+  />
+);
+
+export const TVSymbolInfoWidget = ({ symbol = "FX:EURUSD" }) => (
+  <TVWidget 
+    id="tv-symbol-info"
+    scriptSrc="https://s3.tradingview.com/external-embedding/embed-widget-symbol-info.js"
+    config={{
+      "symbol": symbol,
+      "width": "100%",
+      "locale": "en",
+      "isTransparent": true,
+    }}
+  />
+);
+
+export const TVCompanyProfileWidget = ({ symbol = "FX:EURUSD" }) => (
+  <TVWidget 
+    id="tv-company-profile"
+    scriptSrc="https://s3.tradingview.com/external-embedding/embed-widget-symbol-profile.js"
+    config={{
+      "width": "100%",
+      "height": "100%",
+      "showSymbolLogo": true,
+      "symbol": symbol,
+      "isTransparent": true,
+      "locale": "en"
+    }}
+  />
+);
+
+export const TVFundamentalDataWidget = ({ symbol = "FX:EURUSD" }) => (
+  <TVWidget 
+    id="tv-fundamental-data"
+    scriptSrc="https://s3.tradingview.com/external-embedding/embed-widget-financials.js"
+    config={{
+      "showSymbolLogo": true,
+      "largeChartUrl": "",
+      "displayMode": "regular",
+      "width": "100%",
+      "height": "100%",
+      "symbol": symbol,
+      "isTransparent": true,
+      "locale": "en"
+    }}
+  />
+);
+
+export const TVTimelineWidget = ({ symbol = "FX:EURUSD" }) => (
+  <TVWidget 
+    id="tv-timeline"
+    scriptSrc="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js"
+    config={{
+      "feedMode": "symbol",
+      "symbol": symbol,
+      "showSymbolLogo": true,
+      "displayMode": "regular",
+      "width": "100%",
+      "height": "100%",
+      "isTransparent": true,
       "locale": "en"
     }}
   />

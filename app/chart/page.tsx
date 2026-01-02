@@ -172,8 +172,12 @@ export default function ChartPage() {
             <LayoutGrid size={18} className="text-blue-400" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-white tracking-widest uppercase italic">Command Terminal</h1>
-            <p className="text-[9px] text-white/30 font-mono uppercase tracking-[0.2em] mt-0.5">Unified Intelligence Mesh</p>
+            <h1 className="text-xl md:text-2xl font-black italic uppercase tracking-[0.02em] bg-gradient-to-br from-white to-white/70 bg-clip-text text-transparent leading-none">
+              Market Terminal
+            </h1>
+            <p className="text-[10px] text-white/80 font-black uppercase tracking-[0.3em] mt-1 italic">
+              Live Market Analysis
+            </p>
           </div>
         </div>
 
@@ -203,7 +207,7 @@ export default function ChartPage() {
             <div className="absolute inset-0 flex items-center justify-center bg-[#050505] z-30">
               <div className="flex flex-col items-center gap-4">
                 <Zap className="text-blue-500 animate-pulse" size={32} />
-                <p className="text-[10px] font-mono text-white/20 uppercase tracking-[0.5em]">Synchronizing Market Data...</p>
+                <p className="text-[10px] font-mono text-white/40 uppercase tracking-[0.5em]">Loading Market Data...</p>
               </div>
             </div>
           )}
@@ -215,9 +219,9 @@ export default function ChartPage() {
           <div className="py-4 border-b border-white/5 flex items-center justify-between flex-shrink-0 mb-6 font-bold group">
              <div className="flex items-center gap-3">
                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-               <h2 className="text-xs font-black text-white/40 uppercase tracking-[0.4em] group-hover:text-white/60 transition-all">Global Correlation Mesh / Cross Rates</h2>
+               <h2 className="text-xs font-black text-white/60 uppercase tracking-[0.4em] group-hover:text-white transition-all">Currency Cross Rates</h2>
              </div>
-             <Globe size={14} className="text-white/10 group-hover:text-blue-400 transition-all" />
+             <Globe size={14} className="text-white/30 group-hover:text-blue-400 transition-all" />
           </div>
           <div className="flex-1 rounded-[2.5rem] bg-white/[0.02] border border-white/10 p-6 overflow-hidden hover:bg-white/[0.04] transition-all">
             <div id="tv-cross-rates" className="w-full h-full" />
@@ -228,17 +232,17 @@ export default function ChartPage() {
       {/* LOWER DATA BAND */}
       <footer className="flex items-center justify-between p-3 px-6 bg-black border-t border-white/5 text-[9px] font-black uppercase tracking-[0.2em]">
         <div className="flex items-center gap-8">
-          <div className="flex items-center gap-2 text-white/40">
+          <div className="flex items-center gap-2 text-white/50">
             <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-            <span>Feed: WebSocket Active</span>
+            <span>Connection: Active</span>
           </div>
-          <div className="flex items-center gap-2 text-white/40">
+          <div className="flex items-center gap-2 text-white/50">
             <Globe size={11} />
-            <span>Node ID: {selectedSymbol}</span>
+            <span>Symbol Index: {selectedSymbol}</span>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-white/10 italic">
-          Apex Intelligence Collective v5.0.0
+        <div className="flex items-center gap-4 text-white/30 italic">
+          ApexLedger v5.0.0
         </div>
       </footer>
     </div>

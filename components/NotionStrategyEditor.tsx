@@ -530,23 +530,23 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white selection:bg-sky-500/30 font-sans">
+        <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 font-sans">
             {/* Header */}
-            <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-3xl border-b border-white/10 px-8 h-20 flex items-center justify-between">
+            <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-3xl border-b border-border px-8 h-20 flex items-center justify-between">
                 <div className="flex items-center gap-8">
-                    <button onClick={onBack} className="p-3 hover:bg-white/[0.08] rounded-2xl text-white/80 hover:text-white transition-all border border-transparent hover:border-white/10">
+                    <button onClick={onBack} className="p-3 hover:bg-foreground/[0.08] rounded-2xl text-muted-foreground hover:text-foreground transition-all border border-transparent hover:border-border">
                         <Maximize2 size={20} className="rotate-45" />
                     </button>
-                    <div className="h-8 w-[1px] bg-white/10" />
+                    <div className="h-8 w-[1px] bg-border" />
                     <input 
                         value={data.name}
                         onChange={(e) => setData({ ...data, name: e.target.value })}
-                        className="bg-transparent border-none p-0 text-3xl font-black placeholder:text-white/20 focus:ring-0 w-[400px] tracking-tight"
+                        className="bg-transparent border-none p-0 text-3xl font-black placeholder:text-muted-foreground/20 focus:ring-0 w-[400px] tracking-tight text-foreground"
                         placeholder="Untitled Strategy"
                     />
                     <button 
                         onClick={() => setData({ ...data, isTemplate: !data.isTemplate })}
-                        className={`p-3 rounded-2xl border transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${data.isTemplate ? "bg-amber-500/20 border-amber-500/50 text-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.2)]" : "bg-white/5 border-white/10 text-white/40 hover:text-white"}`}
+                        className={`p-3 rounded-2xl border transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${data.isTemplate ? "bg-amber-500/20 border-amber-500/50 text-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.2)]" : "bg-foreground/5 border-border text-muted-foreground hover:text-foreground"}`}
                         title={data.isTemplate ? "Stored as Blueprint" : "Mark as Blueprint"}
                     >
                         <Sparkles size={16} className={data.isTemplate ? "animate-pulse" : ""} />
@@ -554,16 +554,16 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
                     </button>
                 </div>
                 <div className="flex items-center gap-6">
-                    <div className="flex bg-white/[0.03] p-1.5 rounded-2xl border border-white/10">
+                    <div className="flex bg-foreground/[0.03] p-1.5 rounded-2xl border border-border">
                         <button 
                             onClick={() => setActiveSection('editor')}
-                            className={`px-6 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all ${activeSection === 'editor' ? 'bg-white/10 text-white shadow-2xl' : 'text-white/70 hover:text-white/80'}`}
+                            className={`px-6 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all ${activeSection === 'editor' ? 'bg-foreground/10 text-foreground shadow-2xl' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                             Blueprint
                         </button>
                         <button 
                             onClick={() => setActiveSection('map')}
-                            className={`px-6 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all ${activeSection === 'map' ? 'bg-white/10 text-white shadow-2xl' : 'text-white/70 hover:text-white/80'}`}
+                            className={`px-6 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all ${activeSection === 'map' ? 'bg-foreground/10 text-foreground shadow-2xl' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                             Synthesis
                         </button>
@@ -571,7 +571,7 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
                     <button 
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="px-8 py-3 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] transition-all shadow-2xl shadow-sky-500/20 active:scale-95"
+                        className="px-8 py-3 bg-primary hover:opacity-90 disabled:opacity-50 text-primary-foreground rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] transition-all shadow-2xl shadow-primary/20 active:scale-95"
                     >
                         {isSaving ? 'Synching...' : 'Store System'}
                     </button>
@@ -582,20 +582,20 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
                 {showTemplatePicker ? (
                     <div className="max-w-3xl mx-auto space-y-12 py-20 text-center animate-in fade-in zoom-in duration-700">
                         <div className="space-y-4">
-                            <h2 className="text-5xl font-black tracking-tighter text-white">Select Architecture</h2>
-                            <p className="text-white/40 text-lg font-medium">Choose a structural starting point for your trading system.</p>
+                            <h2 className="text-5xl font-black tracking-tighter text-foreground">Select Architecture</h2>
+                            <p className="text-muted-foreground/40 text-lg font-medium">Choose a structural starting point for your trading system.</p>
                         </div>
                         <div className="grid grid-cols-2 gap-8">
                             <button 
                                 onClick={() => selectTemplate(INSTITUTIONAL_CORE_BLUEPRINT)}
-                                className="group p-10 bg-[#0A0A0A] border border-white/10 rounded-[2.5rem] hover:border-sky-500 transition-all text-left space-y-6 shadow-2xl"
+                                className="group p-10 bg-card border border-border rounded-[2.5rem] hover:border-primary transition-all text-left space-y-6 shadow-2xl"
                             >
                                 <div className="w-16 h-16 bg-sky-500/10 rounded-[1.5rem] flex items-center justify-center text-sky-500 group-hover:scale-110 transition-transform">
                                     <Layout size={32} />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-white group-hover:text-sky-500 transition-colors">Institutional Core Blueprint</h3>
-                                    <p className="text-sm text-white/40 font-medium mt-2 leading-relaxed">Full framework including market bias, execution protocol, and risk labs.</p>
+                                    <h3 className="text-xl font-black text-foreground group-hover:text-primary transition-colors">Institutional Core Blueprint</h3>
+                                    <p className="text-sm text-muted-foreground/40 font-medium mt-2 leading-relaxed">Full framework including market bias, execution protocol, and risk labs.</p>
                                 </div>
                                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-sky-400 opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
                                     Initialize Framework <ChevronUp className="rotate-90" size={14} />
@@ -603,16 +603,16 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
                             </button>
                             <button 
                                 onClick={() => selectTemplate(BLANK_TEMPLATE)}
-                                className="group p-10 bg-[#0A0A0A] border border-white/10 rounded-[2.5rem] hover:border-white/30 transition-all text-left space-y-6 shadow-2xl"
+                                className="group p-10 bg-card border border-border rounded-[2.5rem] hover:border-foreground/30 transition-all text-left space-y-6 shadow-2xl"
                             >
                                 <div className="w-16 h-16 bg-white/5 rounded-[1.5rem] flex items-center justify-center text-white/40 group-hover:scale-110 transition-transform">
                                     <Plus size={32} />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-white group-hover:text-white/80 transition-colors">Empty Canvas</h3>
-                                    <p className="text-sm text-white/40 font-medium mt-2 leading-relaxed">Pure Notion-style freestyle editing. Build your playbook from scratch.</p>
+                                    <h3 className="text-xl font-black text-foreground group-hover:text-foreground/80 transition-colors">Empty Canvas</h3>
+                                    <p className="text-sm text-muted-foreground/40 font-medium mt-2 leading-relaxed">Pure Notion-style freestyle editing. Build your playbook from scratch.</p>
                                 </div>
-                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
+                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
                                     Start Fresh <ChevronUp className="rotate-90" size={14} />
                                 </div>
                             </button>
@@ -640,10 +640,10 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
                                     ))}
                                 </Reorder.Group>
                                 
-                                <div className="mt-20 pt-20 border-t border-white/5 text-center">
+                                <div className="mt-20 pt-20 border-t border-border text-center">
                                     <button 
                                         onClick={() => addBlockAt(data.blocks[data.blocks.length-1]?.id, 'text', true)}
-                                        className="inline-flex items-center gap-3 px-8 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-all"
+                                        className="inline-flex items-center gap-3 px-8 py-4 bg-foreground/5 hover:bg-foreground/10 rounded-2xl text-[11px] font-black uppercase tracking-widest text-muted-foreground/40 hover:text-foreground transition-all"
                                     >
                                         <Plus size={18} /> Append New Content Block
                                     </button>

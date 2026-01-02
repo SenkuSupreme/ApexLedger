@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Trade from '@/lib/models/Trade';
+import Portfolio from '@/lib/models/Portfolio';
 import { calculateTradeMetrics } from '@/lib/utils/tradeCalculations';
 
 export async function GET(req: Request) {
@@ -31,6 +32,63 @@ export async function GET(req: Request) {
       };
   }
 
+  // Calculate Lifetime PnL for live balance
+  const balanceTradesQuery: any = { userId: (session.user as any).id };
+  if (portfolioId && portfolioId !== 'all') {
+    balanceTradesQuery.portfolioId = portfolioId;
+  }
+  const allTimeTrades = await Trade.find(balanceTradesQuery).select('pnl entryPrice exitPrice quantity direction fees assetType symbol status portfolioBalance').lean();
+  
+  let totalAllTimePnl = 0;
+  allTimeTrades.forEach((t: any) => {
+      if (t.status === 'Open') return;
+      if (t.entryPrice && t.exitPrice && t.quantity) {
+          try {
+              const m = calculateTradeMetrics({
+                  entryPrice: t.entryPrice,
+                  exitPrice: t.exitPrice,
+                  quantity: t.quantity,
+                  direction: t.direction || "long",
+                  portfolioBalance: t.portfolioBalance || 10000, 
+                  fees: t.fees || 0,
+                  assetType: t.assetType || "forex",
+                  symbol: t.symbol || "",
+              });
+              totalAllTimePnl += m.netPnl;
+          } catch(e) {
+              totalAllTimePnl += (t.pnl || 0);
+          }
+      } else {
+          totalAllTimePnl += (t.pnl || 0);
+      }
+  });
+
+  // Fetch Portfolio static data
+  let initialBalance = 0;
+  let deposits = 0;
+  let withdrawals = 0;
+
+  if (portfolioId && portfolioId !== 'all') {
+      const portfolio = await Portfolio.findOne({ _id: portfolioId, userId: (session.user as any).id }).lean();
+      if (portfolio) {
+          initialBalance = (portfolio as any).initialBalance || 0;
+          deposits = (portfolio as any).deposits || 0;
+          withdrawals = (portfolio as any).withdrawals || 0;
+      }
+  } else {
+      const portfolios = await Portfolio.find({ userId: (session.user as any).id }).lean();
+      initialBalance = portfolios.reduce((sum, p) => sum + ((p as any).initialBalance || 0), 0);
+      deposits = portfolios.reduce((sum, p) => sum + ((p as any).deposits || 0), 0);
+      withdrawals = portfolios.reduce((sum, p) => sum + ((p as any).withdrawals || 0), 0);
+  }
+
+  // Anchor strictly to initialBalance to avoid double counting
+  // If the user has not set initialBalance, it starts from 0 effectively.
+  const baseBalance = initialBalance;
+  const liveBalance = baseBalance + totalAllTimePnl + deposits - withdrawals;
+
+  const balance = liveBalance;
+
   // Use .lean() to skip Mongoose hydration for massive speed gains in analytical processing
   // @ts-ignore
   const trades = await Trade.find(query).sort({ timestampEntry: 1 }).lean(); 
@@ -38,7 +96,7 @@ export async function GET(req: Request) {
   // Helper function to get complete calculated metrics for a trade
   const getTradeMetrics = (trade: any) => {
     // If we have all the required data, calculate comprehensive metrics
-    if (trade.entryPrice && trade.quantity) {
+    if (trade.entryPrice && trade.exitPrice && trade.quantity) {
       try {
         const metrics = calculateTradeMetrics({
           entryPrice: trade.entryPrice,
@@ -67,7 +125,7 @@ export async function GET(req: Request) {
       }
     }
     
-    // Fallback to stored values
+    // Fallback to stored values or zero
     return {
       netPnl: trade.pnl || 0,
       grossPnl: trade.grossPnl || trade.pnl || 0,
@@ -101,13 +159,21 @@ export async function GET(req: Request) {
   const gradeBreakdown: Record<string, { count: number; avgPnl: number; totalPnl: number; avgR: number; totalR: number }> = {};
   const monthlyData: Record<string, { pnl: number; trades: number; wins: number; losses: number; totalR: number }> = {};
   const assetTypeBreakdown: Record<string, { count: number; pnl: number; avgR: number }> = {};
+  const strategyBreakdown: Record<string, { count: number; pnl: number; wins: number; totalR: number }> = {};
   const symbolMap = new Map<string, { count: number; pnl: number }>();
   const directionBreakdown = { long: { count: 0, pnl: 0, wins: 0 }, short: { count: 0, pnl: 0, wins: 0 } };
-  
-  // For Drawdown Calculation and Streak Tracking
-  let peakEquity = 0;
+  const dayOfWeekBreakdown: Record<string, { count: number; pnl: number; wins: number }> = {
+    'Monday': { count: 0, pnl: 0, wins: 0 },
+    'Tuesday': { count: 0, pnl: 0, wins: 0 },
+    'Wednesday': { count: 0, pnl: 0, wins: 0 },
+    'Thursday': { count: 0, pnl: 0, wins: 0 },
+    'Friday': { count: 0, pnl: 0, wins: 0 },
+    'Saturday': { count: 0, pnl: 0, wins: 0 },
+    'Sunday': { count: 0, pnl: 0, wins: 0 }
+  };
+  let peakEquity = baseBalance;
   let maxDrawdown = 0;
-  let currentEquity = 0;
+  let currentEquity = baseBalance;
   let currentDrawdown = 0;
   let drawdownPeriods: Array<{ start: string; end: string; amount: number; duration: number }> = [];
   let drawdownStart: string | null = null;
@@ -263,6 +329,24 @@ export async function GET(req: Request) {
       if (pnl > 0) directionBreakdown[dir].wins++;
     }
 
+    // Strategy tracking
+    const strategyName = trade.strategyId?.name || 'Uncategorized';
+    if (!strategyBreakdown[strategyName]) {
+      strategyBreakdown[strategyName] = { count: 0, pnl: 0, wins: 0, totalR: 0 };
+    }
+    strategyBreakdown[strategyName].count++;
+    strategyBreakdown[strategyName].pnl += pnl;
+    strategyBreakdown[strategyName].totalR += rMultiple;
+    if (pnl > 0) strategyBreakdown[strategyName].wins++;
+
+    // Day of Week tracking
+    const dayName = new Date(trade.timestampEntry).toLocaleDateString('en-US', { weekday: 'long' });
+    if (dayOfWeekBreakdown[dayName]) {
+      dayOfWeekBreakdown[dayName].count++;
+      dayOfWeekBreakdown[dayName].pnl += pnl;
+      if (pnl > 0) dayOfWeekBreakdown[dayName].wins++;
+    }
+
     // Daily heatmap data
     const dateStr = new Date(trade.timestampEntry).toISOString().split('T')[0];
     if (!heatmapData[dateStr]) {
@@ -300,7 +384,7 @@ export async function GET(req: Request) {
   if (processedTrades.length > 0) {
     equityCurve.push({
       name: 'Start',
-      value: 0,
+      value: Number(baseBalance.toFixed(2)),
       date: processedTrades[0].timestampEntry,
       pnl: 0,
       rMultiple: 0,
@@ -450,7 +534,9 @@ export async function GET(req: Request) {
     emotionBreakdown,
     gradeBreakdown,
     assetTypeBreakdown,
+    strategyBreakdown,
     directionBreakdown,
+    dayOfWeekBreakdown,
     
     // Recent Activity
     recentTrades,
@@ -484,7 +570,13 @@ export async function GET(req: Request) {
       mostActive: symbolMap.size > 0 ? Array.from(symbolMap.entries())
         .sort((a: any, b: any) => b[1].count - a[1].count)[0]?.[0] || "N/A" : "N/A",
       totalPnL: totalPnl
-    }
+    },
+    
+    // Portfolio Balance Stats
+    currentBalance: balance,
+    balance: balance,
+    initialBalance: initialBalance,
+    allTimePnl: totalAllTimePnl
   };
 
   return NextResponse.json(stats);

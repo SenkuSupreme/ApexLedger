@@ -24,18 +24,18 @@ interface GoalCardProps {
 }
 
 const categoryColors = {
-  trading: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  learning: "bg-green-500/20 text-green-400 border-green-500/30",
-  financial: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  personal: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-  other: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+  trading: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  learning: "bg-green-500/10 text-green-400 border-green-500/20",
+  financial: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+  personal: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  other: "bg-muted text-muted-foreground border-border",
 };
 
 const statusColors = {
-  "not-started": "bg-gray-500/20 text-gray-400 border-gray-500/30",
-  "in-progress": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  completed: "bg-green-500/20 text-green-400 border-green-500/30",
-  paused: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+  "not-started": "bg-muted text-muted-foreground border-border",
+  "in-progress": "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  completed: "bg-green-500/10 text-green-400 border-green-500/20",
+  paused: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
 };
 
 export default function GoalCard({
@@ -79,11 +79,11 @@ export default function GoalCard({
 
   return (
     <div 
-      className="group relative bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 h-full flex flex-col transition-all duration-500 hover:bg-white/[0.04] hover:border-white/20 cursor-pointer overflow-hidden shadow-2xl"
+      className="group relative bg-card/40 border border-border rounded-[2.5rem] p-8 h-full flex flex-col transition-all duration-500 hover:bg-card/60 hover:border-primary/20 cursor-pointer overflow-hidden shadow-2xl"
       onClick={() => router.push(`/details?type=goal&id=${goal._id}`)}
     >
       {/* Background Glow */}
-      <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 blur-[100px] group-hover:bg-blue-500/20 transition-all duration-700" />
+      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 blur-[100px] group-hover:bg-primary/10 transition-all duration-700" />
       
       {/* Modal Grain Effect */}
       <div className="absolute inset-0 z-0 opacity-[0.02] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
@@ -95,7 +95,7 @@ export default function GoalCard({
             e.stopPropagation();
             onEdit(goal);
           }}
-          className="p-2.5 bg-white/5 hover:bg-white text-white/40 hover:text-black rounded-xl border border-white/10 transition-all duration-300"
+          className="p-2.5 bg-foreground/5 hover:bg-foreground text-muted-foreground hover:text-background rounded-xl border border-border transition-all duration-300"
         >
           <Edit3 size={14} />
         </button>
@@ -122,12 +122,12 @@ export default function GoalCard({
 
       {/* Title & Description Mesh */}
       <div className="relative z-10 space-y-4 flex-1 pointer-events-none">
-        <h3 className="text-2xl font-black text-white leading-tight tracking-tighter uppercase italic pr-20">
+        <h3 className="text-2xl font-black text-foreground leading-tight tracking-tighter uppercase italic pr-20">
           {goal.title}
         </h3>
         
         {goal.description && (
-          <p className="text-white/40 text-sm leading-relaxed font-medium italic line-clamp-2">
+          <p className="text-muted-foreground text-sm leading-relaxed font-medium italic line-clamp-2">
             "{goal.description}"
           </p>
         )}
@@ -136,12 +136,12 @@ export default function GoalCard({
       {/* Progress Mesh */}
       <div className="relative z-10 mt-8 mb-6 pointer-events-none">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Execution Progress</span>
-          <span className="text-[11px] font-black text-white italic">{goal.progress}%</span>
+          <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Execution Progress</span>
+          <span className="text-[11px] font-black text-foreground italic">{goal.progress}%</span>
         </div>
-        <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
+        <div className="w-full bg-foreground/5 rounded-full h-1.5 overflow-hidden border border-border">
           <div
-            className="bg-white h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+            className="bg-foreground h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(var(--foreground),0.3)]"
             style={{ width: `${goal.progress}%` }}
           />
         </div>
@@ -150,26 +150,26 @@ export default function GoalCard({
       {/* Milestones Mesh */}
       {goal.milestones && goal.milestones.length > 0 && (
         <div className="relative z-10 space-y-2 mb-8" onClick={(e) => e.stopPropagation()}>
-          <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-3">Key Milestones</div>
+          <div className="text-[9px] font-black text-muted-foreground/20 uppercase tracking-[0.3em] mb-3">Key Milestones</div>
           <div className="space-y-2">
             {goal.milestones.slice(0, 3).map((milestone, index) => (
               <div 
                 key={index} 
-                className="flex items-center gap-3 bg-white/[0.02] px-3 py-2.5 rounded-2xl border border-white/5 hover:bg-white/[0.04] transition-all cursor-pointer"
+                className="flex items-center gap-3 bg-foreground/[0.02] px-3 py-2.5 rounded-2xl border border-border hover:bg-foreground/[0.04] transition-all cursor-pointer"
                 onClick={() => toggleMilestone(index)}
               >
                 {milestone.completed ? (
                   <CheckCircle size={14} className="text-green-500" />
                 ) : (
-                  <div className="w-3.5 h-3.5 rounded-full border border-white/20" />
+                  <div className="w-3.5 h-3.5 rounded-full border border-border" />
                 )}
-                <span className={`text-[11px] font-black uppercase tracking-tighter truncate italic ${milestone.completed ? "text-white/20 line-through" : "text-white/60"}`}>
+                <span className={`text-[11px] font-black uppercase tracking-tighter truncate italic ${milestone.completed ? "text-muted-foreground/20 line-through" : "text-muted-foreground/60"}`}>
                   {milestone.title}
                 </span>
               </div>
             ))}
             {goal.milestones.length > 3 && (
-               <div className="text-[9px] font-black text-white/10 uppercase tracking-widest pl-2">
+               <div className="text-[9px] font-black text-muted-foreground/10 uppercase tracking-widest pl-2">
                   + {goal.milestones.length - 3} More Signals
                </div>
             )}
@@ -178,7 +178,7 @@ export default function GoalCard({
       )}
 
       {/* Terminal Footer */}
-      <div className="mt-auto flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/10 pt-6 border-t border-white/5 relative z-10 w-full pointer-events-none">
+      <div className="mt-auto flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/10 pt-6 border-t border-border relative z-10 w-full pointer-events-none">
         <div className="flex items-center gap-3">
           {goal.targetDate && (
             <div className="flex items-center gap-2">
@@ -197,7 +197,7 @@ export default function GoalCard({
             {goal.tags.slice(0, 1).map((tag, i) => (
               <span
                 key={i}
-                className="bg-white/5 text-white/20 px-3 py-1 rounded-lg border border-white/5"
+                className="bg-foreground/5 text-muted-foreground/20 px-3 py-1 rounded-lg border border-border"
               >
                 #{tag}
               </span>

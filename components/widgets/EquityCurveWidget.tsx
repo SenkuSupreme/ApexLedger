@@ -25,16 +25,16 @@ export default function EquityCurveWidget({
     <div className={`h-full ${className}`}>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h3 className="text-2xl font-bold text-white tracking-tight">
+          <h3 className="text-2xl font-bold text-foreground dark:text-foreground tracking-tight">
             Equity Curve
           </h3>
-          <p className="text-[11px] text-white/60 font-mono uppercase tracking-[0.2em]">
+          <p className="text-[11px] text-foreground/80 dark:text-muted-foreground font-mono uppercase tracking-[0.2em]">
             Aggregate Account Growth
           </p>
         </div>
         <div className="flex gap-4 items-center">
           <div className="text-right">
-            <div className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">
+            <div className="text-[10px] font-black text-foreground/80 dark:text-muted-foreground uppercase tracking-[0.2em]">
               Current P&L
             </div>
             <div
@@ -102,12 +102,12 @@ export default function EquityCurveWidget({
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className="flex h-full items-center justify-center border border-dashed border-white/5 rounded-2xl bg-white/[0.01]">
+          <div className="flex h-full items-center justify-center border border-dashed border-border rounded-2xl bg-white/[0.01]">
             <div className="flex flex-col items-center gap-3 opacity-40">
-              <div className="p-3 bg-white/5 rounded-full">
-                <Activity size={20} className="text-white/70" />
+              <div className="p-3 bg-foreground/5 rounded-full">
+                <Activity size={20} className="text-foreground/90 dark:text-foreground" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">Waiting for Market Data</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/80 dark:text-muted-foreground">Waiting for Market Data</span>
             </div>
           </div>
         )}

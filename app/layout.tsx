@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 };
 
 import { PortfolioProvider } from "@/context/PortfolioContext";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 export default function RootLayout({
   children,
@@ -28,18 +29,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-star-grid text-foreground`}
       >
-
-        <AuthProvider>
-          <PortfolioProvider>
-            <ClientLayout>
-              {children}
-            </ClientLayout>
-          </PortfolioProvider>
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <PortfolioProvider>
+              <ClientLayout>
+                {children}
+              </ClientLayout>
+            </PortfolioProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -146,8 +146,8 @@ export default function NotesPage() {
 
   if (loading) {
     return (
-      <div className="flex h-[80vh] w-full items-center justify-center text-white/20 font-black text-xs uppercase tracking-[0.5em] animate-pulse">
-        Synchronizing Intelligence Nodes...
+      <div className="flex h-[80vh] w-full items-center justify-center text-white/40 font-black text-xs uppercase tracking-[0.5em] animate-pulse">
+        Loading Notes...
       </div>
     );
   }
@@ -168,18 +168,18 @@ export default function NotesPage() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400">Terminal 06 Live</span>
+               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400">Notes Active</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/20">
+            <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/60">
                <Globe size={10} />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em]">Mesh Sync: Active</span>
+               <span className="text-[9px] font-black uppercase tracking-[0.3em]">Sync Active</span>
             </div>
           </div>
-          <h1 className="text-6xl font-black tracking-tighter italic uppercase bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent leading-none">
-            Trading Notebook
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-[0.02em] italic uppercase bg-gradient-to-br from-white to-white/70 bg-clip-text text-transparent leading-none">
+            Notebook
           </h1>
-          <p className="text-white/30 text-sm font-medium italic max-w-xl leading-relaxed">
-            "Institutional ledger for market anomalies, cognitive shifts, and protocol adjustments. Every entry is a signal in the noise."
+          <p className="text-white/80 text-sm font-medium italic max-w-xl leading-relaxed">
+            "Record your market observations, strategy ideas, and psychological insights. Every entry is a step towards mastery."
           </p>
         </div>
 
@@ -197,7 +197,7 @@ export default function NotesPage() {
           >
             <div className="absolute inset-0 bg-black/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
             <Plus size={18} className="relative z-10" />
-            <span className="relative z-10">Initialize Record</span>
+            <span className="relative z-10">New Note</span>
           </button>
         </div>
       </div>
@@ -205,10 +205,10 @@ export default function NotesPage() {
       {/* Intelligence Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
         {[
-          { icon: <FileText size={18} />, label: "Total Records", value: notes.length, color: "blue" },
-          { icon: <Star size={18} />, label: "Priority Pins", value: notes.filter(n => n.isPinned).length, color: "yellow" },
-          { icon: <Tag size={18} />, label: "Signal Fractals", value: [...new Set(notes.flatMap(n => n.tags))].length, color: "purple" },
-          { icon: <Clock size={18} />, label: "Last Sync", value: notes.length > 0 ? new Date(notes[0].updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : "--", color: "green" },
+          { icon: <FileText size={18} />, label: "Total Notes", value: notes.length, color: "blue" },
+          { icon: <Star size={18} />, label: "Pinned Notes", value: notes.filter(n => n.isPinned).length, color: "yellow" },
+          { icon: <Tag size={18} />, label: "Total Tags", value: [...new Set(notes.flatMap(n => n.tags))].length, color: "purple" },
+          { icon: <Clock size={18} />, label: "Last Updated", value: notes.length > 0 ? new Date(notes[0].updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : "--", color: "green" },
         ].map((stat, i) => (
           <motion.div 
             key={i} 
@@ -222,7 +222,7 @@ export default function NotesPage() {
               </div>
               <span className="text-4xl font-black italic tracking-tighter text-white/90 group-hover:text-black transition-colors">{stat.value}</span>
             </div>
-            <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] group-hover:text-black transition-colors relative z-10">
+            <div className="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] group-hover:text-black transition-colors relative z-10">
               {stat.label}
             </div>
           </motion.div>
@@ -238,10 +238,10 @@ export default function NotesPage() {
           />
           <input
             type="text"
-            placeholder="Scan signals and record identifiers..."
+            placeholder="Search notes and tags..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-16 pr-8 py-5 bg-white/[0.02] border border-white/5 rounded-2xl text-white placeholder:text-white/10 text-[11px] font-black uppercase tracking-[0.2em] focus:border-blue-500/30 focus:outline-none focus:bg-white/[0.04] transition-all shadow-inner"
+            className="w-full pl-16 pr-8 py-5 bg-white/[0.02] border border-white/5 rounded-2xl text-white placeholder:text-white/30 text-[11px] font-black uppercase tracking-[0.2em] focus:border-blue-500/30 focus:outline-none focus:bg-white/[0.04] transition-all shadow-inner"
           />
         </div>
         <div className="flex items-center gap-4">
@@ -284,9 +284,9 @@ export default function NotesPage() {
                   <BookOpen size={48} className="text-blue-500/60" />
                </div>
             </div>
-            <h3 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter italic">No Neural Records Found</h3>
-            <p className="text-white/30 text-[11px] font-black uppercase tracking-[0.4em] mb-12 max-w-sm text-center leading-relaxed italic">
-              "The ledger is void. Awaiting first transmission of institutional data."
+            <h3 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter italic">No Notes Found</h3>
+            <p className="text-white/60 text-[11px] font-black uppercase tracking-[0.4em] mb-12 max-w-sm text-center leading-relaxed italic">
+              "Your notebook is empty. Create your first note to start recording your thoughts."
             </p>
             <button
               onClick={() => {
@@ -296,7 +296,7 @@ export default function NotesPage() {
               className="flex items-center gap-4 bg-white/5 hover:bg-white text-white/40 hover:text-black px-12 py-6 rounded-2xl font-black text-[11px] uppercase tracking-[0.4em] border border-white/10 transition-all active:scale-95 backdrop-blur-md"
             >
               <Plus size={18} />
-              Initialize Record 01
+              Create First Note
             </button>
           </motion.div>
         ) : (
@@ -318,7 +318,7 @@ export default function NotesPage() {
                   <div className="flex items-center gap-6">
                     <div className="flex items-center gap-3 px-6 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full">
                       <Star size={14} className="text-yellow-500 animate-pulse" fill="currentColor" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.4em] text-yellow-500">Priority Protocols</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.4em] text-yellow-500">Pinned Notes</span>
                     </div>
                     <div className="h-px flex-1 bg-gradient-to-r from-yellow-500/20 to-transparent" />
                   </div>
@@ -345,7 +345,7 @@ export default function NotesPage() {
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-3 px-6 py-2 bg-white/5 border border-white/10 rounded-full">
                     <FileText size={14} className="text-white/30" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">General Frequency</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">All Notes</span>
                   </div>
                   <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
                 </div>
@@ -396,8 +396,8 @@ export default function NotesPage() {
             deleteNote(deleteDialog.note._id);
           }
         }}
-        title="Terminate Record"
-        message={`Terminate intelligence node "${deleteDialog.note?.title}"? This action cannot be reversed within this cycle.`}
+        title="Delete Note"
+        message={`Are you sure you want to delete "${deleteDialog.note?.title}"? This action cannot be undone.`}
       />
     </div>
   );
@@ -465,7 +465,7 @@ function NoteCard({
           </div>
         </div>
 
-        <p className="text-white/40 text-[11px] leading-relaxed font-medium line-clamp-4 flex-1 italic group-hover:text-white/60 transition-colors duration-500">
+        <p className="text-white/60 text-[11px] leading-relaxed font-medium line-clamp-4 flex-1 italic group-hover:text-white transition-colors duration-500">
           "{note.content}"
         </p>
 
@@ -584,10 +584,10 @@ function NoteEditor({
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Intelligence Configuration</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/50">Note Settings</span>
               </div>
               <h2 className="text-3xl font-black tracking-tighter uppercase italic">
-                {note ? "Modify Ledger" : "Init Record"}
+                {note ? "Edit Note" : "New Note"}
               </h2>
             </div>
             <button
@@ -604,35 +604,35 @@ function NoteEditor({
                 {/* Left Column: Metadata Mesh (5 cols) */}
                 <div className="lg:col-span-5 space-y-12">
                   <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 block px-2">Signal Identifier</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 block px-2">Note Title</label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="w-full px-8 py-6 bg-white/[0.03] border border-white/5 rounded-[2rem] text-white font-black uppercase italic tracking-tighter focus:bg-white/[0.06] focus:border-white/20 transition-all outline-none shadow-inner text-lg"
-                      placeholder="Identify record node..."
+                      placeholder="Enter note title..."
                       required
                     />
                   </div>
 
                   <div className="grid grid-cols-1 gap-8">
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 block px-2">Intelligence Sector</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 block px-2">Category</label>
                       <select
                         value={formData.category}
                         onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
                         className="w-full px-8 py-5 bg-white/[0.03] border border-white/5 rounded-2xl text-white font-black uppercase tracking-widest focus:bg-white/[0.06] focus:border-white/20 transition-all outline-none cursor-pointer appearance-none shadow-inner"
                       >
-                        <option value="general">General Node</option>
-                        <option value="trading">Trading Signal</option>
-                        <option value="analysis">Deep Analysis</option>
-                        <option value="strategy">Strategy Blueprint</option>
-                        <option value="journal">Personal Journal</option>
+                        <option value="general">General</option>
+                        <option value="trading">Trading</option>
+                        <option value="analysis">Analysis</option>
+                        <option value="strategy">Strategy</option>
+                        <option value="journal">Journal</option>
                       </select>
                     </div>
 
                     <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 block px-2">Signal Fragments</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 block px-2">Tags</label>
                       <div className="relative">
                         <Tag size={14} className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" />
                         <input
@@ -658,7 +658,7 @@ function NoteEditor({
                     >
                       <div className="flex items-center gap-4">
                         <Star size={20} fill={formData.isPinned ? "currentColor" : "none"} className={formData.isPinned ? "animate-pulse" : ""} />
-                        <span className="text-[11px] font-black uppercase tracking-[0.3em]">Priority Ledger</span>
+                        <span className="text-[11px] font-black uppercase tracking-[0.3em]">Pin to Top</span>
                       </div>
                       <div className={`w-2 h-2 rounded-full ${formData.isPinned ? "bg-yellow-500" : "bg-white/10"}`} />
                     </button>
@@ -667,14 +667,14 @@ function NoteEditor({
 
                 {/* Right Column: Deep Insight Mesh (7 cols) */}
                 <div className="lg:col-span-7 flex flex-col space-y-6">
-                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 block px-2 italic">Neural Observation Protocol</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 block px-2 italic">Note Content</label>
                   <div className="flex-1 relative group h-full">
                     <div className="absolute inset-0 bg-blue-500/5 blur-[50px] opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
                     <textarea
                       value={formData.content}
                       onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                       className="w-full h-full min-h-[450px] px-10 py-10 bg-white/[0.02] border border-white/5 rounded-[3rem] text-white/80 font-medium italic leading-relaxed focus:bg-white/[0.04] focus:border-white/20 transition-all outline-none resize-none shadow-2xl relative z-10"
-                      placeholder="Record deep institutional market insights, psychological shifts, and tactical observations..."
+                      placeholder="Write your notes, strategy ideas, or observations here..."
                       required
                     />
                   </div>
@@ -687,14 +687,14 @@ function NoteEditor({
                 type="submit"
                 className="flex-1 bg-white text-black py-7 px-10 rounded-2xl font-black text-xs uppercase tracking-[0.3em] hover:bg-gray-200 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] active:scale-95 flex items-center justify-center gap-3"
               >
-                Commit Protocol
+                Save Note
               </button>
               <button
                 type="button"
                 onClick={onClose}
                 className="flex-[0.5] bg-white/5 text-white/40 py-7 px-10 rounded-2xl font-black text-xs uppercase tracking-[0.3em] border border-white/5 hover:bg-white/[0.08] hover:text-white transition-all active:scale-95"
               >
-                Abort Sync
+                Cancel
               </button>
             </div>
           </form>

@@ -258,11 +258,11 @@ export default function TradeList({
     return (
       <th
         key={column.id}
-        className={`px-4 py-6 ${
-          column.sortable ? "cursor-pointer hover:text-white group" : ""
+        className={`px-4 py-4 ${
+          column.sortable ? "cursor-pointer hover:text-foreground group" : ""
         } transition-all relative ${
-          isBeingDragged ? "opacity-30 bg-blue-500/10" : ""
-        } hover:bg-white/[0.02]`}
+          isBeingDragged ? "opacity-30 bg-primary/10" : ""
+        } hover:bg-foreground/[0.02]`}
         onClick={() =>
           column.sortable &&
           handleSort(
@@ -282,16 +282,16 @@ export default function TradeList({
           {column.id !== "actions" && (
             <GripVertical
               size={10}
-              className="text-white/10 group-hover:text-white/30 cursor-grab active:cursor-grabbing"
+              className="text-white/20 group-hover:text-white/40 cursor-grab active:cursor-grabbing"
             />
           )}
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] italic text-white/40 group-hover:text-white/70 transition-colors">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] italic text-muted-foreground group-hover:text-foreground transition-colors">
             {column.label}
           </span>
           {column.sortable && (
             <ArrowUpDown
               size={10}
-              className="opacity-0 group-hover:opacity-40 transition-opacity"
+              className="opacity-0 group-hover:opacity-60 transition-opacity"
             />
           )}
         </div>
@@ -306,12 +306,12 @@ export default function TradeList({
     switch (columnId) {
       case "date":
         return (
-          <td key={columnId} className="px-4 py-6">
+          <td key={columnId} className="px-4 py-4">
             <div className="flex flex-col gap-1">
-              <span className="text-white/90 font-black italic uppercase text-xs tracking-tighter tabular-nums">
+              <span className="text-foreground font-black italic uppercase text-xs tracking-tighter tabular-nums">
                 {new Date(trade.timestampEntry).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                 {new Date(trade.timestampEntry).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -323,12 +323,12 @@ export default function TradeList({
 
       case "symbol":
         return (
-          <td key={columnId} className="px-4 py-6">
+          <td key={columnId} className="px-4 py-4">
             <div className="flex flex-col gap-1">
-              <span className="font-black text-white italic truncate max-w-[120px] uppercase tracking-tighter text-base leading-none">
+              <span className="font-black text-foreground italic truncate max-w-[120px] uppercase tracking-tighter text-base leading-none">
                 {trade.symbol}
               </span>
-              <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] italic">
+              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] italic">
                 {trade.assetType}
               </span>
             </div>
@@ -337,15 +337,15 @@ export default function TradeList({
 
       case "account":
         return (
-          <td key={columnId} className="px-4 py-6">
+          <td key={columnId} className="px-4 py-4">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
               <span className="text-[10px] text-blue-400 font-black uppercase tracking-[0.2em] italic">
-                {trade.portfolio?.name || "Main_Sector"}
+                {trade.portfolio?.name || "Main Account"}
               </span>
             </div>
             {trade.portfolio?.accountType && (
-              <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] ml-3">
+              <div className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-3">
                 {trade.portfolio.accountType}
               </div>
             )}
@@ -354,7 +354,7 @@ export default function TradeList({
 
       case "strategy":
         return (
-          <td key={columnId} className="px-4 py-6">
+          <td key={columnId} className="px-4 py-4">
             {trade.strategy ? (
               <div className="flex items-center gap-2">
                 <div className="w-1 h-1 bg-purple-500 rounded-full"></div>
@@ -372,7 +372,7 @@ export default function TradeList({
                 )}
               </div>
             ) : (
-              <span className="text-[10px] font-black text-white/10 uppercase tracking-[0.2em] italic">Direct_Input</span>
+              <span className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.2em] italic">Manual Entry</span>
             )}
           </td>
         );
@@ -388,7 +388,7 @@ export default function TradeList({
 
       case "side":
         return (
-          <td key={columnId} className="px-4 py-6">
+          <td key={columnId} className="px-4 py-4">
             <span
               className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.3em] italic ${
                 trade.direction === "long"
@@ -396,7 +396,7 @@ export default function TradeList({
                   : "bg-rose-500/5 text-rose-400 border border-rose-500/10"
               }`}
             >
-              {trade.direction === 'long' ? 'Buy_Pulse' : 'Sell_Pulse'}
+              {trade.direction === 'long' ? 'Long' : 'Short'}
             </span>
           </td>
         );
@@ -405,9 +405,9 @@ export default function TradeList({
         return (
           <td
             key={columnId}
-            className="px-4 py-6"
+            className="px-4 py-4"
           >
-            <span className="text-white/60 font-black text-xs tabular-nums italic">
+            <span className="text-foreground/80 font-black text-xs tabular-nums italic">
               {trade.quantity || "-"}
             </span>
           </td>
@@ -415,7 +415,7 @@ export default function TradeList({
 
       case "entry":
         return (
-          <td key={columnId} className="px-4 py-6">
+          <td key={columnId} className="px-4 py-4">
             <span className="text-blue-400 font-black italic tracking-tighter tabular-nums text-xs">
               {trade.entryPrice ? trade.entryPrice.toFixed(trade.symbol?.includes("JPY") ? 3 : 5) : "-"}
             </span>
@@ -457,7 +457,7 @@ export default function TradeList({
         }
 
         return (
-          <td key={columnId} className="px-4 py-6">
+          <td key={columnId} className="px-4 py-4">
             <div className="flex flex-col gap-1">
               <span
                 className={`text-sm font-black italic tracking-tighter tabular-nums ${
@@ -467,8 +467,8 @@ export default function TradeList({
                 {rMultiple ? `${rMultiple.toFixed(2)}R` : "---"}
               </span>
               {riskAmount > 0 && (
-                <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] italic">
-                  ${riskAmount.toFixed(0)} Risk_Value
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] italic">
+                  ${riskAmount.toFixed(0)} Risk
                 </span>
               )}
             </div>
@@ -477,7 +477,7 @@ export default function TradeList({
 
       case "grade":
         return (
-          <td key={columnId} className="px-4 py-6">
+          <td key={columnId} className="px-4 py-4">
             {trade.setupGrade ? (
               <div className="flex items-center">
                 <div
@@ -490,18 +490,18 @@ export default function TradeList({
                   }`}
                 >
                   {trade.setupGrade === 5
-                    ? "A_Plus"
+                    ? "A+"
                     : trade.setupGrade === 4
-                    ? "A_Grade"
+                    ? "A Grade"
                     : trade.setupGrade === 3
-                    ? "B_Grade"
+                    ? "B Grade"
                     : trade.setupGrade === 2
-                    ? "C_Grade"
-                    : "D_Grade"}
+                    ? "C Grade"
+                    : "D Grade"}
                 </div>
               </div>
             ) : (
-              <span className="text-white/10 italic text-[10px] font-black">---</span>
+              <span className="text-muted-foreground/40 italic text-[10px] font-black">---</span>
             )}
           </td>
         );
@@ -541,7 +541,7 @@ export default function TradeList({
       case "pnl":
         const pnlData = getCorrectPnL(trade);
         return (
-          <td key={columnId} className="px-4 py-6">
+          <td key={columnId} className="px-4 py-4">
             <div className="flex flex-col items-end gap-1">
               <span
                 className={`text-base font-black italic tracking-tighter tabular-nums ${
@@ -551,8 +551,8 @@ export default function TradeList({
                 {pnlData.netPnl >= 0 ? "+" : ""}${pnlData.netPnl.toFixed(2)}
               </span>
               {pnlData.grossPnl && pnlData.grossPnl !== pnlData.netPnl && (
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/20 italic">
-                  Net_Artifact
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground italic">
+                  Net P&L
                 </span>
               )}
             </div>
@@ -561,12 +561,12 @@ export default function TradeList({
 
       case "actions":
         return (
-          <td key={columnId} className="px-4 py-6 text-right">
+          <td key={columnId} className="px-4 py-4 text-right">
             <Link
               href={`/journal/${trade._id}`}
-              className="inline-flex items-center px-6 py-2 bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 transition-all hover:translate-x-1 group"
+              className="inline-flex items-center px-4 py-1.5 bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 transition-all hover:translate-x-1 group"
             >
-              Examine
+              Details
               <ChevronRight size={14} className="ml-1 opacity-40 group-hover:opacity-100 transition-opacity" />
             </Link>
           </td>
@@ -584,14 +584,14 @@ export default function TradeList({
   if (loading && trades.length === 0)
     return (
       <div className="text-white text-center py-8 animate-pulse font-mono text-sm">
-        LOADING LEDGER...
+        LOADING TRADES...
       </div>
     );
 
   return (
-    <div className="bg-gradient-to-br from-[#0A0A0A] to-[#0F0F0F] rounded-xl overflow-hidden border border-white/10 shadow-2xl backdrop-blur-sm">
+    <div className="bg-card rounded-xl overflow-hidden border border-border shadow-2xl backdrop-blur-sm">
       {/* Toolbar */}
-      <div className="p-6 border-b border-white/10 bg-gradient-to-r from-white/[0.02] to-white/[0.01]">
+      <div className="p-6 border-b border-border bg-foreground/[0.02]">
         <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">
             <div className="relative">
@@ -601,24 +601,24 @@ export default function TradeList({
               />
               <input
                 type="text"
-                placeholder="Search Symbol..."
-                className="bg-black/50 border border-white/20 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-sky-500/50 focus:bg-black/70 outline-none w-full sm:w-64 transition-all duration-200"
-                value={filter.symbol}
-                onChange={(e) =>
-                  setFilter((prev: any) => ({ ...prev, symbol: e.target.value }))
-                }
+                 placeholder="Search Symbol..."
+                 className="bg-foreground/[0.05] border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 focus:border-primary/50 outline-none w-full sm:w-64 transition-all duration-200"
+                 value={filter.symbol}
+                 onChange={(e) =>
+                   setFilter((prev: any) => ({ ...prev, symbol: e.target.value }))
+                 }
               />
             </div>
             <select
-              className="bg-black/50 border border-white/20 rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:border-sky-500/50 focus:bg-black/70 outline-none transition-all duration-200 min-w-[140px]"
+              className="bg-foreground/[0.05] border border-border rounded-lg px-4 py-2 text-sm text-muted-foreground focus:border-primary/50 outline-none transition-all duration-200 min-w-[140px]"
               value={filter.status}
               onChange={(e) =>
                 setFilter((prev: any) => ({ ...prev, status: e.target.value }))
               }
             >
-              <option value="">All Outcomes</option>
-              <option value="win">Winners</option>
-              <option value="loss">Losers</option>
+              <option value="" className="bg-background">All Outcomes</option>
+              <option value="win" className="bg-background">Winners</option>
+              <option value="loss" className="bg-background">Losers</option>
             </select>
           </div>
           <div className="flex items-center gap-4">

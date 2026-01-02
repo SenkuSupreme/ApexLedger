@@ -35,8 +35,8 @@ export default function BacktesterPage() {
 
   if (loading) {
     return (
-      <div className="flex h-[80vh] w-full items-center justify-center text-white/20 font-black text-xs uppercase tracking-[0.5em] animate-pulse">
-        Initializing Simulation Terminal...
+      <div className="flex h-[80vh] w-full items-center justify-center text-white/40 font-black text-xs uppercase tracking-[0.5em] animate-pulse">
+        Loading Backtester...
       </div>
     );
   }
@@ -48,143 +48,165 @@ export default function BacktesterPage() {
         <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-blue-500/[0.03] blur-[150px] -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-[1000px] h-[1000px] bg-sky-500/[0.03] blur-[150px] translate-y-1/2 -translate-x-1/2" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 
       {/* Header Mesh */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/5 pb-10 relative z-10 gap-8">
-        <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/5 pb-10 relative z-10 gap-8 pt-12">
+        <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400">Simulation Terminal 02 Live</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/20">
-               <Cpu size={10} className="text-blue-500/50" />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em]">Edge Validation: Active</span>
+               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400">Backtester Active</span>
             </div>
           </div>
-          <h1 className="text-6xl font-black tracking-tighter italic uppercase bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent leading-none">
-            Simulation Matrix
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-[0.02em] uppercase italic bg-gradient-to-br from-white via-white to-white/70 bg-clip-text text-transparent leading-none">
+            Backtest <span className="text-blue-500">History</span>
           </h1>
-          <p className="text-white/30 text-sm font-medium italic max-w-xl leading-relaxed">
-            "Validate history. Stress-test tactical systems in the simulated neural grid. Codify your edge through high-fidelity archival playback."
+          <p className="text-white/80 text-xs md:text-sm font-medium italic max-w-xl leading-relaxed">
+            "Your complete backtesting history and performance records. Review your strategies across historical data to see how they perform."
           </p>
         </div>
 
         <div className="flex items-center gap-4 relative z-10">
           <Link
             href="/backtester/new"
-            className="group relative flex items-center gap-4 bg-white text-black hover:bg-blue-500 hover:text-white px-10 py-5 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.3em] transition-all shadow-2xl shadow-white/5 active:scale-95 overflow-hidden border border-white/10"
+            className="group relative flex items-center gap-6 bg-blue-600/90 hover:bg-blue-500 text-white px-12 py-6 rounded-2xl font-black text-[12px] uppercase tracking-[0.4em] transition-all shadow-3xl shadow-blue-500/20 active:scale-95 overflow-hidden border border-blue-400/20"
           >
-            <div className="absolute inset-0 bg-black/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-            <Plus size={18} className="relative z-10" />
-            <span className="relative z-10">Initialize Simulation</span>
+            <Plus size={20} className="relative z-10" />
+            <span className="relative z-10 font-bold">New Backtest</span>
           </Link>
         </div>
       </div>
 
       {/* Intelligence Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
         {[
           { 
-            icon: totalPnL >= 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />, 
-            label: "Simulated P&L", 
-            value: `$${totalPnL.toFixed(2)}`, 
-            color: totalPnL >= 0 ? "emerald" : "red" 
+            icon: totalPnL >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />, 
+            label: "Total P&L", 
+            value: `$${totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 
+            color: totalPnL >= 0 ? "emerald" : "red",
+            sub: "Total Profit/Loss"
           },
-          { icon: <Activity size={18} />, label: "Win Rate", value: `${winRate}%`, color: "sky" },
-          { icon: <Database size={18} />, label: "Signals Logged", value: trades.length, color: "purple" },
+          { 
+            icon: <Activity size={20} />, 
+            label: "Win Rate", 
+            value: `${winRate}%`, 
+            color: "blue",
+            sub: "Win Rate Score"
+          },
+          { 
+            icon: <Database size={20} />, 
+            label: "Backtest Volume", 
+            value: trades.length, 
+            color: "purple",
+            sub: "Total Trades"
+          },
+          { 
+             icon: <Zap size={20} />, 
+             label: "Avg Trade Performance", 
+             value: `$${(totalPnL / (trades.length || 1)).toFixed(2)}`, 
+             color: "amber",
+             sub: "Avg Per Trade"
+          },
         ].map((stat, i) => (
-          <div key={i} className="bg-white/[0.02] backdrop-blur-md border border-white/5 rounded-[2.5rem] p-8 group hover:bg-white/[0.04] transition-all duration-500 relative overflow-hidden">
+          <div key={i} className="bg-[#0D0D0D] border border-white/5 rounded-3xl p-8 group hover:border-blue-500/30 transition-all duration-500 relative overflow-hidden h-full">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[40px] rounded-full translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
              <div className="flex items-center justify-between mb-8 relative z-10">
-                <div className={`p-3 bg-${stat.color}-500/10 border border-${stat.color}-500/20 rounded-2xl text-${stat.color}-400 group-hover:bg-white group-hover:text-black transition-all`}>
+                <div className={`p-4 bg-${stat.color}-500/10 border border-${stat.color}-500/20 rounded-2xl text-${stat.color}-400 group-hover:bg-${stat.color}-500 group-hover:text-black transition-all duration-500`}>
                    {stat.icon}
                 </div>
-                <span className={`text-3xl font-black italic tracking-tighter transition-colors ${stat.color === "red" ? "text-red-400" : "text-white/80 group-hover:text-white"}`}>{stat.value}</span>
+                 <div className="flex flex-col items-end">
+                   <span className={`text-4xl font-black italic tracking-tighter ${stat.color === "red" ? "text-red-400" : "text-white"}`}>{stat.value}</span>
+                   <span className="text-[10px] font-black text-white/50 uppercase tracking-widest mt-1">{stat.sub}</span>
+                </div>
              </div>
-             <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">
-                {stat.label}
-             </div>
+              <div className="text-[11px] font-black text-white/80 uppercase tracking-[0.5em] italic border-t border-white/5 pt-6 group-hover:text-white transition-colors">
+                 {stat.label}
+              </div>
           </div>
         ))}
       </div>
 
-      {/* Simulation Log Mesh */}
+      {/* Simulation Log Container */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#0A0A0A]/40 backdrop-blur-xl border border-white/5 rounded-[3.5rem] overflow-hidden relative z-10 shadow-3xl group/ledger"
+        className="bg-[#080808] border border-white/5 rounded-[3rem] overflow-hidden relative z-10 shadow-3xl group/ledger"
       >
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.01] pointer-events-none" />
-        <div className="p-10 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
-            <div className="flex items-center gap-4">
-               <div className="p-3 bg-blue-500/10 rounded-2xl border border-blue-500/20 text-blue-500">
-                  <PlayCircle size={20} />
+        <div className="p-12 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-blue-500/[0.02] to-transparent">
+            <div className="flex items-center gap-6">
+               <div className="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20 text-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+                  <Activity size={24} />
                </div>
-               <div>
-                  <h3 className="text-xs font-black text-white uppercase tracking-[0.4em] italic">Simulation Log</h3>
-                  <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mt-1">Archived Fragments</p>
-               </div>
+                 <div>
+                    <h3 className="text-lg font-black text-white uppercase tracking-[0.5em] italic">Backtest History</h3>
+                    <p className="text-[11px] text-white/60 uppercase font-black tracking-[0.3em] mt-2 flex items-center gap-2">
+                       <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse" /> History Loaded
+                    </p>
+                 </div>
             </div>
-            <div className="flex items-center gap-3 bg-white/[0.03] border border-white/5 px-6 py-3 rounded-2xl">
-               <Shield size={14} className="text-white/20" />
-               <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">Validation Encryption 02</span>
+            <div className="flex items-center gap-4">
+               <div className="hidden md:flex items-center gap-3 bg-white/[0.03] border border-white/5 px-8 py-4 rounded-2xl">
+                  <Shield size={16} className="text-blue-500" />
+                  <span className="text-[11px] font-black text-white/80 uppercase tracking-[0.3em]">Verified</span>
+               </div>
             </div>
         </div>
         
         {trades.length === 0 ? (
-            <div className="p-40 text-center relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/5 blur-[120px] rounded-full" />
-                <Layers size={64} className="text-white/10 mx-auto mb-10 relative z-10" />
-                <h3 className="text-3xl font-black text-white/20 uppercase tracking-tighter italic relative z-10">Sector Void</h3>
-                <p className="text-[11px] font-black text-white/10 uppercase tracking-[0.5em] italic max-w-xs mx-auto leading-relaxed relative z-10">
-                  "No simulation data detected. Stress-test your systems to populate the neural grid."
+            <div className="py-56 text-center relative overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/5 blur-[150px] rounded-full animate-pulse" />
+                <Layers size={80} className="text-white/10 mx-auto mb-12 relative z-10 animate-bounce" />
+                 <h3 className="text-4xl font-black text-white/80 uppercase tracking-tighter italic relative z-10">No Records Found</h3>
+                <p className="text-[12px] font-black text-white/60 uppercase tracking-[0.6em] italic max-w-sm mx-auto mt-6 leading-relaxed relative z-10">
+                  No backtest data available. Start a new session to see your history.
                 </p>
-                <Link
-                   href="/backtester/new"
-                   className="mt-12 group relative inline-flex items-center gap-4 bg-white text-black hover:bg-blue-500 hover:text-white px-12 py-6 rounded-[2.5rem] font-black text-[11px] uppercase tracking-[0.4em] transition-all shadow-2xl active:scale-95 overflow-hidden border border-white/10 relative z-10"
-                >
-                  <div className="absolute inset-0 bg-black/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-                  <Plus size={18} className="relative z-10" />
-                  <span className="relative z-10">Start Simulation 01</span>
-                </Link>
             </div>
         ) : (
              <div className="overflow-x-auto">
                 <table className="w-full text-left">
                 <thead>
-                    <tr className="bg-white/[0.04] border-b border-white/5">
-                      <th className="py-8 px-10 text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic">Temporal Marker</th>
-                      <th className="py-8 px-6 text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic">Asset Segment</th>
-                      <th className="py-8 px-6 text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic">Operational Side</th>
-                      <th className="py-8 px-10 text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic text-right">Yield Artifact</th>
+                     <tr className="bg-white/[0.02] border-b border-white/5">
+                       <th className="py-10 px-12 text-[11px] font-black text-white/80 uppercase tracking-[0.5em] italic">Date</th>
+                      <th className="py-10 px-8 text-[11px] font-black text-white/80 uppercase tracking-[0.5em] italic">Symbol</th>
+                      <th className="py-10 px-8 text-[11px] font-black text-white/80 uppercase tracking-[0.5em] italic">Direction</th>
+                      <th className="py-10 px-8 text-[11px] font-black text-white/80 uppercase tracking-[0.5em] italic">Strategy</th>
+                      <th className="py-10 px-12 text-[11px] font-black text-white/80 uppercase tracking-[0.5em] italic text-right">Result</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                     {trades.map((trade) => (
-                        <tr key={trade._id} className="group/row hover:bg-white/[0.03] transition-all duration-500">
-                             <td className="py-8 px-10">
-                                <div className="flex items-center gap-4">
-                                   <div className="p-3 bg-white/[0.03] rounded-xl border border-white/5 group-hover/row:bg-white/10 transition-all">
-                                      <Zap size={16} className="text-white/20 group-hover/row:text-white/60" />
+                        <tr key={trade._id} className="group/row hover:bg-white/[0.02] transition-all duration-500">
+                             <td className="py-10 px-12">
+                                <div className="flex items-center gap-6">
+                                   <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5 group-hover/row:bg-blue-500/10 group-hover/row:border-blue-500/30 transition-all duration-500">
+                                      <Zap size={18} className="text-white/20 group-hover/row:text-blue-500" />
                                    </div>
-                                   <div className="text-[12px] font-black text-white uppercase italic tracking-tighter tabular-nums">
+                                     <div className="text-[13px] font-black text-white uppercase italic tracking-tighter tabular-nums group-hover/row:text-white transition-colors">
                                       {new Date(trade.createdAt).toLocaleDateString()}
+                                      <div className="text-[9px] text-white/50 uppercase tracking-widest mt-1">ID: {trade._id.slice(-4).toUpperCase()}</div>
                                    </div>
                                 </div>
                              </td>
-                             <td className="py-8 px-6">
-                                <h4 className="text-xl font-black text-white group-hover/row:text-blue-400 transition-colors uppercase italic tracking-tighter">{trade.symbol}</h4>
+                             <td className="py-10 px-8 font-black">
+                                  <h4 className="text-2xl font-black text-white group-hover/row:text-blue-400 transition-all duration-500 uppercase italic tracking-tighter tabular-nums">{trade.symbol}</h4>
+                                 <span className="text-[10px] text-white/60 uppercase tracking-widest block font-black">Symbol</span>
                              </td>
-                             <td className="py-8 px-6">
-                                <div className={`inline-flex px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${trade.direction === 'long' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-                                   {trade.direction.toUpperCase()} SIGNAL
+                             <td className="py-10 px-8">
+                                <div className={`inline-flex px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all duration-500 ${trade.direction === 'long' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400 group-hover/row:bg-emerald-500 group-hover/row:text-black' : 'bg-red-500/5 border-red-500/20 text-red-400 group-hover/row:bg-red-500 group-hover/row:text-black'}`}>
+                                   {trade.direction.toUpperCase()}
                                 </div>
                              </td>
-                             <td className="py-8 px-10 text-right">
-                                <div className={`text-2xl font-black italic tracking-tighter tabular-nums ${trade.pnl >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                                   {trade.pnl >= 0 ? "+" : ""}${Math.abs(trade.pnl || 0).toFixed(2)}
+                             <td className="py-10 px-8">
+                                  <div className="text-[11px] font-black text-white/80 uppercase tracking-[0.3em] italic">
+                                   {trade.playbook || "Standard Strategy"}
+                                </div>
+                             </td>
+                             <td className="py-10 px-12 text-right">
+                                  <div className={`text-3xl font-black italic tracking-tighter tabular-nums transition-all duration-500 ${trade.pnl >= 0 ? "text-emerald-400 group-hover/row:scale-110" : "text-red-400 group-hover/row:opacity-100 opacity-90"}`}>
+                                   {trade.pnl >= 0 ? "+" : ""}${Math.abs(trade.pnl || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                   <div className="text-[9px] text-white/50 uppercase tracking-widest mt-1">Net P&L</div>
                                 </div>
                              </td>
                         </tr>

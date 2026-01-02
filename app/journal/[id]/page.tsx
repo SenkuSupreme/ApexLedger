@@ -87,7 +87,8 @@ export default function TradeDetailPage() {
   const [uploading, setUploading] = useState(false);
   const [calculatedMetrics, setCalculatedMetrics] =
     useState<TradeCalculationResult | null>(null);
-  const [isAiCollapsed, setIsAiCollapsed] = useState(true);
+  const [isAiCollapsed, setIsAiCollapsed] = useState(false);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
@@ -538,7 +539,7 @@ export default function TradeDetailPage() {
   if (loading)
     return (
       <div className="flex h-[80vh] w-full items-center justify-center text-white/60 font-mono text-xs uppercase tracking-[0.3em] animate-pulse">
-        Loading Trade Analysis...
+        Loading...
       </div>
     );
 
@@ -746,16 +747,16 @@ export default function TradeDetailPage() {
             </button>
             <div className="h-8 w-px bg-white/5" />
             <div className="space-y-1.5">
-               <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 rounded-full">
-                     <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse" />
-                     <span className="text-[8px] font-black uppercase tracking-[0.2em] text-blue-400 italic">Forensic Analysis 09</span>
-                  </div>
-                  <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Temporal Artifact: Synchronized</span>
-               </div>
-               <h1 className="text-3xl font-black italic uppercase tracking-tighter text-white/90 break-words">
-                 {trade.symbol} <span className="text-white/20">/</span> {trade.direction === 'long' ? 'Buy_Pulse' : 'Sell_Pulse'}
-               </h1>
+                <div className="flex items-center gap-3">
+                   <div className="flex items-center gap-2 px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 rounded-full">
+                      <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse" />
+                      <span className="text-[8px] font-black uppercase tracking-[0.2em] text-blue-400 italic">Trade Analysis</span>
+                   </div>
+                   <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.3em]">Market Status: Synchronized</span>
+                </div>
+                <h1 className="text-3xl font-black italic uppercase tracking-[0.02em] bg-gradient-to-br from-white to-white/70 bg-clip-text text-transparent leading-none break-words">
+                  {trade.symbol} <span className="text-white/20">/</span> {trade.direction === 'long' ? 'Buy' : 'Sell'}
+                </h1>
             </div>
           </div>
 
@@ -763,10 +764,10 @@ export default function TradeDetailPage() {
             <div className="flex items-center gap-1 bg-white/[0.02] border border-white/5 p-1 rounded-2xl">
               <button
                 onClick={() => setShowShareModal(true)}
-                className="flex items-center gap-3 px-6 py-2.5 rounded-xl hover:bg-white/[0.05] text-white/40 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest italic"
+                className="flex items-center gap-3 px-6 py-2.5 rounded-xl hover:bg-white/[0.05] text-white/60 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest italic"
               >
                 <Share2 size={14} />
-                Distribute
+                Share
               </button>
               <button
                 onClick={analyzeWithAI}
@@ -774,7 +775,7 @@ export default function TradeDetailPage() {
                 className="flex items-center gap-3 px-6 py-2.5 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400 hover:bg-purple-500/20 transition-all text-[10px] font-black uppercase tracking-widest italic disabled:opacity-30"
               >
                 <Brain size={14} className={analyzingAI ? "animate-spin" : ""} />
-                {analyzingAI ? "Processing..." : "Neural Scan"}
+                {analyzingAI ? "Analyzing..." : "AI Analyze"}
               </button>
             </div>
 
@@ -786,22 +787,22 @@ export default function TradeDetailPage() {
                 className="flex items-center gap-4 bg-white text-black px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-blue-500 hover:text-white transition-all shadow-2xl active:scale-95"
               >
                 <Edit3 size={14} />
-                Recalibrate
+                Edit
               </button>
             ) : (
               <div className="flex gap-3">
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="px-6 py-3 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white hover:bg-white/5 transition-all"
+                  className="px-6 py-3 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white hover:bg-white/5 transition-all"
                 >
-                  Terminate
+                  Cancel
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving}
                   className="px-8 py-3 bg-emerald-500 text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-emerald-400 transition-all shadow-2xl disabled:opacity-30"
                 >
-                  {saving ? "Storing..." : "Commit Changes"}
+                  {saving ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             )}
@@ -831,20 +832,20 @@ export default function TradeDetailPage() {
                     <Brain size={20} className="text-purple-400" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-black text-purple-400 uppercase tracking-widest flex items-center gap-2">
-                       Forensic Neural Audit
-                       <span className="px-1.5 py-0.5 rounded text-[8px] bg-purple-500/20 text-purple-300 border border-purple-500/30">CONFIDENTIAL</span>
+                    <h3 className="text-sm font-black text-purple-400 uppercase tracking-[0.4em] flex items-center gap-2 italic">
+                       AI Trade Analysis
+                       <span className="px-1.5 py-0.5 rounded text-[8px] bg-purple-500/20 text-purple-300 border border-purple-500/30 font-black not-italic">CONFIDENTIAL</span>
                     </h3>
                     <div className="flex items-center gap-3 mt-1">
                       <div className="flex items-center gap-1.5">
                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
                          <span className="text-[10px] font-mono text-purple-300/60 uppercase">
-                            Model: {aiAnalysis?.model || "APEX_NEURAL_V1"}
+                            Model: {aiAnalysis?.model || "Analysis v1"}
                          </span>
                       </div>
                       <span className="text-purple-500/20">•</span>
                       <span className="text-[10px] font-mono text-purple-300/60 uppercase">
-                        {aiAnalysis && aiAnalysis.timestamp ? new Date(aiAnalysis.timestamp).toLocaleTimeString() : "SYNC_PENDING"}
+                        {aiAnalysis?.timestamp ? new Date(aiAnalysis.timestamp).toLocaleTimeString() : "Pending Sync"}
                       </span>
                     </div>
                   </div>
@@ -891,34 +892,34 @@ export default function TradeDetailPage() {
                           <div className="text-2xl font-bold text-white mb-1">
                             {aiAnalysis?.sections?.traderScore?.overall || "0"}
                           </div>
-                          <div className="text-xs text-purple-300 uppercase tracking-wider">
-                            Overall
-                          </div>
+                           <div className="text-xs text-purple-300 uppercase tracking-[0.3em] font-black italic">
+                             Overall
+                           </div>
                         </div>
                         <div className="bg-black/20 rounded-lg p-4 text-center">
                           <div className="text-2xl font-bold text-white mb-1">
                             {aiAnalysis?.sections?.traderScore?.riskDiscipline || "0"}
                           </div>
-                          <div className="text-xs text-purple-300 uppercase tracking-wider">
-                            Risk
-                          </div>
+                           <div className="text-xs text-purple-300 uppercase tracking-[0.3em] font-black italic">
+                             Risk
+                           </div>
                         </div>
                         <div className="bg-black/20 rounded-lg p-4 text-center">
                           <div className="text-2xl font-bold text-white mb-1">
                             {aiAnalysis?.sections?.traderScore?.executionQuality ||
                               "0"}
                           </div>
-                          <div className="text-xs text-purple-300 uppercase tracking-wider">
-                            Execution
-                          </div>
+                           <div className="text-xs text-purple-300 uppercase tracking-[0.3em] font-black italic">
+                             Execution
+                           </div>
                         </div>
                         <div className="bg-black/20 rounded-lg p-4 text-center">
                           <div className="text-2xl font-bold text-white mb-1">
                             {aiAnalysis?.sections?.traderScore?.consistency || "0"}
                           </div>
-                          <div className="text-xs text-purple-300 uppercase tracking-wider">
-                            Consistency
-                          </div>
+                           <div className="text-xs text-purple-300 uppercase tracking-[0.3em] font-black italic">
+                             Consistency
+                           </div>
                         </div>
                       </div>
                     )}
@@ -940,7 +941,7 @@ export default function TradeDetailPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {aiAnalysis?.sections?.whatMustStop && (
                           <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-4">
-                            <h4 className="text-sm font-bold text-red-400 mb-2 uppercase tracking-wider">
+                            <h4 className="text-[10px] font-black text-red-400 uppercase tracking-[0.3em] italic mb-2">
                               🚫 Must Stop Immediately
                             </h4>
                             <div className="text-sm text-white/80">
@@ -951,7 +952,7 @@ export default function TradeDetailPage() {
 
                         {aiAnalysis?.sections?.actionPlan && (
                           <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-4">
-                            <h4 className="text-sm font-bold text-green-400 mb-2 uppercase tracking-wider">
+                            <h4 className="text-[10px] font-black text-green-400 uppercase tracking-[0.3em] italic mb-2">
                               ✅ Action Plan
                             </h4>
                             <div className="text-sm text-white/80">
@@ -975,7 +976,7 @@ export default function TradeDetailPage() {
              <div className="absolute inset-0 bg-blue-500/[0.02] -z-10 group-hover:opacity-100 transition-opacity opacity-0" />
              <div className="flex flex-col h-full justify-between">
                 <div className="flex items-center justify-between mb-3">
-                   <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Gross_Yield</span>
+                   <span className="text-[9px] font-black text-white/60 uppercase tracking-[0.2em]">Gross P&L</span>
                    <TrendingUp size={12} className="text-blue-500/50" />
                 </div>
                 <div className={`text-xl font-black font-mono tracking-tighter ${getDisplayValue(trade.grossPnl, calculatedMetrics?.grossPnl) >= 0 ? "text-blue-400" : "text-rose-400"}`}>
@@ -989,7 +990,7 @@ export default function TradeDetailPage() {
              <div className="absolute inset-0 bg-emerald-500/[0.02] -z-10 group-hover:opacity-100 transition-opacity opacity-0" />
              <div className="flex flex-col h-full justify-between">
                 <div className="flex items-center justify-between mb-3">
-                   <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Net_Artifact</span>
+                   <span className="text-[9px] font-black text-white/60 uppercase tracking-[0.2em]">Net P&L</span>
                    <DollarSign size={12} className="text-emerald-500/50" />
                 </div>
                 <div className={`text-xl font-black font-mono tracking-tighter ${getDisplayValue(trade.pnl, calculatedMetrics?.netPnl) >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
@@ -1003,7 +1004,7 @@ export default function TradeDetailPage() {
              <div className="absolute inset-0 bg-sky-500/[0.02] -z-10 group-hover:opacity-100 transition-opacity opacity-0" />
              <div className="flex flex-col h-full justify-between">
                 <div className="flex items-center justify-between mb-3">
-                   <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">R_Multiple</span>
+                   <span className="text-[9px] font-black text-white/60 uppercase tracking-[0.2em]">R-Multiple</span>
                    <Target size={12} className="text-sky-500/50" />
                 </div>
                 <div className="text-xl font-black font-mono tracking-tighter text-sky-400">
@@ -1017,7 +1018,7 @@ export default function TradeDetailPage() {
              <div className="absolute inset-0 bg-amber-500/[0.02] -z-10 group-hover:opacity-100 transition-opacity opacity-0" />
              <div className="flex flex-col h-full justify-between">
                 <div className="flex items-center justify-between mb-3">
-                   <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Risk_Load</span>
+                   <span className="text-[9px] font-black text-white/60 uppercase tracking-[0.2em]">Account Risk</span>
                    <Shield size={12} className="text-amber-500/50" />
                 </div>
                 <div className="text-xl font-black font-mono tracking-tighter text-amber-400">
@@ -1031,7 +1032,7 @@ export default function TradeDetailPage() {
              <div className="absolute inset-0 bg-purple-500/[0.02] -z-10 group-hover:opacity-100 transition-opacity opacity-0" />
              <div className="flex flex-col h-full justify-between">
                 <div className="flex items-center justify-between mb-3">
-                   <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Risk_Value</span>
+                   <span className="text-[9px] font-black text-white/60 uppercase tracking-[0.2em]">Risk Amount</span>
                    <Calculator size={12} className="text-purple-500/50" />
                 </div>
                 <div className="text-xl font-black font-mono tracking-tighter text-purple-400">
@@ -1045,7 +1046,7 @@ export default function TradeDetailPage() {
              <div className="absolute inset-0 bg-indigo-500/[0.02] -z-10 group-hover:opacity-100 transition-opacity opacity-0" />
              <div className="flex flex-col h-full justify-between">
                 <div className="flex items-center justify-between mb-3">
-                   <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Target_RR</span>
+                   <span className="text-[9px] font-black text-white/60 uppercase tracking-[0.2em]">Target R:R</span>
                    <BarChart3 size={12} className="text-indigo-500/50" />
                 </div>
                 <div className="text-xl font-black font-mono tracking-tighter text-indigo-400">
@@ -1069,14 +1070,14 @@ export default function TradeDetailPage() {
               <div className="relative p-8">
                 <div className="flex items-center justify-between mb-12">
                   <div className="space-y-1">
-                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+                    <h3 className="text-2xl font-black italic uppercase tracking-[0.02em] text-white flex items-center gap-3">
                       <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                      Execution Artifacts
+                      Trade Details
                     </h3>
-                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Forensic Detail Matrix • System Sync Optimized</p>
+                    <p className="text-[10px] font-black text-white/70 uppercase tracking-[0.3em] italic">Full Trade Analysis • System Synced</p>
                   </div>
-                  <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">
-                    ID_TERMINAL: {trade._id.slice(-8).toUpperCase()}
+                  <div className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] italic">
+                    Trade ID: {trade._id.slice(-8).toUpperCase()}
                   </div>
                 </div>
 
@@ -1084,7 +1085,7 @@ export default function TradeDetailPage() {
                   {/* Entry Hub */}
                   <div className="space-y-4">
                     <div className="p-4 bg-white/[0.01] rounded-2xl group/item hover:bg-white/[0.03] transition-all">
-                      <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] block mb-2 italic">Entry_Signal</label>
+                      <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">Entry Price</label>
                       {isEditing ? (
                         <input
                           type="number"
@@ -1103,7 +1104,7 @@ export default function TradeDetailPage() {
                     </div>
 
                     <div className="p-4 bg-white/[0.01] rounded-2xl group/item hover:bg-white/[0.03] transition-all">
-                      <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] block mb-2 italic">Stop_Anchor</label>
+                      <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">Stop Loss</label>
                       {isEditing ? (
                         <input
                           type="number"
@@ -1125,7 +1126,7 @@ export default function TradeDetailPage() {
                   {/* Exit Hub */}
                   <div className="space-y-4">
                     <div className="p-4 bg-white/[0.01] rounded-2xl group/item hover:bg-white/[0.03] transition-all">
-                      <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] block mb-2 italic">Exit_Termination</label>
+                      <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">Exit Price</label>
                       {isEditing ? (
                         <input
                           type="number"
@@ -1144,7 +1145,7 @@ export default function TradeDetailPage() {
                     </div>
 
                     <div className="p-4 bg-white/[0.01] rounded-2xl group/item hover:bg-white/[0.03] transition-all">
-                      <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] block mb-2 italic">Profit_Objective</label>
+                      <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">Take Profit</label>
                       {isEditing ? (
                         <input
                           type="number"
@@ -1166,7 +1167,7 @@ export default function TradeDetailPage() {
                   {/* Volume Hub */}
                   <div className="space-y-4">
                     <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl group/item hover:bg-white/[0.05] transition-all">
-                      <label className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em] block mb-2">Quantitative_Load</label>
+                      <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">Quantity</label>
                       {isEditing ? (
                         <input
                           type="number"
@@ -1185,7 +1186,7 @@ export default function TradeDetailPage() {
                     </div>
 
                     <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl group/item hover:bg-white/[0.05] transition-all">
-                      <label className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em] block mb-2">Operational_Leverage</label>
+                      <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">Leverage</label>
                       {isEditing ? (
                         <select
                           value={editForm.leverage || "1:1"}
@@ -1207,7 +1208,7 @@ export default function TradeDetailPage() {
                   {/* Metadata Hub */}
                   <div className="space-y-4">
                     <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl group/item hover:bg-white/[0.05] transition-all">
-                      <label className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em] block mb-2">Account_Exposure</label>
+                      <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">Risk %</label>
                       {isEditing ? (
                         <input
                           type="number"
@@ -1225,7 +1226,7 @@ export default function TradeDetailPage() {
                     </div>
 
                     <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl group/item hover:bg-white/[0.05] transition-all">
-                      <label className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em] block mb-2">Protocol_Fees</label>
+                      <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">Fees</label>
                       {isEditing ? (
                         <input
                           type="number"
@@ -1250,11 +1251,14 @@ export default function TradeDetailPage() {
                             <select 
                               value={editForm.assetType || "forex"}
                               onChange={(e) => setEditForm({...editForm, assetType: e.target.value})}
-                              className="bg-transparent border-none text-white font-bold uppercase text-xs outline-none p-0"
+                              className="bg-transparent border-none text-white font-black uppercase text-[10px] tracking-[0.2em] outline-none p-0 italic"
                             >
-                              <option value="forex">Forex</option>
-                              <option value="crypto">Crypto</option>
-                              <option value="stocks">Stocks</option>
+                              <option value="forex" className="bg-[#0A0A0A]">Forex</option>
+                              <option value="crypto" className="bg-[#0A0A0A]">Crypto</option>
+                              <option value="stock" className="bg-[#0A0A0A]">Stock</option>
+                              <option value="cfd" className="bg-[#0A0A0A]">CFD</option>
+                              <option value="futures" className="bg-[#0A0A0A]">Futures</option>
+                              <option value="indices" className="bg-[#0A0A0A]">Indices</option>
                             </select>
                           ) : (
                             <p className="text-sm font-bold text-white uppercase tracking-wider">{trade.assetType || "Forex"}</p>
@@ -1295,8 +1299,8 @@ export default function TradeDetailPage() {
             {/* Trade Notes */}
             <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl overflow-hidden relative group">
               <div className="p-8">
-                 <h3 className="text-xl font-bold text-white flex items-center gap-3 mb-6">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                 <h3 className="text-xl font-black italic uppercase tracking-[0.02em] text-white flex items-center gap-3 mb-6">
+                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
                     Trade Notes
                  </h3>
                  
@@ -1335,24 +1339,24 @@ export default function TradeDetailPage() {
               <div className="relative p-8">
                 <div className="flex items-center justify-between mb-8">
                   <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full" />
-                      Trade Analysis
-                    </h3>
-                    <p className="text-xs font-medium text-white/50 uppercase tracking-wider">Detailed Market & Risk Analysis</p>
+                     <h3 className="text-xl font-black italic uppercase tracking-[0.02em] text-white flex items-center gap-3">
+                       <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                       Trade Analysis
+                     </h3>
+                     <p className="text-[10px] font-black text-white/70 uppercase tracking-[0.3em] italic">Detailed Market & Risk Analysis</p>
                   </div>
                 </div>
 
               {/* Market Analysis */}
               <div className="space-y-6 mb-8">
-                <h4 className="text-lg font-semibold text-sky-400">
-                  Market Context
-                </h4>
+                 <h4 className="text-[11px] font-black text-sky-400 uppercase tracking-[0.4em] italic mb-6">
+                   Market Context
+                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-xs text-white/60 uppercase tracking-wider block mb-2">
-                      Daily Bias
-                    </label>
+                     <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
+                       Daily Bias
+                     </label>
                     {isEditing ? (
                       <select
                         value={editForm.dailyBias || ""}
@@ -1377,9 +1381,9 @@ export default function TradeDetailPage() {
                     )}
                   </div>
                   <div>
-                    <label className="text-xs text-white/60 uppercase tracking-wider block mb-2">
-                      Trade Type
-                    </label>
+                     <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
+                       Trade Type
+                     </label>
                     {isEditing ? (
                       <select
                         value={editForm.tradeType || ""}
@@ -1404,9 +1408,9 @@ export default function TradeDetailPage() {
                     )}
                   </div>
                   <div>
-                    <label className="text-xs text-white/60 uppercase tracking-wider block mb-2">
-                      Entry Timeframe
-                    </label>
+                      <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
+                       Entry Timeframe
+                     </label>
                     {isEditing ? (
                       <select
                         value={editForm.entryTimeframe || ""}
@@ -1433,9 +1437,9 @@ export default function TradeDetailPage() {
                     )}
                   </div>
                   <div>
-                    <label className="text-xs text-white/60 uppercase tracking-wider block mb-2">
-                      News Impact
-                    </label>
+                      <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
+                       News Impact
+                     </label>
                     {isEditing ? (
                       <select
                         value={editForm.newsImpact || ""}
@@ -1459,17 +1463,45 @@ export default function TradeDetailPage() {
                       </p>
                     )}
                   </div>
+                  <div>
+                      <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
+                       Market Environment
+                     </label>
+                    {isEditing ? (
+                      <select
+                        value={editForm.marketEnvironment || ""}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            marketEnvironment: e.target.value,
+                          })
+                        }
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500/50 outline-none"
+                      >
+                        <option value="">Select Environment</option>
+                        <option value="Trend">Trend</option>
+                        <option value="Range">Range</option>
+                        <option value="Volatility">Volatility</option>
+                        <option value="Expansion">Expansion</option>
+                        <option value="Consolidation">Consolidation</option>
+                      </select>
+                    ) : (
+                      <p className="text-sm font-bold text-sky-400 bg-sky-500/10 rounded-lg p-3">
+                        {trade.marketEnvironment || "Not specified"}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Technical Setup */}
               <div className="space-y-6 mb-8">
-                <h4 className="text-lg font-semibold text-purple-400">
-                  Technical Setup
-                </h4>
+                 <h4 className="text-[11px] font-black text-purple-400 uppercase tracking-[0.4em] italic mb-6">
+                   Technical Setup
+                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-xs text-white/60 uppercase tracking-wider block mb-2">
+                    <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
                       Market Conditions
                     </label>
                     {isEditing ? (
@@ -1510,7 +1542,7 @@ export default function TradeDetailPage() {
                     )}
                   </div>
                   <div>
-                    <label className="text-xs text-white/80 uppercase tracking-wider block mb-2 font-bold">
+                    <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
                       Trading Sessions
                     </label>
                     {isEditing ? (
@@ -1551,7 +1583,7 @@ export default function TradeDetailPage() {
                     )}
                   </div>
                   <div>
-                    <label className="text-xs text-white/80 uppercase tracking-wider block mb-2 font-bold">
+                    <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
                       Entry Signals
                     </label>
                     {isEditing ? (
@@ -1591,8 +1623,96 @@ export default function TradeDetailPage() {
                       </div>
                     )}
                   </div>
+
                   <div>
-                    <label className="text-xs text-white/60 uppercase tracking-wider block mb-2">
+                    <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
+                      Execution Architecture
+                    </label>
+                    {isEditing ? (
+                      <select
+                        value={editForm.executionArchitecture || ""}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            executionArchitecture: e.target.value,
+                          })
+                        }
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500/50 outline-none"
+                      >
+                         <option value="">Select Architecture</option>
+                         <option value="Limit Order">Limit Order</option>
+                         <option value="Market Execution">Market Execution</option>
+                         <option value="Aggressive Entry">Aggressive Entry</option>
+                         <option value="Conservative Entry">Conservative Entry</option>
+                         <option value="Breakout">Breakout</option>
+                         <option value="Retest">Retest</option>
+                      </select>
+                    ) : (
+                      <p className="text-sm font-bold text-emerald-400 bg-emerald-500/10 rounded-lg p-3">
+                        {trade.executionArchitecture || "Not specified"}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
+                      Signal Trigger
+                    </label>
+                    {isEditing ? (
+                      <select
+                        value={editForm.signalTrigger || ""}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            signalTrigger: e.target.value,
+                          })
+                        }
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500/50 outline-none"
+                      >
+                         <option value="">Select Trigger</option>
+                         <option value="Fair Value Gap">Fair Value Gap</option>
+                         <option value="Order Block">Order Block</option>
+                         <option value="Breaker Block">Breaker Block</option>
+                         <option value="Liquidity Sweep">Liquidity Sweep</option>
+                         <option value="MTF Alignment">MTF Alignment</option>
+                      </select>
+                    ) : (
+                      <p className="text-sm font-bold text-amber-400 bg-amber-500/10 rounded-lg p-3">
+                        {trade.signalTrigger || "Not specified"}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
+                      Technical Confluence
+                    </label>
+                    {isEditing ? (
+                      <select
+                        value={editForm.technicalConfluence || ""}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            technicalConfluence: e.target.value,
+                          })
+                        }
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500/50 outline-none"
+                      >
+                         <option value="">Select Confluence</option>
+                         <option value="HTF Bias">HTF Bias</option>
+                         <option value="Key Level">Key Level</option>
+                         <option value="Fibonacci">Fibonacci</option>
+                         <option value="Indicator Cross">Indicator Cross</option>
+                         <option value="Correlated Asset">Correlated Asset</option>
+                      </select>
+                    ) : (
+                      <p className="text-sm font-bold text-purple-400 bg-purple-500/10 rounded-lg p-3">
+                        {trade.technicalConfluence || "Not specified"}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
                       Key Levels
                     </label>
                     {isEditing ? (
@@ -1636,12 +1756,12 @@ export default function TradeDetailPage() {
 
               {/* Risk Management */}
               <div className="space-y-6 mb-8">
-                <h4 className="text-lg font-semibold text-amber-400">
-                  Risk Management
-                </h4>
+                 <h4 className="text-[11px] font-black text-amber-400 uppercase tracking-[0.4em] italic mb-6">
+                   Risk Management
+                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-xs text-white/60 uppercase tracking-wider block mb-2">
+                    <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
                       SL Management
                     </label>
                     {isEditing ? (
@@ -1682,7 +1802,7 @@ export default function TradeDetailPage() {
                     )}
                   </div>
                   <div>
-                    <label className="text-xs text-white/60 uppercase tracking-wider block mb-2">
+                    <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
                       TP Management
                     </label>
                     {isEditing ? (
@@ -1727,12 +1847,12 @@ export default function TradeDetailPage() {
 
               {/* Performance Analysis */}
               <div className="space-y-6">
-                <h4 className="text-lg font-semibold text-green-400">
-                  Performance Analysis
-                </h4>
+                 <h4 className="text-[11px] font-black text-green-400 uppercase tracking-[0.4em] italic mb-6">
+                   Performance Analysis
+                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="text-xs text-white/60 uppercase tracking-wider block mb-2">
+                    <label className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] block mb-2 italic">
                       Outcome
                     </label>
                     {isEditing ? (
@@ -1974,21 +2094,27 @@ export default function TradeDetailPage() {
               <div className="p-8">
                 <div className="flex items-center justify-between mb-8">
                   <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-                      Trade Screenshots
+                    <h3 className="text-xl font-black italic uppercase tracking-[0.02em] text-white flex items-center gap-3">
+                       <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
+                       Trade Screenshots
                     </h3>
-                    <p className="text-xs font-medium text-white/50 uppercase tracking-wider">Chart Analysis & Execution</p>
+                    <p className="text-[10px] font-black text-white/70 uppercase tracking-[0.3em] italic">Chart Analysis & Execution</p>
                   </div>
-                  {isEditing && (
-                    <label className="cursor-pointer group/upload">
-                       <div className="px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-2 group-hover/upload:bg-blue-500/20 transition-all">
-                          <Upload size={14} className="text-blue-400" />
-                          <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Upload Image</span>
-                       </div>
-                       <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
-                    </label>
-                  )}
+                    <div className="flex items-center gap-4">
+                      <div className="flex flex-col items-end">
+                        <span className="text-[10px] font-black text-white/70 uppercase tracking-[0.2em] italic">Queue Active</span>
+                        <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em]">Commit on Save</span>
+                      </div>
+                      {isEditing && (
+                        <label className="cursor-pointer group/upload">
+                           <div className="px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-2 group-hover/upload:bg-blue-500/20 transition-all">
+                              <Upload size={14} className="text-blue-400" />
+                              <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest italic">Upload Artifact</span>
+                           </div>
+                           <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
+                        </label>
+                      )}
+                    </div>
                 </div>
 
                 <div className="space-y-6">
@@ -2005,15 +2131,27 @@ export default function TradeDetailPage() {
                             src={screenshot}
                             alt={`Screenshot ${i + 1}`}
                             className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-700 cursor-pointer"
-                            onClick={() => window.open(screenshot, "_blank")}
+                            onClick={() => setActiveImage(screenshot)}
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                             <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-1">Image {i + 1}</p>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity flex flex-col justify-end p-4 pointer-events-none">
+                             <p className="text-[10px] font-black text-white/60 uppercase tracking-[0.3em] mb-1 italic">Image {i + 1}</p>
+                             <button
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 setActiveImage(screenshot);
+                               }}
+                               className="text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] pointer-events-auto hover:text-blue-300 transition-colors"
+                             >
+                               Click to View Full Artifact
+                             </button>
                           </div>
                           {isEditing && (
                             <button
-                              onClick={() => removeScreenshot(i)}
-                              className="absolute top-4 right-4 w-8 h-8 bg-red-500/80 hover:bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all shadow-xl backdrop-blur-md"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeScreenshot(i);
+                              }}
+                              className="absolute top-4 right-4 w-8 h-8 bg-red-500/80 hover:bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all shadow-xl backdrop-blur-md z-10"
                             >
                               <X size={14} />
                             </button>
@@ -2032,10 +2170,10 @@ export default function TradeDetailPage() {
             {/* Psychology */}
             <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 relative group overflow-hidden">
                <div className="absolute inset-0 bg-blue-500/[0.02] -z-10 group-hover:opacity-100 transition-opacity opacity-0" />
-               <h3 className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-4 flex items-center gap-2">
-                 <div className="w-1 h-1 bg-red-500 rounded-full" />
-                 Psychology
-               </h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60 mb-4 flex items-center gap-2 italic">
+                  <div className="w-1 h-1 bg-red-500 rounded-full" />
+                  Psychology
+                </h3>
 
               {isEditing ? (
                 <div className="grid grid-cols-2 gap-2">
@@ -2060,7 +2198,7 @@ export default function TradeDetailPage() {
                     {EMOTIONS.find((e) => e.value === trade.emotion)?.emoji || "😐"}
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Sentiment</p>
+                    <p className="text-[10px] font-black text-white/60 uppercase tracking-[0.3em] italic">Sentiment</p>
                     <p className="text-xl font-bold uppercase tracking-tight text-white/90">
                       {trade.emotion || "Neutral"}
                     </p>
@@ -2072,10 +2210,10 @@ export default function TradeDetailPage() {
             {/* Setup Quality */}
             <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 relative group overflow-hidden">
                <div className="absolute inset-0 bg-amber-500/[0.02] -z-10 group-hover:opacity-100 transition-opacity opacity-0" />
-               <h3 className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-4 flex items-center gap-2">
-                 <div className="w-1 h-1 bg-amber-500 rounded-full" />
-                 Setup Quality
-               </h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60 mb-4 flex items-center gap-2 italic">
+                  <div className="w-1 h-1 bg-amber-500 rounded-full" />
+                  Setup Quality
+                </h3>
 
               {isEditing ? (
                 <div className="flex justify-between gap-1">
@@ -2113,7 +2251,7 @@ export default function TradeDetailPage() {
 
             {/* Key Metrics */}
             <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-6">Key Metrics</h3>
+               <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60 mb-6 italic">Key Metrics</h3>
               
               <div className="space-y-4">
                 {trade.strategy && (
@@ -2123,7 +2261,7 @@ export default function TradeDetailPage() {
                         <Target size={16} />
                       </div>
                       <div className="space-y-0.5">
-                        <p className="text-[9px] font-bold text-sky-400/50 uppercase tracking-widest">Active Strategy</p>
+                        <p className="text-[9px] font-black text-sky-400/60 uppercase tracking-[0.3em] italic">Active Strategy</p>
                         <p className="text-sm font-bold text-sky-400 uppercase tracking-tight">{trade.strategy.name}</p>
                       </div>
                     </div>
@@ -2159,11 +2297,11 @@ export default function TradeDetailPage() {
                 <div className="mt-6 pt-6 border-t border-white/5 space-y-4">
                    <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest">Time</p>
+                        <p className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] italic">Time</p>
                         <p className="text-[10px] font-mono text-white/60">{new Date(trade.timestampEntry).toLocaleTimeString()}</p>
                       </div>
                       <div className="text-right space-y-0.5">
-                        <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest">Status</p>
+                        <p className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em] italic">Status</p>
                         <div className="flex items-center gap-1.5 justify-end">
                           <div className={`w-1 h-1 rounded-full ${trade.status === 'Open' ? 'bg-blue-500 animate-pulse' : 'bg-white/20'}`} />
                           <p className="text-[10px] font-bold text-white/80 uppercase">{trade.status || 'Archived'}</p>
@@ -2279,6 +2417,44 @@ export default function TradeDetailPage() {
                 >
                   Maintain Linkage
                 </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Image Lightbox Terminal */}
+      <AnimatePresence>
+        {activeImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-[200] flex items-center justify-center p-4 md:p-12"
+            onClick={() => setActiveImage(null)}
+          >
+            <button
+              onClick={() => setActiveImage(null)}
+              className="absolute top-8 right-8 p-4 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white hover:bg-white/10 transition-all z-10 group"
+            >
+              <X size={24} className="group-hover:rotate-90 transition-transform" />
+            </button>
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-7xl w-full h-full flex flex-col items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img 
+                src={activeImage} 
+                alt="Full artifact view" 
+                className="max-w-full max-h-full object-contain rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/5"
+              />
+              <div className="absolute bottom-[-40px] left-0 right-0 flex justify-center">
+                 <div className="px-6 py-2 bg-white/[0.03] border border-white/10 rounded-full backdrop-blur-md">
+                    <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic">Full Artifact Inspection Mode</span>
+                 </div>
               </div>
             </motion.div>
           </motion.div>

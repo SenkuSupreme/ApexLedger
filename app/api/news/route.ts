@@ -1,114 +1,130 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Free news sources and RSS feeds
-const NEWS_SOURCES = {
+// Valid public RSS Feeds
+const RSS_FEEDS: Record<string, string[]> = {
   forex: [
-    {
-      name: "ForexLive",
-      url: "https://www.forexlive.com/feed/",
-      type: "rss"
-    },
-    {
-      name: "FXStreet",
-      url: "https://www.fxstreet.com/rss",
-      type: "rss"
-    }
+    "https://www.forexlive.com/feed/news/", 
+    "https://www.fxstreet.com/rss/news"
   ],
   crypto: [
-    {
-      name: "CoinDesk",
-      url: "https://feeds.coindesk.com/rss",
-      type: "rss"
-    }
+    "https://cointelegraph.com/rss",
+    "https://www.coindesk.com/arc/outboundfeeds/rss/"
   ],
   stocks: [
-    {
-      name: "MarketWatch",
-      url: "https://feeds.marketwatch.com/marketwatch/topstories/",
-      type: "rss"
-    }
+    "https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC,^DJI,^IXIC&region=US&lang=en-US",
+    "https://www.investing.com/rss/stock_market_reviews.rss"
+  ],
+  commodities: [
+    "https://www.investing.com/rss/commodities.rss",
+    "https://custom-feed.kitco.com/feed?format=rss"
   ],
   economics: [
-    {
-      name: "Reuters Economics",
-      url: "https://feeds.reuters.com/reuters/businessNews",
-      type: "rss"
-    }
+    "https://www.investing.com/rss/economic_indicators.rss",
+    "https://tradingeconomics.com/rss/news.aspx"
+  ],
+  futures: [
+     "https://www.investing.com/rss/commodities_fut.rss"
   ]
 };
 
-// Mock news data for demonstration
+const getImpactLevel = (text: string): "high" | "medium" | "low" => {
+    const highImpactKeywords = ["fed", "federal reserve", "interest rate", "inflation", "gdp", "unemployment", "central bank", "cpi", "nfp", "fomc"];
+    const mediumImpactKeywords = ["earnings", "economic data", "trade war", "brexit", "election", "meeting", "minutes"];
+    const lowerText = text.toLowerCase();
+    if (highImpactKeywords.some((keyword) => lowerText.includes(keyword))) return "high";
+    if (mediumImpactKeywords.some((keyword) => lowerText.includes(keyword))) return "medium";
+    return "low";
+};
+
+// Helper to parse RSS XML using simple regex (since we don't have an XML parser lib)
+const parseRSS = (xml: string, category: string) => {
+  const items = [];
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+  let match;
+
+  while ((match = itemRegex.exec(xml)) !== null) {
+    const itemContent = match[1];
+    
+    // Extract fields
+    const titleMatch = itemContent.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || itemContent.match(/<title>(.*?)<\/title>/);
+    const linkMatch = itemContent.match(/<link>(.*?)<\/link>/);
+    const descMatch = itemContent.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || itemContent.match(/<description>(.*?)<\/description>/);
+    const pubDateMatch = itemContent.match(/<pubDate>(.*?)<\/pubDate>/);
+    const imageMatch = itemContent.match(/<enclosure[^>]*url=["'](.*?)["'][^>]*>/) || itemContent.match(/<media:content[^>]*url=["'](.*?)["'][^>]*>/);
+
+    if (titleMatch && linkMatch) {
+      const title = titleMatch[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+      const description = descMatch ? descMatch[1].replace(/<[^>]*>?/gm, "") : ""; // strip html from desc
+      
+      items.push({
+        title: title.trim(),
+        description: description.slice(0, 200) + (description.length > 200 ? "..." : ""),
+        url: linkMatch[1],
+        urlToImage: imageMatch ? imageMatch[1] : null,
+        publishedAt: pubDateMatch ? new Date(pubDateMatch[1]).toISOString() : new Date().toISOString(),
+        source: { name: new URL(linkMatch[1]).hostname.replace('www.','').split('.')[0].toUpperCase() },
+        category,
+        impact: getImpactLevel(title + " " + description)
+      });
+    }
+  }
+  return items;
+};
+
 const getMockNews = (category: string) => {
+  // ... existing mock function content can essentially stay or be trimmed, 
+  // keeping a minimal fallback just in case all fetches fail
   const baseNews = [
     {
-      title: "Federal Reserve Signals Potential Rate Changes in Q2",
-      description: "The Federal Reserve indicated possible monetary policy adjustments following recent economic data showing mixed signals in inflation and employment metrics.",
-      url: "https://www.reuters.com/markets/us/",
-      urlToImage: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=200&fit=crop",
-      publishedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-      source: { name: "Financial Times" },
+      title: "Market data unavailable - System Offline",
+      description: "Unable to retrieve real-time intelligence feeds at this moment.",
+      url: "#",
+      urlToImage: null,
+      publishedAt: new Date().toISOString(),
+      source: { name: "System" },
       category,
-      impact: "high"
-    },
-    {
-      title: "EUR/USD Breaks Key Resistance Level at 1.0950",
-      description: "The euro strengthened against the dollar following positive eurozone economic data and dovish comments from Fed officials.",
-      url: "https://www.forexlive.com/",
-      urlToImage: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=400&h=200&fit=crop",
-      publishedAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-      source: { name: "Reuters" },
-      category,
-      impact: "medium"
-    },
-    {
-      title: "Gold Reaches New Monthly High Amid Market Uncertainty",
-      description: "Gold prices surged to new monthly highs as investors seek safe-haven assets amid ongoing geopolitical tensions and economic uncertainty.",
-      url: "https://www.marketwatch.com/investing/metal/gold",
-      urlToImage: "https://images.unsplash.com/photo-1610375461246-83df859d849d?w=400&h=200&fit=crop",
-      publishedAt: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-      source: { name: "MarketWatch" },
-      category,
-      impact: "medium"
-    },
-    {
-      title: "Bitcoin Volatility Increases Ahead of ETF Decision",
-      description: "Bitcoin price action shows increased volatility as the market awaits regulatory decisions on spot Bitcoin ETF applications.",
-      url: "https://www.coindesk.com/markets/",
-      urlToImage: "https://images.unsplash.com/photo-1518544866330-4e4815de2e40?w=400&h=200&fit=crop",
-      publishedAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-      source: { name: "CoinDesk" },
-      category,
-      impact: "high"
-    },
-    {
-      title: "Weekly Economic Calendar: Key Events to Watch",
-      description: "This week's economic calendar includes important data releases including CPI, GDP, and central bank meetings that could impact market sentiment.",
-      url: "https://www.investing.com/economic-calendar/",
-      urlToImage: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400&h=200&fit=crop",
-      publishedAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
-      source: { name: "Economic Times" },
-      category,
-      impact: "medium"
+      impact: "low" as "high" | "medium" | "low"
     }
   ];
-
-  // Filter and customize based on category
-  return baseNews.map(article => ({
-    ...article,
-    category,
-    title: category === 'crypto' ? article.title.replace('EUR/USD', 'BTC/USD') : article.title,
-    description: category === 'crypto' ? article.description.replace('euro', 'bitcoin') : article.description
-  }));
+  return baseNews;
 };
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category") || "forex";
+    
+    // Choose feeds based on category
+    // Fallback to forex if category unknown
+    const feeds = RSS_FEEDS[category] || RSS_FEEDS.forex;
 
-    // For now, return mock data
-    // In production, you would implement RSS parsing or use other free APIs
-    const articles = getMockNews(category);
+    const feedPromises = feeds.map(async (url) => {
+      try {
+        const res = await fetch(url, { next: { revalidate: 300 } }); // cache for 5 mins
+        if (!res.ok) return [];
+        const txt = await res.text();
+        return parseRSS(txt, category);
+      } catch (e) {
+        console.error(`Error fetching feed ${url}:`, e);
+        return [];
+      }
+    });
+
+    const results = await Promise.all(feedPromises);
+    // Flatten and sort by date
+    let articles = results.flat().sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+
+    // Filter duplicates
+    const seen = new Set();
+    articles = articles.filter(a => {
+      const duplicate = seen.has(a.title);
+      seen.add(a.title);
+      return !duplicate;
+    });
+
+    if (articles.length === 0) {
+        articles = getMockNews(category);
+    }
 
     return NextResponse.json({
       success: true,

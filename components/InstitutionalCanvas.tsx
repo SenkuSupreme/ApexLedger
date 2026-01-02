@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { useTheme } from 'next-themes';
 import { Pencil, Square, Circle, ArrowRight, Type, Eraser, Hand, Image as ImageIcon, Download, Upload, Trash2 } from 'lucide-react';
 
 // Dynamic import to prevent SSR issues
@@ -29,6 +30,7 @@ interface Props {
 
 export default function InstitutionalCanvas({ elements, onElementsChange }: Props) {
     const [excalidrawAPI, setExcalidrawAPI] = useState<any>(null);
+    const { theme } = useTheme();
 
     // Load saved elements when component mounts
     useEffect(() => {
@@ -39,7 +41,7 @@ export default function InstitutionalCanvas({ elements, onElementsChange }: Prop
     }, [excalidrawAPI, elements]);
 
     return (
-        <div className="w-full h-[85vh] bg-[#030303] rounded-[4rem] border border-white/5 relative overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]">
+        <div className="w-full h-[85vh] bg-background rounded-[4rem] border border-border relative overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]">
             {/* Header Overlay */}
             <div className="absolute top-8 left-8 z-[100] pointer-events-none">
                 <div className="flex items-center gap-4">
@@ -47,7 +49,7 @@ export default function InstitutionalCanvas({ elements, onElementsChange }: Prop
                         <Pencil size={24} className="text-black" />
                     </div>
                     <div className="space-y-1">
-                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Strategy Canvas</h2>
+                        <h2 className="text-2xl font-black text-foreground uppercase tracking-tighter">Strategy Canvas</h2>
                         <p className="text-[9px] font-black text-sky-500/50 uppercase tracking-[0.4em]">Visual Architecture Lab</p>
                     </div>
                 </div>
@@ -57,10 +59,10 @@ export default function InstitutionalCanvas({ elements, onElementsChange }: Prop
             <div className="w-full h-full rounded-[4rem] overflow-hidden">
                 <Excalidraw
                     excalidrawAPI={(api) => setExcalidrawAPI(api)}
-                    theme="dark"
+                    theme={theme === 'dark' ? 'dark' : 'light'}
                     initialData={{
                         appState: {
-                            viewBackgroundColor: '#030303',
+                            viewBackgroundColor: 'transparent',
                             currentItemStrokeColor: '#0ea5e9',
                             currentItemBackgroundColor: 'transparent',
                             currentItemFillStyle: 'solid',
@@ -88,9 +90,9 @@ export default function InstitutionalCanvas({ elements, onElementsChange }: Prop
             </div>
 
             {/* Quick Actions Overlay */}
-            <div className="absolute bottom-8 right-8 z-[100] bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[2rem] p-2 flex items-center gap-2 opacity-0 hover:opacity-100 transition-opacity pointer-events-auto">
+            <div className="absolute bottom-8 right-8 z-[100] bg-background/60 backdrop-blur-3xl border border-border rounded-[2rem] p-2 flex items-center gap-2 opacity-0 hover:opacity-100 transition-opacity pointer-events-auto">
                 <button 
-                    className="p-3 hover:bg-white/10 rounded-xl text-white/60 hover:text-sky-400 transition-all"
+                    className="p-3 hover:bg-foreground/10 rounded-xl text-muted-foreground/60 hover:text-sky-400 transition-all"
                     title="Download Canvas"
                     onClick={() => {
                         if (excalidrawAPI) {
@@ -106,9 +108,9 @@ export default function InstitutionalCanvas({ elements, onElementsChange }: Prop
                 >
                     <Download size={18} />
                 </button>
-                <div className="h-8 w-[1px] bg-white/10" />
+                <div className="h-8 w-[1px] bg-border" />
                 <button 
-                    className="p-3 hover:bg-white/10 rounded-xl text-white/60 hover:text-rose-400 transition-all"
+                    className="p-3 hover:bg-foreground/10 rounded-xl text-muted-foreground/60 hover:text-rose-400 transition-all"
                     title="Clear Canvas"
                     onClick={() => {
                         if (excalidrawAPI && confirm('Clear entire canvas?')) {

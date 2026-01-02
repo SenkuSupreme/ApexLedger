@@ -53,17 +53,14 @@ import {
   SymbolPerformanceWidget,
   GoalsProgressWidget,
   HabitsTrackerWidget,
-  EconomicCalendarWidget,
   EquityCurveWidget,
   NewsWidget,
   WeatherWidget,
   ChecklistWidget,
   ComprehensiveMetricsWidget,
-  TVTechnicalAnalysisWidget,
-  TVForexHeatMapWidget,
-  TVMarketQuotesWidget,
-  TVEconomicCalendarWidget,
-  TVTickerTapeWidget,
+  AssetPerformanceWidget,
+  DailyPnLComparisonWidget,
+  StrategyPerformanceWidget,
 } from "./widgets";
 
 // Widget Types
@@ -96,17 +93,14 @@ export const WIDGET_TYPES = {
   GOALS_PROGRESS: "goals_progress",
   HABITS_TRACKER: "habits_tracker",
   MARKET_SESSION: "market_session",
-  ECONOMIC_CALENDAR: "economic_calendar",
   EQUITY_CURVE: "equity_curve",
   NEWS: "news",
   WEATHER: "weather",
   CHECKLIST: "checklist",
   COMPREHENSIVE_METRICS: "comprehensive_metrics",
-  TV_TECHNICAL_ANALYSIS: "tv_technical_analysis",
-  TV_FOREX_HEATMAP: "tv_forex_heatmap",
-  TV_MARKET_QUOTES: "tv_market_quotes",
-  TV_ECONOMIC_CALENDAR: "tv_economic_calendar",
-  TV_TICKER_TAPE: "tv_ticker_tape",
+  ASSET_PERFORMANCE: "asset_performance",
+  DAILY_PNL_COMPARISON: "daily_pnl_comparison",
+  STRATEGY_PERFORMANCE: "strategy_performance",
 } as const;
 
 // Widget Size Classes
@@ -159,11 +153,11 @@ function SortableWidget({
       style={style}
       className={`
         ${WIDGET_SIZE_CLASSES[widget.size]}
-        bg-[#0A0A0A]/80 border border-white/5 rounded-[2rem] p-8
-        relative group hover:bg-[#0A0A0A] hover:border-white/10 transition-all duration-300
+        bg-card border border-border shadow-2xl rounded-[1.5rem] p-6
+        relative group hover:border-border transition-all duration-300
         overflow-hidden
-        ${isDragging ? "shadow-2xl shadow-black/80 scale-[1.02] z-50 border-blue-500/50" : "shadow-xl"}
-        ${isEditMode ? "ring-2 ring-blue-500/30" : ""}
+        ${isDragging ? "shadow-2xl shadow-background scale-[1.02] z-50 border-primary/50" : ""}
+        ${isEditMode ? "ring-2 ring-primary/30" : ""}
       `}
     >
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] pointer-events-none" />
@@ -175,7 +169,7 @@ function SortableWidget({
           <button
             {...attributes}
             {...listeners}
-            className="p-1 bg-white/10 hover:bg-white/20 rounded text-white/60 hover:text-white transition-colors cursor-grab active:cursor-grabbing"
+            className="p-1 bg-foreground/10 hover:bg-foreground/20 rounded text-muted-foreground/60 hover:text-foreground transition-colors cursor-grab active:cursor-grabbing"
           >
             <GripVertical size={14} />
           </button>
@@ -186,7 +180,7 @@ function SortableWidget({
             onChange={(e) =>
               onResize(widget.id, e.target.value as Widget["size"])
             }
-            className="text-xs bg-white/10 text-white border-none rounded px-1 py-1"
+            className="text-xs bg-foreground/10 text-foreground border-none rounded px-1 py-1"
             onClick={(e) => e.stopPropagation()}
           >
             <option value="small">S</option>
@@ -350,8 +344,8 @@ export default function WidgetSystem({
       {/* Widget Controls */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white">Dashboard Widgets</h2>
-          <p className="text-sm text-white/60">
+          <h2 className="text-xl font-bold text-foreground">Dashboard Widgets</h2>
+          <p className="text-sm text-muted-foreground/60">
             Customize your trading overview
           </p>
         </div>
@@ -359,7 +353,7 @@ export default function WidgetSystem({
         <div className="flex gap-2">
           <button
             onClick={() => setShowAddWidget(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-foreground/10 hover:bg-foreground/20 rounded-lg text-foreground transition-colors"
           >
             <Plus size={16} />
             Add Widget
@@ -369,8 +363,8 @@ export default function WidgetSystem({
             onClick={() => setIsEditMode(!isEditMode)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
               isEditMode
-                ? "bg-blue-500 text-white"
-                : "bg-white/10 hover:bg-white/20 text-white"
+                ? "bg-primary text-primary-foreground"
+                : "bg-foreground/10 hover:bg-foreground/20 text-foreground"
             }`}
           >
             <Settings size={16} />
@@ -389,7 +383,7 @@ export default function WidgetSystem({
           items={widgets.map((w) => w.id)}
           strategy={rectSortingStrategy}
         >
-          <div className="grid grid-cols-4 gap-6 auto-rows-min">
+          <div className="grid grid-cols-4 gap-4 auto-rows-min">
             {widgets
               .filter((w) => w.isVisible)
               .sort((a, b) => a.position - b.position)
@@ -469,8 +463,6 @@ function WidgetContent({
       return <GoalsProgressWidget className={opacity} />;
     case WIDGET_TYPES.HABITS_TRACKER:
       return <HabitsTrackerWidget className={opacity} />;
-    case WIDGET_TYPES.ECONOMIC_CALENDAR:
-      return <EconomicCalendarWidget className={opacity} />;
     case WIDGET_TYPES.EQUITY_CURVE:
       return <EquityCurveWidget stats={stats} className={opacity} />;
     case WIDGET_TYPES.NEWS:
@@ -481,19 +473,11 @@ function WidgetContent({
       return <ChecklistWidget className={opacity} />;
     case WIDGET_TYPES.COMPREHENSIVE_METRICS:
       return <ComprehensiveMetricsWidget stats={stats} className={opacity} />;
-    case WIDGET_TYPES.TV_TECHNICAL_ANALYSIS:
-      return <TVTechnicalAnalysisWidget />;
-    case WIDGET_TYPES.TV_FOREX_HEATMAP:
-      return <TVForexHeatMapWidget />;
-    case WIDGET_TYPES.TV_MARKET_QUOTES:
-      return <TVMarketQuotesWidget />;
-    case WIDGET_TYPES.TV_ECONOMIC_CALENDAR:
-      return <TVEconomicCalendarWidget />;
-    case WIDGET_TYPES.TV_TICKER_TAPE:
-      return <TVTickerTapeWidget />;
+    case WIDGET_TYPES.STRATEGY_PERFORMANCE:
+      return <StrategyPerformanceWidget stats={stats} className={opacity} />;
     default:
       return (
-        <div className="flex items-center justify-center h-32 text-white/40">
+        <div className="flex items-center justify-center h-32 text-muted-foreground/40">
           Widget type not found
         </div>
       );
@@ -519,17 +503,13 @@ function getWidgetTitle(type: string): string {
     [WIDGET_TYPES.SYMBOL_PERFORMANCE]: "Symbol Performance",
     [WIDGET_TYPES.GOALS_PROGRESS]: "Goals Progress",
     [WIDGET_TYPES.HABITS_TRACKER]: "Habits Tracker",
-    [WIDGET_TYPES.ECONOMIC_CALENDAR]: "Economic Calendar",
     [WIDGET_TYPES.EQUITY_CURVE]: "Equity Curve",
     [WIDGET_TYPES.NEWS]: "Market News",
     [WIDGET_TYPES.WEATHER]: "Weather",
     [WIDGET_TYPES.CHECKLIST]: "Pre-Trade Checklist",
     [WIDGET_TYPES.COMPREHENSIVE_METRICS]: "Comprehensive Metrics",
-    [WIDGET_TYPES.TV_TECHNICAL_ANALYSIS]: "TV Technical Sentiment",
-    [WIDGET_TYPES.TV_FOREX_HEATMAP]: "TV Forex Heat Map",
-    [WIDGET_TYPES.TV_MARKET_QUOTES]: "TV Market Quotes",
-    [WIDGET_TYPES.TV_ECONOMIC_CALENDAR]: "TV Economic Calendar",
-    [WIDGET_TYPES.TV_TICKER_TAPE]: "TV Ticker Tape",
+    [WIDGET_TYPES.DAILY_PNL_COMPARISON]: "Daily P&L Comparison",
+    [WIDGET_TYPES.STRATEGY_PERFORMANCE]: "Strategy Performance",
   };
   return titles[type as keyof typeof titles] || "Unknown Widget";
 }
@@ -552,17 +532,13 @@ function getDefaultSize(type: string): Widget["size"] {
     [WIDGET_TYPES.SYMBOL_PERFORMANCE]: "medium" as const,
     [WIDGET_TYPES.GOALS_PROGRESS]: "medium" as const,
     [WIDGET_TYPES.HABITS_TRACKER]: "medium" as const,
-    [WIDGET_TYPES.ECONOMIC_CALENDAR]: "medium" as const,
     [WIDGET_TYPES.EQUITY_CURVE]: "full" as const,
     [WIDGET_TYPES.NEWS]: "medium" as const,
     [WIDGET_TYPES.WEATHER]: "small" as const,
     [WIDGET_TYPES.CHECKLIST]: "medium" as const,
     [WIDGET_TYPES.COMPREHENSIVE_METRICS]: "large" as const,
-    [WIDGET_TYPES.TV_TECHNICAL_ANALYSIS]: "medium" as const,
-    [WIDGET_TYPES.TV_FOREX_HEATMAP]: "large" as const,
-    [WIDGET_TYPES.TV_MARKET_QUOTES]: "large" as const,
-    [WIDGET_TYPES.TV_ECONOMIC_CALENDAR]: "large" as const,
-    [WIDGET_TYPES.TV_TICKER_TAPE]: "full" as const,
+    [WIDGET_TYPES.DAILY_PNL_COMPARISON]: "medium" as const,
+    [WIDGET_TYPES.STRATEGY_PERFORMANCE]: "medium" as const,
   };
   return sizes[type as keyof typeof sizes] || "medium";
 }
@@ -629,6 +605,15 @@ function AddWidgetModal({
       icon: <BarChart3 size={24} />,
       category: "Analytics",
       config: { metric: "totalTrades", icon: "BarChart2" },
+    },
+    {
+      id: "metric-account-balance",
+      type: WIDGET_TYPES.METRIC_CARD,
+      title: "Account Balance",
+      description: "Current portfolio equity",
+      icon: <DollarSign size={24} />,
+      category: "Analytics",
+      config: { metric: "accountBalance", icon: "DollarSign" },
     },
     {
       id: "equity-curve",
@@ -727,14 +712,6 @@ function AddWidgetModal({
       category: "Trading",
     },
     {
-      id: "economic-calendar",
-      type: WIDGET_TYPES.ECONOMIC_CALENDAR,
-      title: "Economic Calendar",
-      description: "Upcoming economic events",
-      icon: <Calendar size={24} />,
-      category: "Market",
-    },
-    {
       id: "news",
       type: WIDGET_TYPES.NEWS,
       title: "Market News",
@@ -790,63 +767,23 @@ function AddWidgetModal({
       icon: <CheckSquare size={24} />,
       category: "Trading",
     },
-    {
-      id: "tv-technical-analysis",
-      type: WIDGET_TYPES.TV_TECHNICAL_ANALYSIS,
-      title: "TradingView TA Gauge",
-      description: "Institutional technical gauges",
-      icon: <Activity size={24} />,
-      category: "Market",
-    },
-    {
-      id: "tv-forex-heatmap",
-      type: WIDGET_TYPES.TV_FOREX_HEATMAP,
-      title: "TV Forex Heat Map",
-      description: "Currency strength heatmap",
-      icon: <Activity size={24} />,
-      category: "Market",
-    },
-    {
-      id: "tv-market-quotes",
-      type: WIDGET_TYPES.TV_MARKET_QUOTES,
-      title: "TV Market Quotes",
-      description: "Live market pricing",
-      icon: <Activity size={24} />,
-      category: "Market",
-    },
-    {
-      id: "tv-economic-calendar",
-      type: WIDGET_TYPES.TV_ECONOMIC_CALENDAR,
-      title: "TV Economic Calendar",
-      description: "Global economic events",
-      icon: <Calendar size={24} />,
-      category: "Market",
-    },
-    {
-      id: "tv-ticker-tape",
-      type: WIDGET_TYPES.TV_TICKER_TAPE,
-      title: "TV Ticker Tape",
-      description: "Scrolling market tape",
-      icon: <Activity size={24} />,
-      category: "Market",
-    },
   ];
 
   const filteredOptions = widgetOptions;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[80vh] flex flex-col shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm">
+      <div className="bg-card border border-border rounded-2xl w-full max-w-4xl max-h-[80vh] flex flex-col shadow-2xl">
+        <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
-            <h3 className="text-xl font-bold text-white">Add Widget</h3>
-            <p className="text-sm text-white/60">
+            <h3 className="text-xl font-bold text-foreground">Add Widget</h3>
+            <p className="text-sm text-muted-foreground/60">
               Select a widget to add to your dashboard
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors"
+            className="p-2 hover:bg-foreground/10 rounded-lg text-muted-foreground/60 hover:text-foreground transition-colors"
           >
             <X size={20} />
           </button>
@@ -858,22 +795,22 @@ function AddWidgetModal({
               <button
                 key={widget.id}
                 onClick={() => onAdd(widget.type, widget.config)}
-                className="flex flex-col items-start p-4 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl transition-all text-left group"
+                className="flex flex-col items-start p-4 bg-foreground/5 hover:bg-foreground/10 border border-border hover:border-foreground/20 rounded-xl transition-all text-left group"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400 group-hover:bg-blue-500/20 group-hover:text-blue-300 transition-colors">
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary group-hover:bg-primary/20 group-hover:text-primary transition-colors">
                     {widget.icon}
                   </div>
                   <div>
-                    <h4 className="font-bold text-white text-sm">
+                    <h4 className="font-bold text-foreground text-sm">
                       {widget.title}
                     </h4>
-                    <span className="text-[10px] text-white/40 uppercase tracking-wider">
+                    <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wider">
                       {widget.category}
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-white/50 leading-relaxed">
+                <p className="text-xs text-muted-foreground/50 leading-relaxed">
                   {widget.description}
                 </p>
               </button>

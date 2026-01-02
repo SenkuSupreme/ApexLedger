@@ -49,48 +49,23 @@ export default function NewsPage() {
   const fetchNews = async (category: string) => {
     setLoading(true);
     try {
-      const categoryData = categories.find((c) => c.id === category);
-      const keywords = categoryData?.keywords || "forex";
-
-      let articles = [];
-      const NEWS_API_KEY = process.env.NEXT_PUBLIC_NEWS_API_KEY;
-
-      if (NEWS_API_KEY && NEWS_API_KEY !== "your_api_key_here") {
-        try {
-          const response = await fetch(
-            `https://newsapi.org/v2/everything?q=${keywords}&sortBy=publishedAt&language=en&pageSize=50&apiKey=${NEWS_API_KEY}`
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            articles = data.articles.map((article: any) => ({
-              ...article,
-              category: category,
-              impact: getImpactLevel(article.title + " " + article.description),
-            }));
-          }
-        } catch (error) {
-          console.log("NewsAPI failed");
+      let fetchedArticles: NewsArticle[] = [];
+      
+      try {
+        const response = await fetch(`/api/news?category=${category}`);
+        if (response.ok) {
+          const data = await response.json();
+          fetchedArticles = data.articles || [];
         }
+      } catch (error) {
+        console.warn("Internal news API unavailable, falling back to local mock data.");
       }
 
-      if (articles.length === 0) {
-        try {
-          const response = await fetch(`/api/news?category=${category}`);
-          if (response.ok) {
-            const data = await response.json();
-            articles = data.articles || [];
-          }
-        } catch (error) {
-          console.log("Alternative news sources failed");
-        }
+      if (fetchedArticles.length === 0) {
+        fetchedArticles = getMockNews(category);
       }
 
-      if (articles.length === 0) {
-        articles = getMockNews(category);
-      }
-
-      setArticles(articles);
+      setArticles(fetchedArticles);
       setLastUpdated(new Date());
     } catch (error) {
       console.error("Failed to fetch news:", error);
@@ -159,29 +134,29 @@ export default function NewsPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/5 pb-10 relative z-10 gap-8">
         <div className="space-y-6">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1 bg-sky-500/10 border border-sky-500/20 rounded-full">
+            <div className="flex items-center gap-2 px-3 py-1 bg-sky-500/10 border border-sky-500/20 rounded-full text-sky-400">
                <div className="w-1.5 h-1.5 bg-sky-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(14,165,233,0.5)]" />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-sky-400">Intelligence Stream 08 Live</span>
+               <span className="text-[9px] font-black uppercase tracking-[0.3em]">Live News Feed</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/20">
+            <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/60">
                <Globe size={10} className="text-sky-500/50" />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em]">Latency: 14MS</span>
+               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/60">Status: Live</span>
             </div>
           </div>
-          <h1 className="text-6xl font-black tracking-tighter italic uppercase bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent leading-none">
-            Global Matrix
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-[0.02em] italic uppercase bg-gradient-to-br from-white to-white/70 bg-clip-text text-transparent leading-none">
+            Market News
           </h1>
-          <p className="text-white/30 text-sm font-medium italic max-w-xl leading-relaxed">
-            "Real-time institutional intelligence. Every signal, every report, every market shift archived within the neural stream."
+          <p className="text-white/80 text-sm font-medium italic max-w-xl leading-relaxed">
+            "Get the latest financial news and market updates. Monitor high-impact economic events and staying informed on global market shifts."
           </p>
         </div>
 
         <div className="flex items-center gap-6 relative z-10">
           <div className="text-right flex flex-col items-end">
-            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic mb-1">Last Sync Cycle</span>
+            <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.4em] italic mb-1">Last Update</span>
             <div className="flex items-center gap-3 px-5 py-2.5 bg-white/[0.03] border border-white/5 rounded-2xl">
               <RefreshCw size={12} className="text-sky-500/50 animate-spin" />
-              <span className="text-xl font-black text-white italic tracking-tighter tabular-nums">{lastUpdated.toLocaleTimeString()}</span>
+              <span className="text-xl font-black text-white/95 italic tracking-tighter tabular-nums">{lastUpdated.toLocaleTimeString()}</span>
             </div>
           </div>
           <button
@@ -203,10 +178,10 @@ export default function NewsPage() {
               className={`px-8 py-5 rounded-[1.8rem] text-[10px] font-black uppercase tracking-[0.3em] transition-all whitespace-nowrap border italic ${
                 selectedCategory === category.id
                   ? "bg-white text-black border-white shadow-xl scale-105"
-                  : "bg-white/[0.02] text-white/40 border-white/5 hover:bg-white/[0.05] hover:text-white"
+                  : "bg-white/[0.02] text-white/50 border-white/5 hover:bg-white/[0.05] hover:text-white"
               }`}
             >
-              {category.label} Sector
+              {category.label}
             </button>
           ))}
         </div>
@@ -218,10 +193,10 @@ export default function NewsPage() {
           />
           <input
             type="text"
-            placeholder="Scan global intelligence..."
+            placeholder="Search news..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-16 pr-8 py-5 bg-black/40 border border-white/5 rounded-[2rem] text-white placeholder:text-white/10 text-[11px] font-black uppercase tracking-[0.3em] focus:border-sky-500/30 focus:outline-none focus:bg-white/[0.04] transition-all backdrop-blur-md shadow-inner italic"
+            className="w-full pl-16 pr-8 py-5 bg-black/40 border border-white/5 rounded-[2rem] text-white placeholder:text-white/30 text-[11px] font-black uppercase tracking-[0.3em] focus:border-sky-500/30 focus:outline-none focus:bg-white/[0.04] transition-all backdrop-blur-md shadow-inner italic"
           />
         </div>
       </div>
@@ -230,7 +205,7 @@ export default function NewsPage() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-40 text-center gap-6">
            <div className="w-16 h-16 border-2 border-white/5 border-t-sky-500 rounded-full animate-spin" />
-           <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] animate-pulse">Decrypting Neural Stream...</span>
+           <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.5em] animate-pulse">Loading News...</span>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10">
@@ -249,10 +224,10 @@ export default function NewsPage() {
           className="col-span-full py-40 text-center relative group overflow-hidden bg-white/[0.01] border border-dashed border-white/10 rounded-[4rem]"
         >
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-sky-500/5 blur-[120px] rounded-full" />
-          <Newspaper size={64} className="text-white/20 mx-auto mb-10 relative z-10" />
-          <h3 className="text-4xl font-black text-white mb-6 uppercase tracking-tighter italic">Signal Void</h3>
-          <p className="text-white/30 text-[11px] font-black uppercase tracking-[0.5em] mb-12 max-w-sm mx-auto italic leading-relaxed">
-            "Communication blackout. No institutional intelligence detected in selected domain."
+          <Newspaper size={64} className="text-white/40 mx-auto mb-10 relative z-10" />
+          <h3 className="text-4xl font-black text-white mb-6 uppercase tracking-tighter italic">No News Found</h3>
+          <p className="text-white/60 text-[11px] font-black uppercase tracking-[0.5em] mb-12 max-w-sm mx-auto italic leading-relaxed">
+            "No news detected in this category. Please check back later or try another category."
           </p>
         </motion.div>
       )}
@@ -311,12 +286,12 @@ function NewsCard({ article }: { article: NewsArticle }) {
         <div className="flex items-center justify-between mb-8">
            <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                 <Globe size={14} className="text-white/30" />
+                 <Globe size={14} className="text-white/50" />
               </div>
-              <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] italic">{article.source.name}</span>
+              <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] italic">{article.source.name}</span>
            </div>
-           <div className="flex items-center gap-2 text-[10px] font-black text-white/20 uppercase tracking-[0.2em] italic">
-             <Clock size={12} className="opacity-40" />
+           <div className="flex items-center gap-2 text-[10px] font-black text-white/40 uppercase tracking-[0.2em] italic">
+             <Clock size={12} className="opacity-60" />
              {timeAgo(article.publishedAt)}
            </div>
         </div>
@@ -325,22 +300,22 @@ function NewsCard({ article }: { article: NewsArticle }) {
           {article.title}
         </h3>
 
-        <p className="text-[13px] text-white/40 line-clamp-3 mb-10 italic leading-relaxed font-medium">
+        <p className="text-[13px] text-white/60 line-clamp-3 mb-10 italic leading-relaxed font-medium">
           "{article.description}"
         </p>
 
         <div className="mt-auto pt-8 border-t border-white/5 flex items-center justify-between">
-          <div className="px-4 py-1.5 bg-white/[0.03] border border-white/5 rounded-full text-[9px] font-black text-white/20 uppercase tracking-[0.3em] italic">
-             {article.category} Sector
+          <div className="px-4 py-1.5 bg-white/[0.03] border border-white/5 rounded-full text-[9px] font-black text-white/40 uppercase tracking-[0.3em] italic">
+             {article.category}
           </div>
 
           <a
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 text-[10px] font-black text-white/40 hover:text-sky-400 uppercase tracking-[0.3em] transition-all italic group/link"
+            className="flex items-center gap-3 text-[10px] font-black text-white/60 hover:text-sky-400 uppercase tracking-[0.3em] transition-all italic group/link"
           >
-            Terminal Access
+            Read Full Article
             <ExternalLink size={14} className="group-hover/link:translate-x-1 group-hover/link:-translate-y-1 transition-transform" />
           </a>
         </div>

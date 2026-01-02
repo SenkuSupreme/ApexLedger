@@ -116,10 +116,10 @@ export default function DetailsPage() {
           case "goal": setGoals(goals.filter((g) => g._id !== item._id)); break;
         }
         setSelectedItem(null);
-        toast.success("Purge complete");
+        toast.success("Item deleted");
       }
     } catch (error) {
-      toast.error("Purge failure");
+      toast.error("Failed to delete item");
     }
     setDeleteDialog({ isOpen: false, item: null, type: null });
   };
@@ -135,7 +135,7 @@ export default function DetailsPage() {
         const updatedTask = await response.json();
         setTasks(tasks.map((t) => (t._id === taskId ? updatedTask : t)));
         setSelectedItem(updatedTask);
-        toast.success("Status calibrated");
+        toast.success("Status updated");
       }
     } catch (error) {}
   };
@@ -153,7 +153,7 @@ export default function DetailsPage() {
         setSelectedItem(updatedHabit);
         setCompletionCount(1);
         setCompletionNotes("");
-        toast.success("Signal transmitted");
+        toast.success("Habit completed");
       }
     } catch (error) {}
   };
@@ -169,7 +169,7 @@ export default function DetailsPage() {
         const updatedGoal = await response.json();
         setGoals(goals.map((g) => (g._id === goalId ? updatedGoal : g)));
         setSelectedItem(updatedGoal);
-        toast.success("Calibration updated");
+        toast.success("Progress updated");
       }
     } catch (error) {}
   };
@@ -194,8 +194,8 @@ export default function DetailsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-[80vh] w-full items-center justify-center text-white/20 font-black text-xs uppercase tracking-[0.5em] animate-pulse">
-        Synchronizing Intelligence Mesh...
+      <div className="flex h-[80vh] w-full items-center justify-center text-white/40 font-black text-xs uppercase tracking-[0.5em] animate-pulse">
+        Loading...
       </div>
     );
   }
@@ -223,18 +223,18 @@ export default function DetailsPage() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full">
                  <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
-                 <span className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-400">Diag Node 04 Live</span>
+                 <span className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-400">Analysis Active</span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/20">
+              <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/80">
                  <Brain size={10} className="text-purple-500/50" />
-                 <span className="text-[9px] font-black uppercase tracking-[0.3em]">Intelligence Dashboard</span>
+                 <span className="text-[9px] font-black uppercase tracking-[0.3em]">Insights</span>
               </div>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter italic uppercase bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent leading-none">
-              Execution Analysis
+            <h1 className="text-4xl md:text-5xl font-black tracking-[0.02em] italic uppercase bg-gradient-to-br from-white to-white/70 bg-clip-text text-transparent leading-none">
+              Item Details
             </h1>
-            <p className="text-white/30 text-sm font-medium italic max-w-xl leading-relaxed">
-              "Granular archival analysis of operational signals. Performing deep execution diagnostics on the institutional ledger node."
+            <p className="text-white/80 text-sm font-medium italic max-w-xl leading-relaxed">
+              "Deep analysis of your tasks, habits, and goals. Monitor your progress and execution consistency over time."
             </p>
           </div>
         </div>
@@ -264,15 +264,15 @@ export default function DetailsPage() {
 
       {/* Content Mesh */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 relative z-10">
-        {/* Intelligence Ledger (List) */}
+        {/* List View */}
         <div className="lg:col-span-4 space-y-6">
           <div className="flex items-center justify-between px-6 py-2">
-            <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">
-              {activeTab} Mesh
+            <h3 className="text-[10px] font-black text-white/60 uppercase tracking-[0.4em] italic">
+              {activeTab}s
             </h3>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
-              <span className="text-[8px] font-black text-purple-500/40 uppercase tracking-widest italic">Live Sync</span>
+              <span className="text-[8px] font-black text-purple-500/60 uppercase tracking-widest italic">Active</span>
             </div>
           </div>
           <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar space-y-4">
@@ -288,20 +288,20 @@ export default function DetailsPage() {
               >
                  <div className="flex items-center justify-between mb-4 relative z-10">
                     <h4 className={`text-sm font-black tracking-tight uppercase italic transition-colors ${
-                      selectedItem?._id === item._id ? "text-white" : "text-white/40 group-hover:text-white/60"
+                      selectedItem?._id === item._id ? "text-white" : "text-white/60 group-hover:text-white/80"
                     }`}>
                       {item.title}
                     </h4>
                     <div className={`px-3 py-1 rounded-full border text-[8px] font-black uppercase tracking-widest ${
                       getItemStatus(item, activeTab) === 'done' || getItemStatus(item, activeTab) === 'completed'
                         ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                        : "bg-white/5 text-white/30 border-white/5"
+                        : "bg-white/5 text-white/50 border-white/5"
                     }`}>
                       {getItemStatus(item, activeTab)}
                     </div>
                  </div>
                  {item.description && (
-                   <p className="text-[11px] text-white/20 font-medium italic line-clamp-2 relative z-10 group-hover:text-white/40 transition-colors">
+                   <p className="text-[11px] text-white/40 font-medium italic line-clamp-2 relative z-10 group-hover:text-white/60 transition-colors">
                      "{item.description}"
                    </p>
                  )}
@@ -310,7 +310,7 @@ export default function DetailsPage() {
           </div>
         </div>
 
-        {/* Intelligence Detail (Focus) */}
+        {/* Item Details */}
         <div className="lg:col-span-8">
            <div className="bg-[#0A0A0A]/40 backdrop-blur-xl border border-white/5 rounded-[4rem] p-12 min-h-[60vh] hover:bg-[#0A0A0A]/60 transition-all duration-1000 shadow-3xl flex flex-col relative overflow-hidden">
              <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.01] pointer-events-none" />
@@ -329,17 +329,17 @@ export default function DetailsPage() {
                            <div className="space-y-4">
                              <div className="flex items-center gap-4">
                                <span className="px-4 py-1.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full text-[9px] font-black uppercase tracking-widest italic">
-                                 {(selectedItem as IHabit).category} protocol
+                                 {(selectedItem as IHabit).category}
                                </span>
-                               <span className="text-[9px] font-black uppercase tracking-widest text-white/20 italic">
-                                 {(selectedItem as IHabit).frequency} sync
+                               <span className="text-[9px] font-black uppercase tracking-widest text-white/40 italic">
+                                 {(selectedItem as IHabit).frequency}
                                </span>
                              </div>
                              <h2 className="text-5xl font-black text-white italic uppercase tracking-tighter leading-none">
                                {selectedItem.title}
                              </h2>
                              {selectedItem.description && (
-                               <p className="text-white/30 font-medium italic text-sm">"{selectedItem.description}"</p>
+                               <p className="text-white/60 font-medium italic text-sm">"{selectedItem.description}"</p>
                              )}
                            </div>
                            <button
@@ -353,13 +353,13 @@ export default function DetailsPage() {
                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                            {[
                              { icon: <Flame size={24} className="text-orange-500" />, value: (selectedItem as IHabit).streak, label: "Current Streak" },
-                             { icon: <TrendingUp size={24} className="text-emerald-500" />, value: (selectedItem as IHabit).longestStreak, label: "Peak Performance" },
-                             { icon: <Activity size={24} className="text-blue-500" />, value: (selectedItem as IHabit).completions?.length || 0, label: "Total Signals" },
+                             { icon: <TrendingUp size={24} className="text-emerald-500" />, value: (selectedItem as IHabit).longestStreak, label: "Best Streak" },
+                             { icon: <Activity size={24} className="text-blue-500" />, value: (selectedItem as IHabit).completions?.length || 0, label: "Total Completions" },
                            ].map((stat, i) => (
                              <div key={i} className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 flex flex-col items-center justify-center group hover:bg-white/[0.04] transition-all duration-500">
                                <div className="mb-4 group-hover:scale-110 transition-transform">{stat.icon}</div>
                                <span className="text-4xl font-black italic tracking-tighter text-white">{stat.value}</span>
-                               <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mt-3 italic">{stat.label}</span>
+                               <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.4em] mt-3 italic">{stat.label}</span>
                              </div>
                            ))}
                          </div>
@@ -367,11 +367,11 @@ export default function DetailsPage() {
                          <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-10 space-y-8">
                             <div className="flex items-center gap-4">
                               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-white/30 italic">Manual Signal Transmission</h4>
+                              <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-white/50 italic">Mark Completion</h4>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                                <div className="md:col-span-1">
-                                  <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-3 block italic">Intensity</label>
+                                  <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em] mb-3 block italic">Count</label>
                                   <input
                                     type="number"
                                     min="1"
@@ -381,12 +381,12 @@ export default function DetailsPage() {
                                   />
                                </div>
                                <div className="md:col-span-3">
-                                  <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-3 block italic">Contextual Analysis</label>
+                                  <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em] mb-3 block italic">Notes</label>
                                   <input
                                     type="text"
                                     value={completionNotes}
                                     onChange={(e) => setCompletionNotes(e.target.value)}
-                                    placeholder="Enter institutional context..."
+                                    placeholder="Enter notes here..."
                                     className="w-full px-8 py-5 bg-black/40 border border-white/5 rounded-2xl text-white placeholder:text-white/10 font-black focus:border-purple-500/30 focus:outline-none transition-all shadow-inner italic"
                                   />
                                </div>
@@ -395,7 +395,7 @@ export default function DetailsPage() {
                               onClick={() => handleHabitComplete(selectedItem._id!)}
                               className="w-full bg-white text-black py-6 rounded-3xl font-black text-[11px] uppercase tracking-[0.4em] hover:bg-purple-500 hover:text-white transition-all shadow-2xl shadow-white/5 active:scale-95 italic overflow-hidden group"
                             >
-                              <span className="relative z-10">Transmit Signal Execution</span>
+                              <span className="relative z-10">Complete Habit</span>
                             </button>
                          </div>
                       </div>
@@ -404,12 +404,12 @@ export default function DetailsPage() {
                          <div className="w-24 h-24 rounded-full bg-white/[0.02] border border-white/5 flex items-center justify-center mb-10 text-white/10">
                             {activeTab === 'task' ? <CheckSquare size={40} /> : <Target size={40} />}
                          </div>
-                         <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-4">{selectedItem.title}</h2>
-                         <p className="text-white/30 italic text-sm mb-12 max-w-lg">"{selectedItem.description || 'No description provided for this protocol node.'}"</p>
-                         <div className="flex gap-4">
-                            <button className="px-10 py-5 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-purple-500 hover:text-white transition-all italic">Calibrate Node</button>
-                            <button onClick={() => setDeleteDialog({ isOpen: true, item: selectedItem, type: activeTab })} className="px-10 py-5 bg-white/5 border border-white/10 text-white/40 hover:text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] transition-all italic">Purge Protocol</button>
-                         </div>
+                          <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-4">{selectedItem.title}</h2>
+                          <p className="text-white/60 italic text-sm mb-12 max-w-lg">"{selectedItem.description || 'No description provided.'}"</p>
+                          <div className="flex gap-4">
+                             <button className="px-10 py-5 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-purple-500 hover:text-white transition-all italic">Edit</button>
+                             <button onClick={() => setDeleteDialog({ isOpen: true, item: selectedItem, type: activeTab })} className="px-10 py-5 bg-white/5 border border-white/10 text-white/60 hover:text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] transition-all italic">Delete</button>
+                          </div>
                       </div>
                     )}
                  </motion.div>
@@ -419,11 +419,11 @@ export default function DetailsPage() {
                    animate={{ opacity: 1 }}
                    className="flex-1 flex flex-col items-center justify-center text-white/10"
                  >
-                   <div className="w-24 h-24 rounded-full bg-white/[0.01] border border-dashed border-white/5 flex items-center justify-center mb-8">
-                     <Eye size={40} />
-                   </div>
-                   <p className="text-xs font-black uppercase tracking-[0.6em] italic">Awaiting Intelligence</p>
-                   <p className="mt-8 text-[9px] font-black italic text-white/5 tracking-[0.2em]">Select a ledger node to perform deep execution diagnostics.</p>
+                    <div className="w-24 h-24 rounded-full bg-white/[0.01] border border-dashed border-white/5 flex items-center justify-center mb-8">
+                      <Eye size={40} />
+                    </div>
+                    <p className="text-xs font-black uppercase tracking-[0.6em] italic">Select an Item</p>
+                    <p className="mt-8 text-[9px] font-black italic text-white/10 tracking-[0.2em]">Select an item from the list to view its details.</p>
                  </motion.div>
                )}
              </AnimatePresence>
@@ -435,8 +435,8 @@ export default function DetailsPage() {
         isOpen={deleteDialog.isOpen}
         onClose={() => setDeleteDialog({ isOpen: false, item: null, type: null })}
         onConfirm={() => deleteDialog.item && deleteDialog.type && handleDelete(deleteDialog.item, deleteDialog.type)}
-        title="Institutional Purge"
-        message={`Terminate this ${deleteDialog.type} protocol node? All associated execution artifacts will be permanently purged from the institutional matrix.`}
+        title="Delete Item"
+        message={`Are you sure you want to delete this ${deleteDialog.type}? All associated data will be permanently removed.`}
       />
     </div>
   );

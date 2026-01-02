@@ -126,24 +126,24 @@ const ForexSessionNavbar = React.memo(function ForexSessionNavbar() {
   }, []);
 
   return (
-    <div className="w-full h-full flex flex-col p-6">
-      <div className="flex justify-between items-end mb-8 relative z-10">
+    <div className="w-full h-full flex flex-col p-4">
+      <div className="flex justify-between items-end mb-4 relative ">
         <div>
-          <h2 className="text-xs font-bold text-white/50 uppercase tracking-[0.2em] mb-2">
+          <h2 className="text-xs font-bold text-muted-foreground/50 uppercase tracking-[0.2em] mb-2">
             Global Market Sessions
           </h2>
-          <div className="text-4xl font-bold text-white font-mono tracking-tight">
-            {currentTimeFormatted} <span className="text-base font-normal text-white/30 ml-2">Local (NPT)</span>
+          <div className="text-4xl font-black text-foreground font-mono tracking-tight">
+            {currentTimeFormatted} <span className="text-xs font-bold text-muted-foreground/60 ml-3 uppercase tracking-widest">Local (NPT)</span>
           </div>
         </div>
-        <div className="flex gap-3 relative z-10">
+        <div className="flex gap-3 relative ">
           {SESSIONS.map((s) => (
             <div
               key={s.id}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 ${
                 activeSessions.includes(s.id) 
-                  ? "bg-white/10 border-white/20 text-white shadow-lg backdrop-blur-md" 
-                  : "bg-white/[0.02] border-white/5 text-white/30"
+                  ? "bg-foreground/10 border-foreground/20 text-foreground shadow-lg backdrop-blur-md" 
+                  : "bg-foreground/[0.02] border-border text-muted-foreground/30"
               }`}
             >
               <div className={`w-2 h-2 rounded-full ${s.color} ${activeSessions.includes(s.id) ? "animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.5)]" : "opacity-40"}`} />
@@ -156,13 +156,13 @@ const ForexSessionNavbar = React.memo(function ForexSessionNavbar() {
       {/* Timeline Container */}
       <div className="relative flex-1 w-full min-h-[0] flex flex-col justify-center">
         {/* Horizontal Divider Line */}
-        <div className="absolute top-0 bottom-0 left-0 w-full border-l border-r border-white/5 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.02)_50%,transparent_100%)] pointer-events-none" />
+        <div className="absolute top-0 bottom-0 left-0 w-full bg-[linear-gradient(90deg,transparent_0%,hsl(var(--foreground)/0.02)_50%,transparent_100%)] pointer-events-none" />
         
         {/* Time Grid - Subtle */}
         <div className="absolute inset-x-0 top-0 bottom-8 flex justify-between px-[1px] pointer-events-none z-0">
            {[0, 6, 12, 18, 24].map((h) => (
-             <div key={h} className="h-full w-px border-l border-dashed border-white/10 opacity-30">
-               <span className="absolute bottom-[-24px] -translate-x-1/2 text-[10px] font-mono text-white/20">{h.toString().padStart(2, '0')}:00</span>
+             <div key={h} className="h-full w-px border-l border-dashed border-border opacity-50">
+               <span className="absolute bottom-[-24px] -translate-x-1/2 text-[10px] font-mono text-muted-foreground/60">{h.toString().padStart(2, '0')}:00</span>
              </div>
            ))}
         </div>
@@ -177,17 +177,15 @@ const ForexSessionNavbar = React.memo(function ForexSessionNavbar() {
             return (
               <div
                 key={session.id}
-                className="absolute h-9 rounded-lg flex items-center px-3 border transition-all duration-300 group cursor-help hover:z-50"
+                className={`absolute h-9 rounded-lg flex items-center px-3 border transition-all duration-300 group cursor-help hover:z-50 ${
+                  activeSessions.includes(session.id)
+                    ? "bg-foreground/10 border-foreground/20"
+                    : "bg-foreground/[0.03] border-border"
+                }`}
                 style={{
                   left: `${left}%`,
                   width: `${width}%`,
                   top: `${top}px`,
-                  backgroundColor: activeSessions.includes(session.id)
-                    ? "rgba(255, 255, 255, 0.08)"
-                    : "rgba(255, 255, 255, 0.02)",
-                  borderColor: activeSessions.includes(session.id)
-                    ? "rgba(255, 255, 255, 0.15)"
-                    : "rgba(255, 255, 255, 0.05)",
                 }}
               >
                 {/* Active Indicator Color Strip */}
@@ -195,19 +193,19 @@ const ForexSessionNavbar = React.memo(function ForexSessionNavbar() {
 
                 <span
                   className={`text-[10px] uppercase font-bold tracking-wider ml-2 transition-colors ${
-                    activeSessions.includes(session.id) ? "text-white" : "text-white/40"
+                    activeSessions.includes(session.id) ? "text-foreground" : "text-muted-foreground"
                   }`}
                 >
                   {session.name}
                 </span>
 
                 {/* Tooltip */}
-                <div className="absolute top-full left-0 mt-2 z-[60] hidden group-hover:block min-w-[200px] p-4 bg-[#0A0A0A] border border-white/10 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
-                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-white/10">
-                     <span className="text-xs font-bold text-white uppercase">{session.name}</span>
-                     <span className="text-[10px] font-mono text-white/50">{sessionTimes[session.id]} (Local)</span>
+                <div className="absolute top-full left-0 mt-2 z-[60] hidden group-hover:block min-w-[200px] p-4 bg-card border border-border rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-border">
+                     <span className="text-xs font-bold text-foreground uppercase">{session.name}</span>
+                     <span className="text-[10px] font-mono text-muted-foreground/50">{sessionTimes[session.id]} (Local)</span>
                   </div>
-                  <p className="text-[11px] text-white/70 leading-relaxed min-w-[180px]">
+                  <p className="text-[11px] text-muted-foreground/70 leading-relaxed min-w-[180px]">
                     {session.details}
                   </p>
                 </div>
@@ -217,7 +215,7 @@ const ForexSessionNavbar = React.memo(function ForexSessionNavbar() {
 
           {/* Current Time Line - Interactive */}
           <div
-            className="absolute -top-4 -bottom-8 w-[3px] z-[60] group cursor-help transition-all duration-1000 ease-linear"
+            className="absolute -top-4 -bottom-4 w-[3px] z-[60] group cursor-help transition-all duration-1000 ease-linear"
             style={{ left: `${currentProgress}%` }}
           >
              {/* Visual Line */}
@@ -238,15 +236,15 @@ const ForexSessionNavbar = React.memo(function ForexSessionNavbar() {
              <div className="absolute inset-y-0 -left-2 -right-2 bg-transparent" />
 
              {/* Detailed Time Tooltip */}
-             <div className="absolute top-8 left-4 z-[70] hidden group-hover:block w-72 p-4 bg-[#0A0A0A]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.9)]">
-                <div className="text-sm font-bold text-white mb-3 pb-2 border-b border-white/10 flex justify-between items-center">
+             <div className="absolute top-8 left-4 z-[70] hidden group-hover:block w-72 p-4 bg-card/95 backdrop-blur-xl border border-border rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.9)]">
+                <div className="text-sm font-bold text-foreground mb-3 pb-2 border-b border-border flex justify-between items-center">
                   <span>Current Status</span>
                   <span className="text-[10px] font-mono text-red-400">LIVE</span>
                 </div>
                 <div className="space-y-2.5">
-                  <div className="flex justify-between items-center bg-white/[0.03] p-2 rounded-lg">
-                    <span className="text-xs text-white/60">Your Time (NPT)</span>
-                    <span className="text-xs text-white font-mono font-bold tracking-tight">
+                  <div className="flex justify-between items-center bg-foreground/[0.03] p-2 rounded-lg">
+                    <span className="text-xs text-muted-foreground/60">Your Time (NPT)</span>
+                    <span className="text-xs text-foreground font-mono font-bold tracking-tight">
                       {currentTimeFormatted}
                     </span>
                   </div>
@@ -254,13 +252,13 @@ const ForexSessionNavbar = React.memo(function ForexSessionNavbar() {
                     {SESSIONS.map((session) => (
                       <div
                         key={session.id}
-                        className={`flex justify-between items-center px-2 py-1 rounded ${activeSessions.includes(session.id) ? "bg-white/[0.05]" : "opacity-40"}`}
+                        className={`flex justify-between items-center px-2 py-1 rounded ${activeSessions.includes(session.id) ? "bg-foreground/[0.05]" : "opacity-40"}`}
                       >
                         <div className="flex items-center gap-2">
                            <div className={`w-1.5 h-1.5 rounded-full ${session.color}`} />
-                           <span className="text-[10px] text-white/80 uppercase">{session.name}</span>
+                           <span className="text-[10px] text-foreground/80 uppercase">{session.name}</span>
                         </div>
-                        <span className="text-[10px] text-white/60 font-mono">
+                        <span className="text-[10px] text-muted-foreground/60 font-mono">
                           {sessionTimes[session.id] || "--:--"}
                         </span>
                       </div>

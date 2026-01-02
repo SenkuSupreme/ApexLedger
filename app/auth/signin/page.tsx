@@ -32,57 +32,55 @@ export default function SignIn() {
   };
 
   return (
-    <div className="flex min-h-screen bg-black text-white selection:bg-white selection:text-black font-sans relative overflow-hidden">
-        {/* Background Grid */}
-        <div className="absolute inset-0 pointer-events-none opacity-20" 
-             style={{ backgroundImage: 'radial-gradient(#333 1px, transparent 1px)', backgroundSize: '40px 40px' }} 
-        />
-        
+    <div className="flex min-h-screen text-white selection:bg-white selection:text-black font-sans relative overflow-hidden">
         <div className="w-full max-w-md mx-auto flex flex-col justify-center px-6 relative z-10">
-            <Link href="/" className="absolute top-8 left-6 text-gray-500 hover:text-white transition-colors flex items-center gap-2">
-                <ArrowLeft size={16} />
-                <span className="text-sm">Back</span>
+            <Link href="/" className="absolute top-8 left-6 text-white/40 hover:text-white transition-all flex items-center gap-2 group">
+                <div className="p-2 rounded-full bg-white/5 group-hover:bg-white/10 transition-all">
+                  <ArrowLeft size={16} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Back</span>
             </Link>
 
-            <div className="mb-10 text-center">
-                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mx-auto mb-6">
-                  <TrendingUp size={24} className="text-black" />
+            <div className="mb-12 text-center">
+                <div className="w-16 h-16 bg-white rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 shadow-[0_20px_40px_rgba(255,255,255,0.1)]">
+                  <TrendingUp size={28} className="text-black" strokeWidth={3} />
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back</h1>
-                <p className="text-gray-400">Enter your credentials to access your journal.</p>
+                <h1 className="text-4xl font-black italic uppercase tracking-[0.02em] mb-4">Welcome Back</h1>
+                <p className="text-white/80 text-[11px] font-black uppercase tracking-[0.3em] italic">Treat trading as a business.</p>
             </div>
 
-            <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
+            <div className="bg-[#0A0A0A]/60 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] p-10 shadow-3xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] pointer-events-none" />
+                
                 {error && (
-                    <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded text-red-400 text-sm text-center">
+                    <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-[10px] font-black uppercase tracking-widest text-center animate-shake">
                         {error}
                     </div>
                 )}
                 
-                <form onSubmit={handleSubmit} className="space-y-5">
-                    <div>
-                        <label className="block text-xs font-mono uppercase text-gray-500 mb-2">Email</label>
+                <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
+                    <div className="space-y-3">
+                        <label className="block text-[9px] font-black uppercase tracking-[0.4em] text-white/40 italic ml-1">Email Address</label>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-[#111] border border-white/10 rounded-lg px-4 py-3 text-white focus:border-white/30 focus:outline-none transition-colors"
-                            placeholder="trader@example.com"
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-white/10 focus:border-white/30 focus:bg-white/[0.05] focus:outline-none transition-all duration-300 italic font-medium"
+                            placeholder="trader@apexledger.com"
                             required
                         />
                     </div>
 
-                    <div>
-                        <div className="flex justify-between mb-2">
-                            <label className="block text-xs font-mono uppercase text-gray-500">Password</label>
-                            <Link href="/auth/forgot-password" className="text-xs text-gray-500 hover:text-white">Forgot?</Link>
+                    <div className="space-y-3">
+                        <div className="flex justify-between ml-1">
+                            <label className="block text-[9px] font-black uppercase tracking-[0.4em] text-white/40 italic">Password Key</label>
+                            <Link href="/auth/forgot-password" className="text-[9px] font-black uppercase tracking-[0.4em] text-blue-500/60 hover:text-blue-400 transition-colors italic">Lost?</Link>
                         </div>
                         <input
-
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-[#111] border border-white/10 rounded-lg px-4 py-3 text-white focus:border-white/30 focus:outline-none transition-colors"
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-white/30 focus:bg-white/[0.05] focus:outline-none transition-all duration-300"
                             required
                         />
                     </div>
@@ -90,17 +88,18 @@ export default function SignIn() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                        className="w-full h-16 bg-white text-black font-black uppercase tracking-[0.4em] text-[11px] rounded-[1.5rem] hover:bg-blue-500 hover:text-white transition-all duration-500 disabled:opacity-50 shadow-2xl active:scale-95 group relative overflow-hidden"
                     >
-                        {isLoading ? 'Authenticating...' : 'Sign In'}
+                        <div className="absolute inset-0 bg-black/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                        <span className="relative z-10">{isLoading ? 'Authenticating...' : 'Sign In'}</span>
                     </button>
                 </form>
             </div>
 
-            <p className="mt-8 text-center text-sm text-gray-500">
-                Don't have an account?{' '}
-                <Link href="/auth/signup" className="text-white hover:underline underline-offset-4">
-                    Sign up
+            <p className="mt-12 text-center text-[11px] font-black uppercase tracking-[0.3em] text-white/30 italic">
+                No account?{' '}
+                <Link href="/auth/signup" className="text-white hover:text-blue-400 transition-colors underline underline-offset-8 decoration-white/10">
+                    Register Artifact
                 </Link>
             </p>
         </div>

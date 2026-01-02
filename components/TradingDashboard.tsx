@@ -107,11 +107,11 @@ export default function TradingDashboard() {
         const metrics = calculateTradeMetrics({
           entryPrice: trade.entryPrice,
           exitPrice: trade.exitPrice,
-          stopLoss: 0, // Not needed for P&L calculation
-          takeProfit: 0, // Not needed for P&L calculation
+          stopLoss: trade.stopLoss || 0,
+          takeProfit: trade.takeProfit || 0,
           quantity: trade.quantity,
           direction: trade.direction || "long",
-          portfolioBalance: 10000, // Default, not needed for P&L calculation
+          portfolioBalance: trade.portfolioBalance || 10000,
           fees: trade.fees || 0,
           assetType: trade.assetType || "forex",
           symbol: trade.symbol || "",

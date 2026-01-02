@@ -138,7 +138,7 @@ export default function ActivityLogPage() {
 
       setActivities(allActivities);
     } catch (error) {
-      toast.error("Process sync error");
+      toast.error("Failed to sync activity");
     } finally {
       setLoading(false);
     }
@@ -243,8 +243,8 @@ export default function ActivityLogPage() {
 
   if (loading) {
     return (
-      <div className="flex h-[80vh] w-full items-center justify-center text-white/20 font-black text-xs uppercase tracking-[0.5em] animate-pulse">
-        Synchronizing Activity Ledger...
+      <div className="flex h-[80vh] w-full items-center justify-center text-white/40 font-black text-xs uppercase tracking-[0.5em] animate-pulse">
+        Loading Activity...
       </div>
     );
   }
@@ -265,24 +265,24 @@ export default function ActivityLogPage() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400">Activity Node 05 Live</span>
+               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400">Activity Log Active</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/20">
+            <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/60">
                <Database size={10} className="text-blue-500/50" />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em]">Temporal Sync: Active</span>
+               <span className="text-[9px] font-black uppercase tracking-[0.3em]">Sync Active</span>
             </div>
           </div>
-          <h1 className="text-6xl font-black tracking-tighter italic uppercase bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent leading-none">
-            Activity Ledger
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-[0.02em] italic uppercase bg-gradient-to-br from-white to-white/70 bg-clip-text text-transparent leading-none">
+            Activity Log
           </h1>
-          <p className="text-white/30 text-sm font-medium italic max-w-xl leading-relaxed">
-            "Every execution signal recorded in the terminal mesh. A forensic history of institutional performance and operational drift."
+          <p className="text-white/80 text-sm font-medium italic max-w-xl leading-relaxed">
+            "Track your history of habit completions, task accomplishments, and goal milestones. Every action is a step towards mastery."
           </p>
         </div>
 
         <div className="flex items-center gap-6 relative z-10">
           <div className="text-right flex flex-col items-end">
-            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic mb-1">Total Signals</span>
+            <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.4em] italic mb-1">Total Actions</span>
             <div className="flex items-center gap-3 px-5 py-2.5 bg-white/[0.03] border border-white/5 rounded-2xl">
               <Activity size={12} className="text-blue-500/50" />
               <span className="text-xl font-black text-white italic tracking-tighter tabular-nums">{totalItems}</span>
@@ -300,10 +300,10 @@ export default function ActivityLogPage() {
           />
           <input
             type="text"
-            placeholder="Scan signals..."
+            placeholder="Search actions..."
             value={filter.search}
             onChange={(e) => setFilter({ ...filter, search: e.target.value })}
-            className="w-full pl-16 pr-8 py-6 bg-black/40 border border-white/5 rounded-[2rem] text-white placeholder:text-white/10 text-[11px] font-black uppercase tracking-[0.3em] focus:border-blue-500/30 focus:outline-none focus:bg-white/[0.04] transition-all backdrop-blur-md shadow-inner"
+            className="w-full pl-16 pr-8 py-6 bg-black/40 border border-white/5 rounded-[2rem] text-white placeholder:text-white/30 text-[11px] font-black uppercase tracking-[0.3em] focus:border-blue-500/30 focus:outline-none focus:bg-white/[0.04] transition-all backdrop-blur-md shadow-inner"
           />
         </div>
 
@@ -312,10 +312,10 @@ export default function ActivityLogPage() {
           onChange={(e) => setFilter({ ...filter, type: e.target.value })}
           className="px-8 py-6 bg-black/40 border border-white/5 rounded-[2rem] text-white text-[10px] font-black uppercase tracking-[0.2em] focus:border-blue-500/30 focus:outline-none transition-all cursor-pointer hover:bg-white/[0.04] backdrop-blur-md"
         >
-          <option value="all">All Signal Types</option>
-          <option value="task">Task Protocols</option>
-          <option value="habit">Habit Syncs</option>
-          <option value="goal">Goal Progress</option>
+          <option value="all">All Types</option>
+          <option value="task">Tasks</option>
+          <option value="habit">Habits</option>
+          <option value="goal">Goals</option>
         </select>
 
         <select
@@ -324,12 +324,12 @@ export default function ActivityLogPage() {
           className="px-8 py-6 bg-black/40 border border-white/5 rounded-[2rem] text-white text-[10px] font-black uppercase tracking-[0.2em] focus:border-blue-500/30 focus:outline-none transition-all cursor-pointer hover:bg-white/[0.04] backdrop-blur-md"
         >
           <option value="all">All Domains</option>
-          <option value="trading">Trading Sector</option>
-          <option value="health">Vitality Lab</option>
-          <option value="learning">Knowledge Sync</option>
-          <option value="productivity">Output Matrix</option>
-          <option value="financial">Capital Sector</option>
-          <option value="personal">Neural Domain</option>
+          <option value="trading">Trading</option>
+          <option value="health">Health</option>
+          <option value="learning">Learning</option>
+          <option value="productivity">Productivity</option>
+          <option value="financial">Financial</option>
+          <option value="personal">Personal</option>
         </select>
 
         <select
@@ -337,10 +337,10 @@ export default function ActivityLogPage() {
           onChange={(e) => setFilter({ ...filter, dateRange: e.target.value })}
           className="px-8 py-6 bg-black/40 border border-white/5 rounded-[2rem] text-white text-[10px] font-black uppercase tracking-[0.2em] focus:border-blue-500/30 focus:outline-none transition-all cursor-pointer hover:bg-white/[0.04] backdrop-blur-md"
         >
-          <option value="all">Full Temporal Span</option>
-          <option value="today">Current Cycle</option>
-          <option value="week">Past 7 Cycles</option>
-          <option value="month">Past 30 Cycles</option>
+          <option value="all">All Time</option>
+          <option value="today">Today</option>
+          <option value="week">Past 7 Days</option>
+          <option value="month">Past 30 Days</option>
         </select>
       </div>
 
@@ -362,19 +362,19 @@ export default function ActivityLogPage() {
                     onClick={() => handleSort("completedAt")}
                     className="flex items-center gap-3 text-[10px] font-black text-white/40 uppercase tracking-[0.4em] hover:text-white transition-colors italic"
                   >
-                    Temporal Marker
+                    Date
                     <ArrowUpDown size={14} className="opacity-40" />
                   </button>
                 </th>
                 <th className="text-left py-8 px-6 text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic">
-                  Protocol Type
+                  Type
                 </th>
                 <th className="text-left py-8 px-6">
                   <button
                     onClick={() => handleSort("title")}
                     className="flex items-center gap-3 text-[10px] font-black text-white/40 uppercase tracking-[0.4em] hover:text-white transition-colors italic"
                   >
-                    Signal Header
+                    Action
                     <ArrowUpDown size={14} className="opacity-40" />
                   </button>
                 </th>
@@ -388,7 +388,7 @@ export default function ActivityLogPage() {
                   Metrics
                 </th>
                 <th className="text-left py-8 px-10 text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic text-right">
-                  Sync
+                  View
                 </th>
               </tr>
             </thead>
@@ -407,7 +407,7 @@ export default function ActivityLogPage() {
                         <div className="text-[12px] font-black text-white uppercase italic tracking-tighter tabular-nums">
                           {activity.completedAt.toLocaleDateString()}
                         </div>
-                        <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mt-0.5 italic tabular-nums">
+                        <div className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mt-0.5 italic tabular-nums">
                           {activity.completedAt.toLocaleTimeString()}
                         </div>
                       </div>
@@ -420,7 +420,7 @@ export default function ActivityLogPage() {
                           activity.type
                         )}`}
                       >
-                         {activity.type} Node
+                         {activity.type}
                       </span>
                     </div>
                   </td>
@@ -429,7 +429,7 @@ export default function ActivityLogPage() {
                       {activity.title}
                     </div>
                     {activity.description && (
-                      <div className="text-[11px] font-medium text-white/20 italic truncate max-w-[250px] mt-1.5 group-hover/row:text-white/40 transition-all font-sans">
+                      <div className="text-[11px] font-medium text-white/50 italic truncate max-w-[250px] mt-1.5 group-hover/row:text-white transition-all font-sans">
                         "{activity.description}"
                       </div>
                     )}
@@ -437,8 +437,8 @@ export default function ActivityLogPage() {
                   <td className="py-8 px-6">
                     {activity.category && (
                       <div className="flex items-center gap-3">
-                         <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                         <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] italic">
+                         <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                         <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.3em] italic">
                            {activity.category}
                          </span>
                       </div>
@@ -465,7 +465,7 @@ export default function ActivityLogPage() {
                     {activity.type === "goal" && activity.progress !== undefined && (
                         <div className="flex items-center gap-3 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-xl">
                           <Target size={14} className="text-green-500" />
-                          <span className="text-[11px] font-black text-green-400 italic tabular-nums">{activity.progress}% Matrix</span>
+                          <span className="text-[11px] font-black text-green-400 italic tabular-nums">{activity.progress}%</span>
                         </div>
                       )}
                   </td>
@@ -487,13 +487,13 @@ export default function ActivityLogPage() {
           <div className="flex flex-col items-center justify-center py-40 text-center relative group/void">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/5 blur-[120px] rounded-full" />
             <div className="w-24 h-24 rounded-[2rem] bg-white/[0.03] border border-white/5 flex items-center justify-center mb-10 group-hover/void:scale-110 transition-transform duration-700 relative z-10">
-               <Cpu size={48} className="text-white/10" />
+               <Cpu size={48} className="text-white/40" />
             </div>
             <h3 className="text-2xl font-black text-white mb-4 uppercase tracking-tighter italic relative z-10">
-              Sector Void
+              No Activity Found
             </h3>
-            <p className="text-[11px] font-black text-white/20 uppercase tracking-[0.4em] italic max-w-sm leading-relaxed relative z-10">
-              "Temporal mesh is empty. No execution signals detected within current sector parameters."
+            <p className="text-[11px] font-black text-white/40 uppercase tracking-[0.4em] italic max-w-sm leading-relaxed relative z-10">
+              "No actions detected. Start completing tasks and habits to see your history here."
             </p>
           </div>
         )}
@@ -501,9 +501,9 @@ export default function ActivityLogPage() {
         {/* Institutional Pagination Matrix */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between p-10 border-t border-white/5 bg-white/[0.01] backdrop-blur-md">
-            <div className="flex items-center gap-4 text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">
+            <div className="flex items-center gap-4 text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic">
                <Shield size={14} className="opacity-20" />
-               <span>Records {(currentPage - 1) * itemsPerPage + 1} — {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}</span>
+               <span>Showing {(currentPage - 1) * itemsPerPage + 1} — {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}</span>
             </div>
             <div className="flex items-center gap-4">
               <button
@@ -514,7 +514,7 @@ export default function ActivityLogPage() {
                 <ChevronLeft size={20} />
               </button>
               <div className="px-10 py-4 bg-white/[0.05] border border-white/5 rounded-[1.5rem] shadow-inner group/page">
-                 <span className="text-[11px] font-black text-white uppercase italic tracking-widest group-hover/page:text-blue-400 transition-colors">Fragment {currentPage} / {totalPages}</span>
+                 <span className="text-[11px] font-black text-white uppercase italic tracking-widest group-hover/page:text-blue-400 transition-colors">Page {currentPage} / {totalPages}</span>
               </div>
               <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}

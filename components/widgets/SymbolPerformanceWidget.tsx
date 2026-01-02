@@ -55,11 +55,11 @@ export default function SymbolPerformanceWidget({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-white">Symbol Performance</h3>
-          <p className="text-xs text-white/60 font-mono uppercase tracking-widest">
+          <p className="text-xs text-foreground/80 dark:text-muted-foreground font-mono uppercase tracking-widest">
             Top Pairs
           </p>
         </div>
-        <TrendingUp size={20} className="text-white/60" />
+        <TrendingUp size={20} className="text-foreground/80 dark:text-muted-foreground" />
       </div>
 
       <div className="space-y-3 max-h-[300px] overflow-y-auto">
@@ -67,7 +67,7 @@ export default function SymbolPerformanceWidget({
           symbolData.map((symbol, index) => (
             <div
               key={index}
-              className="p-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
+              className="p-3 bg-foreground/5 border border-border rounded-lg hover:bg-foreground/10 transition-colors"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -89,13 +89,13 @@ export default function SymbolPerformanceWidget({
                 </div>
               </div>
 
-              <div className="flex justify-between text-xs text-white/60">
+              <div className="flex justify-between text-xs text-foreground/80 dark:text-muted-foreground">
                 <span>{symbol.trades} trades</span>
                 <span>{symbol.winRate.toFixed(1)}% win rate</span>
               </div>
 
               {/* Win rate bar */}
-              <div className="mt-2 w-full bg-white/10 rounded-full h-1">
+              <div className="mt-2 w-full bg-foreground/10 rounded-full h-1">
                 <div
                   className={`h-1 rounded-full ${
                     symbol.winRate >= 50 ? "bg-green-400" : "bg-red-400"
@@ -106,7 +106,7 @@ export default function SymbolPerformanceWidget({
             </div>
           ))
         ) : (
-          <div className="text-center text-white/40 text-sm py-8">
+          <div className="text-center text-foreground/60 dark:text-muted-foreground text-sm py-8">
             No symbol data available
           </div>
         )}

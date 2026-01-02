@@ -74,11 +74,11 @@ export default function MarketSessionWidget({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-white">Market Sessions</h3>
-          <p className="text-xs text-white/60 font-mono uppercase tracking-widest">
+          <p className="text-xs text-foreground/80 dark:text-muted-foreground font-mono uppercase tracking-widest">
             Live Trading Hours
           </p>
         </div>
-        <Globe size={20} className="text-white/60" />
+        <Globe size={20} className="text-foreground/80 dark:text-muted-foreground" />
       </div>
 
       <div className="space-y-3">
@@ -91,8 +91,8 @@ export default function MarketSessionWidget({
               key={index}
               className={`p-3 rounded-lg border transition-all ${
                 isActive
-                  ? "bg-white/10 border-white/20"
-                  : "bg-white/5 border-white/10"
+                  ? "bg-foreground/10 border-border"
+                  : "bg-foreground/5 border-border"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -106,7 +106,7 @@ export default function MarketSessionWidget({
                     <div className="text-sm font-medium text-white">
                       {session.name}
                     </div>
-                    <div className="text-xs text-white/60">
+                    <div className="text-xs text-foreground/80 dark:text-muted-foreground">
                       {isActive ? "ACTIVE" : "CLOSED"}
                     </div>
                   </div>
@@ -115,7 +115,7 @@ export default function MarketSessionWidget({
                   <div className="text-sm font-mono text-white">
                     {sessionTime}
                   </div>
-                  <div className="text-xs text-white/60">
+                  <div className="text-xs text-foreground/80 dark:text-muted-foreground">
                     {session.open}:00-{session.close}:00 UTC
                   </div>
                 </div>

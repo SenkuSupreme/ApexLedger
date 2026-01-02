@@ -108,21 +108,21 @@ export default function KanbanBoard({
       {columns.map((column) => (
         <div key={column.id} className="flex-1 min-w-[350px] flex flex-col group">
           <div
-            className={`p-6 rounded-t-[2rem] border-t border-l border-r border-white/5 bg-white/[0.03] flex items-center justify-between group-hover:bg-white/[0.05] transition-all duration-500`}
+            className={`p-6 rounded-t-[2rem] border-t border-l border-r border-border bg-card/40 flex items-center justify-between group-hover:bg-card/60 transition-all duration-500`}
           >
             <div className="flex items-center gap-3">
-              <div className={`w-1.5 h-1.5 rounded-full ${column.id === 'done' ? 'bg-green-500' : column.id === 'in-progress' ? 'bg-blue-500' : 'bg-white/20'} animate-pulse`} />
-              <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] italic">
+              <div className={`w-1.5 h-1.5 rounded-full ${column.id === 'done' ? 'bg-green-500' : column.id === 'in-progress' ? 'bg-blue-500' : 'bg-muted-foreground/20'} animate-pulse`} />
+              <h3 className="text-sm font-black text-foreground uppercase tracking-[0.2em] italic">
                 {column.title}
               </h3>
             </div>
-            <span className="px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black text-white/40 uppercase tracking-widest">
+            <span className="px-4 py-1.5 rounded-xl bg-foreground/5 border border-border text-[10px] font-black text-muted-foreground uppercase tracking-widest">
               {getTasksByStatus(column.id).length} Nodes
             </span>
           </div>
 
           <div
-            className={`flex-1 bg-white/[0.01] border-l border-r border-b border-white/5 p-5 min-h-[500px] rounded-b-[2rem] transition-all duration-500 ${
+            className={`flex-1 bg-background/40 border-l border-r border-b border-border p-5 min-h-[500px] rounded-b-[2rem] transition-all duration-500 ${
               dragOverColumn === column.id
                 ? "bg-blue-500/[0.03] border-blue-500/30 ring-1 ring-blue-500/10"
                 : ""
@@ -139,7 +139,7 @@ export default function KanbanBoard({
                   draggable
                   onDragStart={(e) => handleDragStart(e, task._id!)}
                   onDragEnd={handleDragEnd}
-                  className={`group relative bg-white/[0.02] border border-white/5 p-6 rounded-[1.8rem] transition-all duration-500 cursor-grab active:cursor-grabbing hover:bg-white/[0.04] hover:border-white/20 shadow-xl ${
+                  className={`group relative bg-card/40 border border-border p-6 rounded-[1.8rem] transition-all duration-500 cursor-grab active:cursor-grabbing hover:bg-card/60 hover:border-primary/20 shadow-xl ${
                     draggedTask === task._id
                       ? "opacity-20 scale-95 grayscale"
                       : "hover:scale-[1.02]"
@@ -153,7 +153,7 @@ export default function KanbanBoard({
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-2">
                          <div className={`w-2 h-2 rounded-full ${priorityColors[task.priority]}`} />
-                         <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em]">{task.priority} Priority</span>
+                         <span className="text-[8px] font-black text-muted-foreground/20 uppercase tracking-[0.3em]">{task.priority} Priority</span>
                       </div>
                       
                       {/* Persistent Action Node */}
@@ -170,20 +170,20 @@ export default function KanbanBoard({
                       </div>
                     </div>
 
-                    <h4 className="text-sm font-black text-white tracking-tighter uppercase italic leading-snug mb-3">
+                    <h4 className="text-sm font-black text-foreground tracking-tighter uppercase italic leading-snug mb-3">
                       {task.title}
                     </h4>
 
                     {task.description && (
-                      <p className="text-[11px] text-white/30 font-medium italic line-clamp-2 leading-relaxed mb-5">
+                      <p className="text-[11px] text-muted-foreground/30 font-medium italic line-clamp-2 leading-relaxed mb-5">
                         "{task.description}"
                       </p>
                     )}
 
-                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/5">
+                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-border">
                       <div className="flex items-center gap-3">
                         {task.dueDate && (
-                          <div className="flex items-center gap-1.5 text-[9px] font-black text-white/10 uppercase tracking-widest">
+                          <div className="flex items-center gap-1.5 text-[9px] font-black text-muted-foreground/10 uppercase tracking-widest">
                             <Calendar size={10} className="text-blue-500/40" />
                             <span>{formatDate(task.dueDate)}</span>
                           </div>
@@ -195,7 +195,7 @@ export default function KanbanBoard({
                           {task.tags.slice(0, 1).map((tag, i) => (
                             <span
                               key={i}
-                              className="text-[8px] font-black text-white/10 uppercase tracking-tighter bg-white/5 px-2 py-0.5 rounded-md border border-white/5"
+                              className="text-[8px] font-black text-muted-foreground/10 uppercase tracking-tighter bg-foreground/5 px-2 py-0.5 rounded-md border border-border"
                             >
                               #{tag}
                             </span>
@@ -211,9 +211,9 @@ export default function KanbanBoard({
             {column.id === "todo" && (
               <button
                 onClick={onCreateTask}
-                className="w-full mt-6 py-8 border-2 border-dashed border-white/5 rounded-[1.8rem] text-white/10 hover:border-white/10 hover:bg-white/[0.02] hover:text-white/30 flex flex-col items-center justify-center gap-3 transition-all duration-500 group"
+                className="w-full mt-6 py-8 border-2 border-dashed border-border rounded-[1.8rem] text-muted-foreground/10 hover:border-foreground/10 hover:bg-foreground/[0.02] hover:text-muted-foreground/30 flex flex-col items-center justify-center gap-3 transition-all duration-500 group"
               >
-                <div className="p-3 bg-white/5 rounded-2xl group-hover:scale-110 transition-transform">
+                <div className="p-3 bg-foreground/5 rounded-2xl group-hover:scale-110 transition-transform">
                    <Plus size={20} />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-[0.4em]">Initialize Node</span>

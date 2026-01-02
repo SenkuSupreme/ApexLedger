@@ -19,7 +19,7 @@ export default function QuickNotesWidget({
   // Fetch recent notes
   const fetchNotes = async () => {
     try {
-      const res = await fetch("/api/notes?limit=3");
+      const res = await fetch("/api/notes?limit=5");
       const data = await res.json();
       setNotes(data.notes || []);
     } catch (err) {
@@ -110,7 +110,7 @@ export default function QuickNotesWidget({
                  value={noteContent}
                  onChange={(e) => setNoteContent(e.target.value)}
                  placeholder="Write a note..."
-                 className="w-full h-24 px-4 py-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white placeholder-white/20 text-xs font-bold uppercase tracking-wider resize-none focus:outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all"
+                 className="w-full h-24 px-4 py-4 bg-foreground/[0.03] border border-border rounded-2xl text-white placeholder-white/20 text-xs font-bold uppercase tracking-wider resize-none focus:outline-none focus:border-white/30 focus:bg-foreground/[0.05] transition-all"
                  autoFocus
                />
                <div className="flex justify-end gap-4">
@@ -120,13 +120,13 @@ export default function QuickNotesWidget({
                      setShowForm(false);
                      setNoteContent("");
                    }}
-                   className="px-4 py-2 text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-wider italic transition-all"
+                   className="px-4 py-2 text-[10px] font-bold text-foreground/60 dark:text-muted-foreground hover:text-foreground dark:text-foreground uppercase tracking-wider italic transition-all"
                  >
                    Cancel
                  </button>
                  <button
                    type="submit"
-                   className="px-6 py-2 bg-white text-black rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-blue-500 hover:text-white transition-all shadow-2xl"
+                   className="px-6 py-2 bg-white text-black rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-blue-500 hover:text-foreground transition-all shadow-2xl"
                  >
                    Save Note
                  </button>
@@ -137,7 +137,7 @@ export default function QuickNotesWidget({
            {!showForm && (
              <button
                onClick={() => setShowForm(true)}
-               className="w-full py-4 border border-dashed border-white/10 rounded-2xl flex items-center justify-center gap-3 text-white/40 hover:text-white hover:bg-white/[0.02] hover:border-white/20 transition-all duration-700 group/add"
+               className="w-full py-4 border border-dashed border-border rounded-2xl flex items-center justify-center gap-3 text-foreground/60 dark:text-muted-foreground hover:text-foreground hover:bg-foreground/[0.02] hover:border-border transition-all duration-700 group/add"
              >
                <Plus size={14} className="group-hover/add:rotate-90 transition-transform duration-500" />
                <span className="text-[10px] font-bold uppercase tracking-wider italic">Create Note</span>
@@ -151,15 +151,15 @@ export default function QuickNotesWidget({
             notes.map((note) => (
               <div
                 key={note._id}
-                className="group/note relative p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] hover:bg-white/[0.04] hover:border-white/10 transition-all duration-500 overflow-hidden"
+                className="group/note relative p-4 bg-foreground/[0.02] border border-border rounded-[1.5rem] hover:bg-white/[0.04] hover:border-border transition-all duration-500 overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/[0.01] blur-2xl pointer-events-none" />
                 
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                       <div className={`w-1 h-1 rounded-full ${note.isPinned ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" : "bg-white/10"}`} />
-                       <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider italic">
+                       <div className={`w-1 h-1 rounded-full ${note.isPinned ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" : "bg-foreground/10"}`} />
+                       <span className="text-[10px] font-bold text-foreground/60 dark:text-muted-foreground uppercase tracking-wider italic">
                          {new Date(note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                        </span>
                     </div>
@@ -170,7 +170,7 @@ export default function QuickNotesWidget({
                           e.stopPropagation();
                           handleTogglePin(note);
                         }}
-                        className={`p-1.5 rounded-lg border transition-all ${note.isPinned ? "bg-rose-500/10 border-rose-500/20 text-rose-500" : "bg-white/5 border-white/10 text-white/20 hover:text-white hover:border-white/20"}`}
+                        className={`p-1.5 rounded-lg border transition-all ${note.isPinned ? "bg-rose-500/10 border-rose-500/20 text-rose-500" : "bg-foreground/5 border-border text-foreground/40 dark:text-muted-foreground/40 hover:text-foreground hover:border-border"}`}
                       >
                         <Pin size={10} />
                       </button>
@@ -179,20 +179,20 @@ export default function QuickNotesWidget({
                           e.stopPropagation();
                           setDeleteConfirmNote(note);
                         }}
-                        className="p-1.5 bg-white/5 border border-white/10 rounded-lg text-white/20 hover:text-rose-500 hover:border-rose-500/20 hover:bg-rose-500/10 transition-all"
+                        className="p-1.5 bg-foreground/5 border border-border rounded-lg text-foreground/40 dark:text-muted-foreground/40 hover:text-rose-500 hover:border-rose-500/20 hover:bg-rose-500/10 transition-all"
                       >
                         <Trash2 size={10} />
                       </button>
                     </div>
                   </div>
 
-                  <p className="text-xs text-white/70 font-medium leading-relaxed italic mb-4 line-clamp-3 group-hover/note:line-clamp-none transition-all">
+                  <p className="text-xs text-foreground/90 dark:text-foreground font-medium leading-relaxed italic mb-2 line-clamp-3 group-hover/note:line-clamp-none transition-all">
                     "{note.content}"
                   </p>
 
-                  <div className="flex items-center gap-4 pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full">
-                       <span className="text-[9px] font-bold text-white/30 uppercase tracking-wider italic">Trading</span>
+                  <div className="flex items-center gap-4 pt-2 border-t border-border">
+                    <div className="flex items-center gap-2 px-3 py-1 bg-foreground/[0.03] border border-border rounded-full">
+                       <span className="text-[9px] font-bold text-foreground/50 dark:text-muted-foreground/50 uppercase tracking-wider italic">Trading</span>
                     </div>
                     {note.tags?.length > 0 && (
                       <span className="text-[9px] font-bold text-blue-500/40 uppercase tracking-wider italic">#{note.tags[0]}</span>
@@ -202,30 +202,30 @@ export default function QuickNotesWidget({
               </div>
             ))
           ) : (
-            <div className="flex flex-col items-center justify-center py-16 px-8 border border-dashed border-white/5 rounded-[3rem] bg-white/[0.01]">
-              <div className="p-4 bg-white/[0.03] rounded-2xl mb-6">
+            <div className="flex flex-col items-center justify-center py-16 px-8 border border-dashed border-border rounded-[3rem] bg-white/[0.01]">
+              <div className="p-4 bg-foreground/[0.03] rounded-2xl mb-6">
                  <StickyNote size={24} className="text-white/10" />
               </div>
               <div className="text-center space-y-2">
-                 <p className="text-xs font-bold text-white/30 uppercase tracking-widest italic">No Notes Found</p>
-                 <p className="text-[10px] font-bold text-white/20 uppercase tracking-wider">Create a new note to get started.</p>
+                 <p className="text-xs font-bold text-foreground/50 dark:text-muted-foreground/50 uppercase tracking-widest italic">No Notes Found</p>
+                 <p className="text-[10px] font-bold text-foreground/40 dark:text-muted-foreground/40 uppercase tracking-wider">Create a new note to get started.</p>
               </div>
             </div>
           )}
         </div>
 
         {/* Global Archive Link */}
-        <div className="mt-8 pt-6 border-t border-white/5">
+        <div className="mt-8 pt-6 border-t border-border">
           <Link
             href="/notebook"
             className="flex items-center justify-center gap-4 group/link"
           >
-             <div className="h-px flex-1 bg-white/5 group-hover/link:bg-blue-500/20 transition-all" />
+             <div className="h-px flex-1 bg-foreground/5 group-hover/link:bg-blue-500/20 transition-all" />
              <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest group-hover/link:text-white transition-all italic">View All Notes</span>
-                <Edit3 size={12} className="text-white/20 group-hover/link:text-blue-500 transition-all" />
+                <span className="text-[10px] font-bold text-foreground/50 dark:text-muted-foreground/50 uppercase tracking-widest group-hover/link:text-white transition-all italic">View All Notes</span>
+                <Edit3 size={12} className="text-foreground/40 dark:text-muted-foreground/40 group-hover/link:text-blue-500 transition-all" />
              </div>
-             <div className="h-px flex-1 bg-white/5 group-hover/link:bg-blue-500/20 transition-all" />
+             <div className="h-px flex-1 bg-foreground/5 group-hover/link:bg-blue-500/20 transition-all" />
           </Link>
         </div>
       </div>
@@ -233,7 +233,7 @@ export default function QuickNotesWidget({
       {/* Delete Confirmation Dialog */}
       {deleteConfirmNote && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 text-left">
-          <div className="bg-[#0A0A0A] border border-white/10 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-[#0A0A0A] border border-border rounded-xl p-6 w-full max-w-md">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-red-500/10 rounded-lg">
                 <Trash2 size={20} className="text-red-400" />
@@ -241,7 +241,7 @@ export default function QuickNotesWidget({
               <h3 className="text-lg font-bold text-white">Delete Note</h3>
             </div>
 
-            <p className="text-white/70 mb-6">
+            <p className="text-foreground/90 dark:text-foreground mb-6">
               Are you sure you want to delete "
               <span className="font-medium">{deleteConfirmNote.title}</span>"?
               This action cannot be undone.
@@ -250,7 +250,7 @@ export default function QuickNotesWidget({
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setDeleteConfirmNote(null)}
-                className="px-4 py-2 text-white/60 hover:text-white transition-colors"
+                className="px-4 py-2 text-foreground/80 dark:text-muted-foreground hover:text-foreground transition-colors"
                >
                 Cancel
               </button>

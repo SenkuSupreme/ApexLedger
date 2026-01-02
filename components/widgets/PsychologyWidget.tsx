@@ -22,15 +22,15 @@ export default function PsychologyWidget({
 }: PsychologyWidgetProps) {
   return (
     <div className={`h-full ${className}`}>
-      <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
+      <div className="flex items-center justify-between mb-8 border-b border-border pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.6)]" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Emotional State Analysis</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/60 dark:text-muted-foreground">Emotional State Analysis</span>
           </div>
-          <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase">Psychology</h3>
+          <h3 className="text-2xl font-black text-foreground dark:text-foreground italic tracking-tighter uppercase">Psychology</h3>
         </div>
-        <div className="p-3 bg-white/5 rounded-2xl border border-white/10 text-purple-500/80">
+        <div className="p-3 bg-foreground/5 rounded-2xl border border-border text-purple-500/80">
           <Brain size={20} />
         </div>
       </div>
@@ -87,7 +87,7 @@ export default function PsychologyWidget({
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="h-48 flex items-center justify-center text-white/40 text-sm font-black uppercase tracking-wider italic">
+        <div className="h-48 flex items-center justify-center text-foreground/60 dark:text-muted-foreground text-sm font-black uppercase tracking-wider italic">
           No emotion data available
         </div>
       )}

@@ -55,15 +55,15 @@ export default function RiskMetricsWidget({
 
   return (
     <div className={`h-full ${className}`}>
-      <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
+      <div className="flex items-center justify-between mb-8 border-b border-border pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Risk Management</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/60 dark:text-muted-foreground">Risk Management</span>
           </div>
-          <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase">Risk Metrics</h3>
+          <h3 className="text-2xl font-black text-foreground dark:text-foreground italic tracking-tighter uppercase">Risk Metrics</h3>
         </div>
-        <div className="p-3 bg-white/5 rounded-2xl border border-white/10 text-red-500/80">
+        <div className="p-3 bg-foreground/5 rounded-2xl border border-border text-red-500/80">
           <Shield size={20} />
         </div>
       </div>
@@ -72,15 +72,15 @@ export default function RiskMetricsWidget({
         {riskMetrics.map((metric, index) => (
           <div
             key={index}
-            className={`p-4 rounded-2xl border border-white/10 ${metric.bgColor} hover:border-white/20 transition-all`}
+            className={`p-4 rounded-2xl border border-border ${metric.bgColor} hover:border-border transition-all`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg bg-white/10 ${metric.color}`}>
+                <div className={`p-2 rounded-lg bg-foreground/10 ${metric.color}`}>
                   {metric.icon}
                 </div>
                 <div>
-                  <div className="text-[10px] text-white/40 uppercase tracking-[0.3em] font-black">{metric.label}</div>
+                  <div className="text-[10px] text-foreground/60 dark:text-muted-foreground uppercase tracking-[0.3em] font-black">{metric.label}</div>
                   <div className={`text-2xl font-black italic tabular-nums ${metric.color}`}>
                     {metric.value}
                   </div>

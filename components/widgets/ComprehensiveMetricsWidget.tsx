@@ -118,7 +118,7 @@ export default function ComprehensiveMetricsWidget({
     <div className={`h-full ${className}`}>
       <div className="mb-6">
         <h3 className="text-lg font-bold text-white">Performance Metrics</h3>
-        <p className="text-xs text-white/60 font-mono uppercase tracking-widest">
+        <p className="text-xs text-foreground/80 dark:text-muted-foreground font-mono uppercase tracking-widest">
           Calculated from Trade Journal
         </p>
       </div>
@@ -127,10 +127,10 @@ export default function ComprehensiveMetricsWidget({
         {metrics.map((metric, index) => (
           <div
             key={index}
-            className={`p-4 rounded-xl border border-white/10 ${metric.bgColor} hover:border-white/20 transition-all`}
+            className={`p-4 rounded-xl border border-border ${metric.bgColor} hover:border-border transition-all`}
           >
             <div className="flex items-center justify-between mb-3">
-              <div className={`p-2 rounded-lg bg-white/10 ${metric.color}`}>
+              <div className={`p-2 rounded-lg bg-foreground/10 ${metric.color}`}>
                 <metric.icon size={16} />
               </div>
             </div>
@@ -139,7 +139,7 @@ export default function ComprehensiveMetricsWidget({
               {metric.value}
             </div>
 
-            <div className="text-xs text-white/60 font-medium">
+            <div className="text-xs text-foreground/80 dark:text-muted-foreground font-medium">
               {metric.label}
             </div>
           </div>
@@ -147,25 +147,25 @@ export default function ComprehensiveMetricsWidget({
       </div>
 
       {/* Summary Stats */}
-      <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
+      <div className="mt-6 p-4 bg-foreground/5 rounded-xl border border-border">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-lg font-bold text-green-400">
               {stats?.wins || 0}
             </div>
-            <div className="text-xs text-white/60">Wins</div>
+            <div className="text-xs text-foreground/80 dark:text-muted-foreground">Wins</div>
           </div>
           <div>
             <div className="text-lg font-bold text-red-400">
               {stats?.losses || 0}
             </div>
-            <div className="text-xs text-white/60">Losses</div>
+            <div className="text-xs text-foreground/80 dark:text-muted-foreground">Losses</div>
           </div>
           <div>
             <div className="text-lg font-bold text-yellow-400">
               {stats?.breakevens || 0}
             </div>
-            <div className="text-xs text-white/60">Breakevens</div>
+            <div className="text-xs text-foreground/80 dark:text-muted-foreground">Breakevens</div>
           </div>
         </div>
       </div>

@@ -61,7 +61,7 @@ export default function SettingsPage() {
       const data = await res.json();
       
       if (!res.ok) {
-        if (data.message?.includes('Terminal handle is locked')) {
+        if (data.message?.includes('Username is locked')) {
           toast.error(data.message);
           // @ts-ignore
           setUsername(session?.user?.username || "");
@@ -157,33 +157,33 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-12 text-white font-sans relative min-h-screen pb-20 overflow-hidden px-4 md:px-8 bg-[#050505]">
+    <div className="space-y-12 text-foreground font-sans relative min-h-screen pb-20 overflow-hidden px-4 md:px-8 bg-background">
       {/* Institutional Background Mesh */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-blue-500/[0.03] blur-[150px] -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-[1000px] h-[1000px] bg-purple-500/[0.03] blur-[150px] translate-y-1/2 -translate-x-1/2" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+        <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-primary/[0.03] blur-[150px] -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-[1000px] h-[1000px] bg-secondary/[0.03] blur-[150px] translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--foreground)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--foreground)/0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 
       {/* Header Mesh */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/10 pb-10 relative z-10 gap-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-border pb-10 relative z-10 gap-8">
         <div className="space-y-6">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
-               <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-               <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Settings Panel Live</span>
+            <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full">
+               <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+               <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Settings Active</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/40">
-               <Lock size={10} className="text-blue-500/50" />
+            <div className="flex items-center gap-2 px-3 py-1 bg-foreground/[0.03] border border-border rounded-full text-muted-foreground">
+               <Lock size={10} className="text-primary/50" />
                <span className="text-[10px] font-bold uppercase tracking-wider">Secure Connection</span>
             </div>
           </div>
-          <h1 className="text-5xl font-bold tracking-tight text-white leading-none">
-            Account Settings
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-[0.02em] italic uppercase bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent leading-none">
+            Settings
           </h1>
-          <p className="text-white/60 text-sm font-medium max-w-xl leading-relaxed">
-            Manage your personal profile, account security, and application preferences.
+          <p className="text-foreground/70 text-xs md:text-sm font-medium italic max-w-xl leading-relaxed">
+            "Manage your personal profile, account security, and application preferences. Fine-tune your terminal for peak operational efficiency."
           </p>
         </div>
 
@@ -201,27 +201,27 @@ export default function SettingsPage() {
       <div className="flex flex-col lg:flex-row gap-12 relative z-10">
         {/* Navigation / Metadata sidebar */}
         <aside className="lg:w-1/4 space-y-8">
-          <div className="bg-[#0A0A0A]/40 backdrop-blur-md border border-white/10 rounded-[2.5rem] p-8 space-y-8">
+          <div className="bg-card/40 backdrop-blur-md border border-border rounded-[2.5rem] p-8 space-y-8">
             <div className="space-y-4">
-              <label className="text-xs font-bold text-white/50 uppercase tracking-widest block px-2">Account Status</label>
+              <label className="text-xs font-bold text-muted-foreground/50 uppercase tracking-widest block px-2">Account Status</label>
               {[
                 { icon: <ShieldCheck size={14} />, label: "Security", value: "Active", color: "emerald" },
                 { icon: <Database size={14} />, label: "Data Sync", value: "Online", color: "blue" },
                 { icon: <Globe size={14} />, label: "Region", value: "Global", color: "purple" },
               ].map((stat, i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl group hover:bg-white/[0.04] transition-all">
+                <div key={i} className="flex items-center justify-between p-4 bg-foreground/[0.02] border border-border rounded-2xl group hover:bg-foreground/[0.04] transition-all">
                   <div className="flex items-center gap-3">
                     <div className={`text-${stat.color}-400 group-hover:text-${stat.color}-300 transition-colors`}>{stat.icon}</div>
-                    <span className="text-[11px] font-bold text-white/60 uppercase tracking-wider">{stat.label}</span>
+                    <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-wider">{stat.label}</span>
                   </div>
-                  <span className="text-[11px] font-mono font-medium text-white/80">{stat.value}</span>
+                  <span className="text-[11px] font-mono font-medium text-foreground/80">{stat.value}</span>
                 </div>
               ))}
             </div>
 
-            <nav className="space-y-2 pt-8 border-t border-white/10">
-              <label className="text-xs font-bold text-white/50 uppercase tracking-widest block px-2 mb-4">Preferences</label>
-              <button className="w-full flex items-center justify-between p-5 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-wider shadow-lg group transition-all">
+            <nav className="space-y-2 pt-8 border-t border-border">
+              <label className="text-xs font-bold text-muted-foreground/50 uppercase tracking-widest block px-2 mb-4">Preferences</label>
+              <button className="w-full flex items-center justify-between p-5 bg-foreground text-background rounded-2xl font-bold text-xs uppercase tracking-wider shadow-lg group transition-all">
                 <div className="flex items-center gap-4">
                   <UserIcon size={16} />
                   <span>Profile</span>
@@ -230,7 +230,7 @@ export default function SettingsPage() {
               </button>
               <button 
                 disabled
-                className="w-full flex items-center justify-between p-5 bg-white/[0.02] border border-white/5 rounded-2xl text-white/30 font-bold text-xs uppercase tracking-wider group cursor-not-allowed"
+                className="w-full flex items-center justify-between p-5 bg-foreground/[0.02] border border-border rounded-2xl text-muted-foreground/30 font-bold text-xs uppercase tracking-wider group cursor-not-allowed"
               >
                 <div className="flex items-center gap-4">
                   <ShieldCheck size={16} />
@@ -248,22 +248,22 @@ export default function SettingsPage() {
           <motion.section 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-[#0A0A0A]/40 backdrop-blur-xl border border-white/10 rounded-[3.5rem] p-12 shadow-2xl relative overflow-hidden group"
+            className="bg-card/40 backdrop-blur-xl border border-border rounded-[3.5rem] p-12 shadow-2xl relative overflow-hidden group"
           >
             {/* Mesh Decor */}
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/[0.03] blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-500/[0.06] transition-all duration-700" />
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/[0.03] blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/[0.06] transition-all duration-700" />
             
             <div className="relative z-10">
-              <div className="flex items-center justify-between mb-12 border-b border-white/10 pb-8">
+              <div className="flex items-center justify-between mb-12 border-b border-border pb-8">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Profile Settings</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/80">Profile Settings</span>
                   </div>
-                  <h2 className="text-3xl font-bold text-white tracking-tight">Your Information</h2>
+                  <h2 className="text-3xl font-bold text-foreground tracking-tight">Your Information</h2>
                 </div>
-                <div className="p-4 bg-white/[0.03] border border-white/10 rounded-2xl">
-                   <UserIcon size={24} className="text-white/40" />
+                <div className="p-4 bg-foreground/[0.03] border border-border rounded-2xl">
+                   <UserIcon size={24} className="text-muted-foreground/40" />
                 </div>
               </div>
 
@@ -271,13 +271,13 @@ export default function SettingsPage() {
                 {/* Avatar Controller */}
                 <div className="flex flex-col items-center">
                   <div className="relative group/avatar">
-                    <div className="w-48 h-48 rounded-[3.5rem] bg-gradient-to-br from-white/5 to-transparent border border-white/10 p-1 flex items-center justify-center overflow-hidden shadow-2xl relative">
-                      <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover/avatar:opacity-100 transition-opacity" />
-                      <div className="w-full h-full rounded-[3.3rem] bg-[#050505] overflow-hidden flex items-center justify-center relative">
+                    <div className="w-48 h-48 rounded-[3.5rem] bg-gradient-to-br from-foreground/5 to-transparent border border-border p-1 flex items-center justify-center overflow-hidden shadow-2xl relative">
+                      <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover/avatar:opacity-100 transition-opacity" />
+                      <div className="w-full h-full rounded-[3.3rem] bg-background overflow-hidden flex items-center justify-center relative">
                         {image ? (
                           <img src={image} alt="Avatar" className="w-full h-full object-cover transition-transform group-hover/avatar:scale-110 duration-700" />
                         ) : (
-                          <UserIcon size={64} className="text-white/20" />
+                          <UserIcon size={64} className="text-muted-foreground/20" />
                         )}
                         <AnimatePresence>
                           {loading && (
@@ -295,7 +295,7 @@ export default function SettingsPage() {
                     </div>
                     <button 
                       onClick={() => fileInputRef.current?.click()}
-                      className="absolute -bottom-2 -right-2 p-4 bg-white text-black rounded-2xl shadow-xl transition-all hover:bg-blue-500 hover:text-white active:scale-95 z-20 border border-white/10"
+                      className="absolute -bottom-2 -right-2 p-4 bg-foreground text-background rounded-2xl shadow-xl transition-all hover:bg-primary hover:text-primary-foreground active:scale-95 z-20 border border-border"
                     >
                       <Camera size={18} />
                     </button>
@@ -308,8 +308,8 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="mt-6 flex flex-col items-center gap-2">
-                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Profile Photo</span>
-                    <div className="h-0.5 w-8 bg-white/10 rounded-full" />
+                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">Profile Photo</span>
+                    <div className="h-0.5 w-8 bg-foreground/10 rounded-full" />
                   </div>
                 </div>
 
@@ -317,45 +317,45 @@ export default function SettingsPage() {
                 <div className="flex-1 space-y-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div className="space-y-4">
-                      <label className="flex items-center gap-2 text-xs font-bold text-white/60 uppercase tracking-wider ml-1">
-                        <Fingerprint size={14} className="text-blue-400/70" />
+                      <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground/60 uppercase tracking-wider ml-1">
+                        <Fingerprint size={14} className="text-primary/70" />
                         Username
                       </label>
                       <div className="relative group/input">
-                        <div className="absolute inset-y-0 left-6 flex items-center text-white/30 font-mono text-sm group-focus-within/input:text-blue-500 transition-colors">@</div>
+                        <div className="absolute inset-y-0 left-6 flex items-center text-muted-foreground/30 font-mono text-sm group-focus-within/input:text-primary transition-colors">@</div>
                         <input 
                           type="text"
                           value={username}
                           onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
-                          className="w-full bg-white/[0.03] border border-white/10 rounded-[2rem] px-12 py-5 text-white font-bold tracking-wide focus:bg-white/[0.05] focus:border-white/20 transition-all outline-none text-lg placeholder:text-white/20"
+                          className="w-full bg-foreground/[0.03] border border-border rounded-[2rem] px-12 py-5 text-foreground font-bold tracking-wide focus:bg-foreground/[0.05] focus:border-primary/20 transition-all outline-none text-lg placeholder:text-muted-foreground/20"
                           placeholder="username"
                         />
                       </div>
                     </div>
-
+ 
                     <div className="space-y-4">
-                      <label className="flex items-center gap-2 text-xs font-bold text-white/60 uppercase tracking-wider ml-1">
-                        <UserIcon size={14} className="text-blue-400/70" />
+                      <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground/60 uppercase tracking-wider ml-1">
+                        <UserIcon size={14} className="text-primary/70" />
                         Display Name
                       </label>
                       <input 
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-[2rem] px-8 py-5 text-white font-bold tracking-wide focus:bg-white/[0.05] focus:border-white/20 transition-all outline-none text-lg placeholder:text-white/20"
+                        className="w-full bg-foreground/[0.03] border border-border rounded-[2rem] px-8 py-5 text-foreground font-bold tracking-wide focus:bg-foreground/[0.05] focus:border-primary/20 transition-all outline-none text-lg placeholder:text-muted-foreground/20"
                         placeholder="Your Name"
                       />
                     </div>
                   </div>
 
-                  <div className="p-6 bg-white/[0.02] border border-white/10 rounded-[2rem] relative overflow-hidden group/mail">
-                     <div className="absolute inset-0 bg-blue-500/[0.01] opacity-0 group-hover/mail:opacity-100 transition-opacity" />
-                     <div className="flex items-center gap-3 text-xs font-bold text-white/60 uppercase tracking-wider mb-3">
-                       <Mail size={14} className="text-blue-400/50" />
+                  <div className="p-6 bg-foreground/[0.02] border border-border rounded-[2rem] relative overflow-hidden group/mail">
+                     <div className="absolute inset-0 bg-primary/[0.01] opacity-0 group-hover/mail:opacity-100 transition-opacity" />
+                     <div className="flex items-center gap-3 text-xs font-bold text-foreground/80 uppercase tracking-wider mb-3">
+                       <Mail size={14} className="text-primary/50" />
                        Email Address
                      </div>
                      <div className="flex items-center justify-between">
-                       <span className="text-lg font-medium text-white/80 select-none cursor-not-allowed">
+                       <span className="text-lg font-medium text-foreground/80 select-none cursor-not-allowed">
                           {session?.user?.email}
                        </span>
                        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
@@ -367,15 +367,15 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="mt-16 pt-10 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-8">
-                <div className="flex items-center gap-3 text-xs text-white/40 font-medium max-w-sm leading-relaxed">
-                  <Info size={16} className="text-white/20 shrink-0" />
+              <div className="mt-16 pt-10 border-t border-border flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground/60 font-medium max-w-sm leading-relaxed">
+                  <Info size={16} className="text-muted-foreground/20 shrink-0" />
                   Username changes are updated across the platform immediately.
                 </div>
                 <button 
                   onClick={handleUpdateProfile}
                   disabled={saving}
-                  className="w-full md:w-auto flex items-center justify-center gap-3 bg-white text-black hover:bg-blue-600 hover:text-white px-10 py-5 rounded-[2rem] font-bold text-xs uppercase tracking-wider transition-all shadow-xl active:scale-95 disabled:opacity-50 overflow-hidden relative group/save"
+                  className="w-full md:w-auto flex items-center justify-center gap-3 bg-foreground text-background hover:bg-primary hover:text-primary-foreground px-10 py-5 rounded-[2rem] font-bold text-xs uppercase tracking-wider transition-all shadow-xl active:scale-95 disabled:opacity-50 overflow-hidden relative group/save"
                 >
                   {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                   <span className="relative z-10">Save Changes</span>
@@ -399,7 +399,7 @@ export default function SettingsPage() {
                      <AlertTriangle size={24} className="text-red-500" />
                    </div>
                    <div>
-                    <h2 className="text-2xl font-bold text-white tracking-tight">Delete Account</h2>
+                    <h2 className="text-2xl font-bold text-foreground tracking-tight">Delete Account</h2>
                     <div className="flex items-center gap-2 mt-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-red-500/50" />
                       <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Irreversible Action</span>
@@ -431,15 +431,15 @@ export default function SettingsPage() {
               initial={{ scale: 0.95, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 30 }}
-              className="bg-[#0D0D0D] border border-red-500/20 p-12 rounded-[3.5rem] shadow-[0_0_100px_rgba(220,38,38,0.1)] max-w-lg w-full relative z-10 text-center overflow-hidden"
+              className="bg-card border border-red-500/20 p-12 rounded-[3.5rem] shadow-[0_0_100px_rgba(220,38,38,0.1)] max-w-lg w-full relative z-10 text-center overflow-hidden"
             >
               <div className="relative z-10">
                 <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-red-500/20">
                   <ShieldCheck size={32} className="text-red-500" />
                 </div>
 
-                <h3 className="text-3xl font-bold text-white mb-4 tracking-tight">Confirm Deletion</h3>
-                <p className="text-white/60 text-sm mb-10 leading-relaxed font-medium">
+                <h3 className="text-3xl font-bold text-foreground mb-4 tracking-tight">Confirm Deletion</h3>
+                <p className="text-muted-foreground/80 text-sm mb-10 leading-relaxed font-medium">
                   Please enter your password to confirm permanently deleting your account.
                 </p>
 
@@ -448,7 +448,7 @@ export default function SettingsPage() {
                     type="password"
                     value={deletePassword}
                     onChange={(e) => setDeletePassword(e.target.value)}
-                    className="w-full bg-red-500/[0.03] border border-red-500/20 rounded-[2rem] px-8 py-5 text-white text-center font-bold outline-none focus:border-red-500/50 focus:bg-red-500/[0.05] placeholder:text-red-500/20 text-xl tracking-widest transition-all"
+                    className="w-full bg-red-500/[0.03] border border-red-500/20 rounded-[2rem] px-8 py-5 text-foreground text-center font-bold outline-none focus:border-red-500/50 focus:bg-red-500/[0.05] placeholder:text-red-500/20 text-xl tracking-widest transition-all"
                     placeholder="PASSWORD"
                     autoFocus
                   />
@@ -456,7 +456,7 @@ export default function SettingsPage() {
                   <div className="flex flex-col md:flex-row gap-4">
                     <button 
                       onClick={() => setShowDeleteModal(false)}
-                      className="flex-1 px-8 py-4 rounded-[2rem] bg-white text-black font-bold text-xs uppercase tracking-wider hover:bg-gray-200 transition-all active:scale-95"
+                      className="flex-1 px-8 py-4 rounded-[2rem] bg-foreground text-background font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all active:scale-95"
                     >
                       Cancel
                     </button>

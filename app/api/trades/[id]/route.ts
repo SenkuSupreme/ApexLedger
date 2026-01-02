@@ -2,51 +2,36 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import dbConnect from '@/lib/db';
 import Trade from '@/lib/models/Trade';
+import Portfolio from '@/lib/models/Portfolio';
+import Strategy from '@/lib/models/Strategy';
+import { calculateTradeMetrics } from '@/lib/utils/tradeCalculations';
 import { authOptions } from '@/lib/auth';
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
-
   const { id } = await params;
+  
+  // Optional: Check session for ownership (could be used for UI purposes later like "Edit" button visibility)
+  // const session = await getServerSession(authOptions);
 
   try {
     await dbConnect();
+    // Force model registration
+    Portfolio.init();
+    Strategy.init();
     
-    const trade = await Trade.findOne({ 
-      _id: id, 
-      // @ts-ignore
-      userId: session.user.id 
-    })
+    // Allow fetching by ID without user constraint to enable sharing
+    const trade = await Trade.findOne({ _id: id })
     .populate('strategyId', 'name isTemplate')
-    .populate('portfolioId', 'name accountType')
-    .lean();
+    .populate('portfolioId', 'name accountType');
 
     if (!trade) {
       return NextResponse.json({ message: 'Trade not found' }, { status: 404 });
     }
 
-    // Transform the populated strategy and portfolio data
-    const transformedTrade = {
-      ...trade,
-      strategy: trade.strategyId ? {
-        _id: trade.strategyId._id,
-        name: trade.strategyId.name,
-        isTemplate: trade.strategyId.isTemplate
-      } : null,
-      portfolio: trade.portfolioId ? {
-        _id: trade.portfolioId._id,
-        name: trade.portfolioId.name,
-        accountType: trade.portfolioId.accountType
-      } : null
-    };
-
-    return NextResponse.json(transformedTrade);
+    return NextResponse.json(trade);
   } catch (error) {
     console.error('Fetch trade error:', error);
     return NextResponse.json({ message: 'Error fetching trade' }, { status: 500 });
@@ -71,25 +56,32 @@ export async function PUT(
     // Calculate derived fields
     const updateData = { ...body };
     
-    // Recalculate PnL if prices changed
-    if (updateData.entryPrice && updateData.exitPrice && updateData.quantity && updateData.direction) {
-      const pnl = updateData.direction === 'long' 
-        ? (updateData.exitPrice - updateData.entryPrice) * updateData.quantity 
-        : (updateData.entryPrice - updateData.exitPrice) * updateData.quantity;
-      
-      updateData.pnl = pnl - (updateData.fees || 0);
-      updateData.grossPnl = pnl;
-    }
+    // Recalculate metrics if sufficient data is provided
+    if (updateData.entryPrice && updateData.quantity) {
+      try {
+        const metrics = calculateTradeMetrics({
+          entryPrice: updateData.entryPrice,
+          exitPrice: updateData.exitPrice,
+          stopLoss: updateData.stopLoss,
+          takeProfit: updateData.takeProfit,
+          quantity: updateData.quantity,
+          direction: updateData.direction || 'long',
+          portfolioBalance: updateData.portfolioBalance || 10000,
+          fees: updateData.fees || 0,
+          assetType: updateData.assetType || 'forex',
+          symbol: updateData.symbol || '',
+        });
 
-    // Recalculate R-Multiple
-    if (updateData.stopLoss && updateData.entryPrice && updateData.exitPrice && updateData.direction) {
-      const risk = Math.abs(updateData.entryPrice - updateData.stopLoss);
-      if (risk > 0) {
-        const reward = updateData.direction === 'long' 
-          ? updateData.exitPrice - updateData.entryPrice 
-          : updateData.entryPrice - updateData.exitPrice;
-        updateData.rMultiple = reward / risk;
-        updateData.actualRR = reward / risk;
+        // Update derived fields
+        updateData.pnl = metrics.netPnl;
+        updateData.grossPnl = metrics.grossPnl;
+        updateData.rMultiple = metrics.rMultiple;
+        updateData.riskAmount = metrics.riskAmount;
+        updateData.accountRisk = metrics.accountRisk;
+        updateData.targetRR = metrics.targetRR;
+        updateData.actualRR = metrics.actualRR;
+      } catch (e) {
+        console.error("Error recalculating metrics during update:", e);
       }
     }
 

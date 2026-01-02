@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import ChatMessage from '@/lib/models/ChatMessage';
+import User from '@/lib/models/User';
 
 export async function GET(req: NextRequest) {
   try {

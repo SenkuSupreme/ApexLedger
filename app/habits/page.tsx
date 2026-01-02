@@ -177,114 +177,110 @@ export default function HabitsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-[80vh] w-full items-center justify-center text-white/20 font-black text-xs uppercase tracking-[0.5em] animate-pulse">
-        Synchronizing Execution Matrix...
+      <div className="flex h-[80vh] w-full items-center justify-center text-muted-foreground font-black text-xs uppercase tracking-[0.5em] animate-pulse">
+        Loading Habits...
       </div>
     );
   }
 
   return (
-    <div className="space-y-12 text-white font-sans relative min-h-screen pb-20 overflow-hidden px-4 md:px-8">
+    <div className="space-y-12 text-foreground font-sans relative min-h-screen pb-20 overflow-hidden px-4 md:px-8">
       {/* Institutional Background Mesh */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-blue-500/[0.03] blur-[150px] -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-[1000px] h-[1000px] bg-purple-500/[0.03] blur-[150px] translate-y-1/2 -translate-x-1/2" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--foreground)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--foreground)/0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 
       {/* Header Mesh */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/5 pb-10 relative z-10 gap-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-border pb-10 relative z-10 gap-8">
         <div className="space-y-6">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400">Execution Node 02 Live</span>
+               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400">Habits Active</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/20">
+            <div className="flex items-center gap-2 px-3 py-1 bg-foreground/[0.03] border border-border rounded-full text-muted-foreground">
                <Activity size={10} className="text-blue-500/50" />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em]">Protocol Sync: Active</span>
+               <span className="text-[9px] font-black uppercase tracking-[0.3em]">Sync: Active</span>
             </div>
           </div>
-          <h1 className="text-6xl font-black tracking-tighter italic uppercase bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent leading-none">
-            Execution Ledger
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-[0.02em] italic uppercase bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent leading-none">
+            Habits
           </h1>
-          <p className="text-white/30 text-sm font-medium italic max-w-xl leading-relaxed">
-            "Institutional archival of tactical consistency. Your edge is forged in the repetitive precision of the terminal mesh."
+          <p className="text-foreground/70 text-xs md:text-sm font-medium italic max-w-xl leading-relaxed">
+            "Build and track your trading habits. Consistency is the key to mastering your edge and achieving long-term success in the markets."
           </p>
         </div>
 
         <div className="flex items-center gap-4 relative z-10">
           <button
             onClick={() => setShowHabitForm(true)}
-            className="group relative flex items-center gap-4 bg-white text-black hover:bg-blue-500 hover:text-white px-10 py-5 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.3em] transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] active:scale-95 overflow-hidden border border-white/10"
+            className="group relative flex items-center gap-4 bg-foreground text-background hover:bg-blue-500 hover:text-white px-8 py-3.5 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.3em] transition-all shadow-xl active:scale-95 overflow-hidden"
           >
-            <div className="absolute inset-0 bg-black/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+            <div className="absolute inset-0 bg-background/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
             <Plus size={18} className="relative z-10" />
-            <span className="relative z-10">Initialize Protocol</span>
+            <span className="relative z-10">New Habit</span>
           </button>
         </div>
       </div>
 
       {/* Intelligence Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 relative z-10">
+      {/* <div className="grid grid-cols-1 md:grid-cols-5 gap-6 relative z-10">
         {[
-          { icon: <Target size={18} />, label: "Total Protocols", value: stats.total, color: "blue" },
-          { icon: <Database size={18} />, label: "Active Sync", value: stats.active, color: "emerald" },
-          { icon: <Calendar size={18} />, label: "Syncs Today", value: stats.completedToday, color: "purple" },
-          { icon: <Flame size={18} />, label: "High Streak", value: stats.totalStreak, color: "orange" },
-          { icon: <TrendingUp size={18} />, label: "Mean Consistency", value: stats.avgStreak, color: "yellow" },
+          { icon: <Target size={18} />, label: "Total Habits", value: stats.total, color: "blue" },
+          { icon: <Database size={18} />, label: "Active Habits", value: stats.active, color: "emerald" },
+          { icon: <Calendar size={18} />, label: "Completed Today", value: stats.completedToday, color: "purple" },
+          { icon: <Flame size={18} />, label: "Total Streak", value: stats.totalStreak, color: "orange" },
+          { icon: <TrendingUp size={18} />, label: "Avg Streak", value: stats.avgStreak, color: "yellow" },
         ].map((stat, i) => (
-          <div key={i} className="bg-white/[0.02] backdrop-blur-md border border-white/5 rounded-[2.5rem] p-8 group hover:bg-white/[0.04] transition-all duration-500 relative overflow-hidden">
+          <div key={i} className="bg-card/40 backdrop-blur-md border border-border rounded-[2.5rem] p-8 group hover:bg-card/60 transition-all duration-500 relative overflow-hidden">
              <div className="flex items-center justify-between mb-8 relative z-10">
-                <div className="p-3 bg-white/[0.05] border border-white/10 rounded-2xl text-white/40 group-hover:bg-white group-hover:text-black transition-all">
+                <div className="p-3 bg-foreground/5 border border-border rounded-2xl text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-all">
                    {stat.icon}
                 </div>
-                <span className="text-3xl font-black italic tracking-tighter text-white/80 group-hover:text-white transition-colors">{stat.value}</span>
+                <span className="text-3xl font-black italic tracking-tighter text-foreground group-hover:text-foreground transition-colors">{stat.value}</span>
              </div>
-             <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">
+             <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] italic">
                 {stat.label}
              </div>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Institutional Filter Mesh */}
       <div className="flex flex-col lg:flex-row gap-6 relative z-10">
         <div className="flex-1 relative group">
           <Search
             size={18}
-            className="absolute left-6 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-blue-500 transition-colors"
+            className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors"
           />
           <input
             type="text"
-            placeholder="Scan global execution protocols..."
+            placeholder="Search habits..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-16 pr-8 py-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] text-white placeholder:text-white/10 text-[11px] font-black uppercase tracking-[0.3em] focus:border-blue-500/30 focus:outline-none focus:bg-white/[0.04] transition-all shadow-inner"
+            className="w-full pl-16 pr-8 py-5 bg-card/40 border border-border rounded-[2.5rem] text-foreground placeholder:text-muted-foreground/20 text-[11px] font-black uppercase tracking-[0.3em] focus:border-primary/30 focus:outline-none focus:bg-card/60 transition-all shadow-inner"
           />
         </div>
         <div className="flex items-center gap-4">
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-8 py-6 bg-black/40 border border-white/5 rounded-[2rem] text-white text-[10px] font-black uppercase tracking-[0.2em] focus:border-blue-500/30 focus:outline-none transition-all cursor-pointer hover:bg-white/[0.04] backdrop-blur-md"
+            className="px-8 py-5 bg-card/40 border border-border rounded-[2rem] text-foreground text-[10px] font-black uppercase tracking-[0.2em] focus:border-primary/30 focus:outline-none transition-all cursor-pointer hover:bg-card/60 backdrop-blur-md"
           >
-            <option value="all">All Domains</option>
-            <option value="trading">Trading Sector</option>
-            <option value="health">Vitality Lab</option>
-            <option value="learning">Knowledge Sync</option>
-            <option value="productivity">Output Matrix</option>
-            <option value="other">Fragmented</option>
+            <option value="all" className="bg-background">All Categories</option>
+            {["trading", "health", "learning", "productivity", "other"].map(cat => <option key={cat} value={cat} className="bg-background">{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>)}
           </select>
           <select
             value={filterActive}
             onChange={(e) => setFilterActive(e.target.value)}
-            className="px-8 py-6 bg-black/40 border border-white/5 rounded-[2rem] text-white text-[10px] font-black uppercase tracking-[0.2em] focus:border-blue-500/30 focus:outline-none transition-all cursor-pointer hover:bg-white/[0.04] backdrop-blur-md"
+            className="px-8 py-5 bg-card/40 border border-border rounded-[2rem] text-foreground text-[10px] font-black uppercase tracking-[0.2em] focus:border-primary/30 focus:outline-none transition-all cursor-pointer hover:bg-card/60 backdrop-blur-md"
           >
-            <option value="all">All States</option>
-            <option value="active">Active Sync</option>
-            <option value="inactive">Static Node</option>
+            <option value="all" className="bg-background">All States</option>
+            <option value="active" className="bg-background">Active</option>
+            <option value="inactive" className="bg-background">Inactive</option>
           </select>
         </div>
       </div>
@@ -319,21 +315,21 @@ export default function HabitsPage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="col-span-full py-40 text-center relative group overflow-hidden bg-white/[0.01] border border-dashed border-white/10 rounded-[3.5rem]"
+          className="col-span-full py-40 text-center relative group overflow-hidden bg-foreground/[0.01] border border-dashed border-border rounded-[3.5rem]"
         >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/5 blur-[120px] rounded-full" />
-          <Flame size={64} className="text-white/20 mx-auto mb-8 relative z-10" />
-          <h3 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter italic">Sector Void</h3>
-          <p className="text-white/30 text-[11px] font-black uppercase tracking-[0.4em] mb-12 max-w-sm mx-auto italic leading-relaxed">
-            "Execution matrix is empty. Awaiting first protocol initialization to begin consistency tracking."
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 blur-[120px] rounded-full" />
+          <Flame size={64} className="text-muted-foreground/40 mx-auto mb-8 relative z-10" />
+          <h3 className="text-3xl font-black text-foreground mb-4 uppercase tracking-tighter italic">No Habits Found</h3>
+          <p className="text-muted-foreground text-[11px] font-black uppercase tracking-[0.4em] mb-12 max-w-sm mx-auto italic leading-relaxed">
+            "Your habits list is empty. Start by creating a new habit to begin tracking your consistency."
           </p>
           <button
             onClick={() => setShowHabitForm(true)}
-            className="group relative inline-flex items-center gap-4 bg-white text-black hover:bg-blue-500 hover:text-white px-12 py-6 rounded-[2.5rem] font-black text-[11px] uppercase tracking-[0.4em] transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] active:scale-95 overflow-hidden border border-white/10"
+            className="group relative inline-flex items-center gap-4 bg-foreground text-background hover:bg-primary hover:text-white px-12 py-6 rounded-[2.5rem] font-black text-[11px] uppercase tracking-[0.4em] transition-all shadow-xl active:scale-95 overflow-hidden"
           >
-            <div className="absolute inset-0 bg-black/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+            <div className="absolute inset-0 bg-background/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
             <Plus size={18} className="relative z-10" />
-            <span className="relative z-10">Initialize Protocol 01</span>
+            <span className="relative z-10">Create Habit</span>
           </button>
         </motion.div>
       )}

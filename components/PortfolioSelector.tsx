@@ -8,6 +8,7 @@ import {
   Edit3,
 } from "lucide-react";
 import CreatePortfolioModal from "./CreatePortfolioModal";
+import EditPortfolioModal from "./EditPortfolioModal";
 import {
   Dialog,
   DialogContent,
@@ -39,32 +40,8 @@ export default function PortfolioSelector({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-
-  const handleEdit = async () => {
-    if (!editName.trim() || !editId) return;
-
-    setIsEditing(true);
-    try {
-      const res = await fetch(`/api/portfolios/${editId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName.trim() }),
-      });
-      if (res.ok) {
-        await refreshPortfolios();
-        setEditId(null);
-        setEditName("");
-      }
-    } catch (err) {
-      console.error("Failed to edit portfolio", err);
-    } finally {
-      setIsEditing(false);
-    }
-  };
 
   const handleDelete = async () => {
     const portfolioToDelete = portfolios.find((p) => p._id === deleteId);
@@ -97,24 +74,24 @@ export default function PortfolioSelector({
       : "Loading...";
 
   return (
-    <div className="relative z-50">
+    <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-sm hover:border-white/20 transition-all hover:bg-white/[0.02]"
+        className="flex items-center gap-2 px-3 py-1.5 bg-card border border-border rounded-lg text-sm hover:border-primary/30 transition-all hover:bg-card/80 shadow-sm"
       >
         <div className="flex flex-col items-start text-left">
-          <span className="text-[10px] text-gray-500 uppercase font-mono leading-none">
+          <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none">
             Portfolio
           </span>
-          <span className="font-medium max-w-[120px] truncate">
+          <span className="font-bold max-w-[120px] truncate text-foreground">
             {displayName}
           </span>
         </div>
-        <ChevronDown size={14} className="text-gray-500" />
+        <ChevronDown size={14} className="text-foreground" />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-72 bg-[#0A0A0A] border border-white/10 rounded-xl shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200 shadow-black/80 overflow-hidden ring-1 ring-white/5">
+        <div className="absolute top-full right-0 mt-2 w-72 bg-card border border-border rounded-xl shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200 overflow-hidden ring-1 ring-border z-[300]">
           <div className="space-y-1 mb-2 max-h-64 overflow-y-auto custom-scrollbar">
             <button
               onClick={() => {
@@ -123,8 +100,8 @@ export default function PortfolioSelector({
               }}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${
                 currentId === "all"
-                  ? "bg-white/10 text-white"
-                  : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                  ? "bg-foreground/10 text-foreground font-bold"
+                  : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground font-medium"
               }`}
             >
               <span className="font-medium">All Portfolios</span>
@@ -132,7 +109,7 @@ export default function PortfolioSelector({
                 <Check size={14} className="text-green-500" />
               )}
             </button>
-            <div className="h-px bg-white/5 my-1 mx-2" />
+            <div className="h-px bg-border my-1 mx-2" />
 
             {portfolios.map((p) => (
               <div key={p._id} className="group relative list-none">
@@ -143,8 +120,8 @@ export default function PortfolioSelector({
                   }}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${
                     currentId === p._id
-                      ? "bg-white/10 text-white"
-                      : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                      ? "bg-foreground/10 text-foreground font-bold"
+                      : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground font-medium"
                   }`}
                 >
                   <span className="truncate pr-10">{p.name}</span>
@@ -157,10 +134,9 @@ export default function PortfolioSelector({
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditId(p._id);
-                      setEditName(p.name);
                       setIsOpen(false);
                     }}
-                    className="p-1.5 text-gray-600 hover:text-blue-500 hover:bg-blue-500/10 rounded-md transition-all focus:opacity-100"
+                    className="p-1.5 text-muted-foreground/60 hover:text-primary hover:bg-primary/10 rounded-md transition-all focus:opacity-100"
                   >
                     <Edit3 size={14} />
                   </button>
@@ -179,13 +155,13 @@ export default function PortfolioSelector({
             ))}
           </div>
 
-          <div className="border-t border-white/10 pt-2 bg-gradient-to-b from-transparent to-white/[0.02]">
+          <div className="border-t border-border pt-2 bg-gradient-to-b from-transparent to-foreground/[0.02]">
             <button
               onClick={() => {
                 setIsModalOpen(true);
                 setIsOpen(false);
               }}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all border border-dashed border-white/10 hover:border-white/30"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-lg transition-all border border-dashed border-border hover:border-primary/30"
             >
               <Plus size={14} />
               CREATE NEW PORTFOLIO
@@ -203,16 +179,26 @@ export default function PortfolioSelector({
         }}
       />
 
+      <EditPortfolioModal
+        isOpen={!!editId}
+        onClose={() => setEditId(null)}
+        onSuccess={() => {
+          refreshPortfolios();
+        }}
+        portfolioId={editId || ''}
+        portfolios={portfolios}
+      />
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <DialogContent className="bg-[#0A0A0A] border-white/10 text-white max-w-md">
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-500">
               <AlertTriangle size={20} /> CAUTION: PERMANENT DELETION
             </DialogTitle>
-            <DialogDescription className="text-gray-400 pt-2 leading-relaxed">
+            <DialogDescription className="text-muted-foreground pt-2 leading-relaxed">
               Deleting this portfolio will{" "}
-              <span className="text-white font-bold underline">
+              <span className="text-foreground font-bold underline">
                 permanently erase all associated trades
               </span>
               , journals, and analytical data. This action cannot be undone.
@@ -227,15 +213,15 @@ export default function PortfolioSelector({
                 );
                 return (
                   <>
-                    <p className="text-xs text-gray-500 uppercase font-mono">
+                    <p className="text-xs text-muted-foreground uppercase font-mono">
                       Type{" "}
-                      <span className="text-white font-bold">
+                      <span className="text-foreground font-bold">
                         "{portfolioToDelete?.name}"
                       </span>{" "}
                       below to proceed:
                     </p>
                     <Input
-                      className="bg-black border-white/10 text-white focus:border-red-500/50 h-12"
+                      className="bg-background border-border text-foreground focus:border-red-500/50 h-12"
                       placeholder={`Type ${portfolioToDelete?.name}...`}
                       value={confirmText}
                       onChange={(e) => setConfirmText(e.target.value)}
@@ -248,7 +234,7 @@ export default function PortfolioSelector({
           <div className="flex gap-3">
             <Button
               variant="ghost"
-              className="flex-1 hover:bg-white/5 text-gray-400 hover:text-white"
+              className="flex-1 hover:bg-foreground/5 text-muted-foreground hover:text-foreground"
               onClick={() => setDeleteId(null)}
             >
               Cancel
@@ -270,54 +256,7 @@ export default function PortfolioSelector({
         </DialogContent>
       </Dialog>
 
-      {/* Edit Portfolio Dialog */}
-      <Dialog open={!!editId} onOpenChange={() => setEditId(null)}>
-        <DialogContent className="bg-[#0A0A0A] border-white/10 text-white max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-blue-500">
-              <Edit3 size={20} /> Edit Portfolio
-            </DialogTitle>
-            <DialogDescription className="text-gray-400 pt-2">
-              Update portfolio name and balance. This will help you track
-              deposits and withdrawals accurately.
-            </DialogDescription>
-          </DialogHeader>
 
-          <div className="py-4 space-y-4">
-            <div>
-              <label className="text-xs text-gray-500 uppercase font-mono block mb-2">
-                Portfolio Name
-              </label>
-              <Input
-                className="bg-black border-white/10 text-white focus:border-blue-500/50 h-12"
-                placeholder="Enter portfolio name..."
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <Button
-              variant="ghost"
-              className="flex-1 hover:bg-white/5 text-gray-400 hover:text-white"
-              onClick={() => {
-                setEditId(null);
-                setEditName("");
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={!editName.trim() || isEditing}
-              className="flex-2 bg-blue-600 hover:bg-blue-700 font-bold"
-              onClick={handleEdit}
-            >
-              {isEditing ? "UPDATING..." : "UPDATE PORTFOLIO"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

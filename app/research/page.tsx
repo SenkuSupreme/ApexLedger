@@ -18,6 +18,7 @@ import {
   X,
   ChevronRight
 } from "lucide-react";
+import { useTheme } from "next-themes";
 
 declare global {
   interface Window {
@@ -62,32 +63,21 @@ const COMMON_TICKERS = [
   { symbol: "NYSE:BRK.B", name: "Berkshire Hathaway", category: "Stocks" },
 ];
 
+import { 
+  TVSymbolInfoWidget, 
+  TVCompanyProfileWidget, 
+  TVFundamentalDataWidget, 
+  TVTechnicalAnalysisWidget, 
+  TVTimelineWidget,
+  TVTickerTapeWidget
+} from "@/components/widgets/TradingViewWidgets";
+
 export default function ResearchPage() {
-  const [symbol, setSymbol] = useState("NASDAQ:AAPL");
+  const [symbol, setSymbol] = useState("OANDA:XAUUSD");
   const [searchInput, setSearchInput] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/tv.js";
-    script.async = true;
-    script.onload = () => {
-      renderWidgets();
-    };
-    document.head.appendChild(script);
-
-    return () => {
-      if (document.head.contains(script)) document.head.removeChild(script);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (window.TradingView) {
-      renderWidgets();
-    }
-  }, [symbol]);
+  const { resolvedTheme } = useTheme();
 
   // Handle outside click for dropdown
   useEffect(() => {
@@ -99,136 +89,6 @@ export default function ResearchPage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const renderWidgets = () => {
-    setIsLoading(true);
-    
-    renderTickerTape();
-    renderSymbolInfo();
-    renderCompanyProfile();
-    renderFundamentalData();
-    renderTechnicalAnalysis();
-    renderTimeline();
-
-    setTimeout(() => setIsLoading(false), 800);
-  };
-
-  const renderTickerTape = () => {
-    const container = document.getElementById("tv-ticker-tape");
-    if (!container) return;
-    container.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-      "symbols": [
-        { "proName": "FOREXCOM:SPX500", "title": "S&P 500" },
-        { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
-        { "proName": "BITSTAMP:BTCUSD", "title": "BTC/USD" }
-      ],
-      "showSymbolLogo": true,
-      "colorTheme": "dark",
-      "isTransparent": true,
-      "displayMode": "adaptive",
-      "locale": "en"
-    });
-    container.appendChild(script);
-  };
-
-  const renderSymbolInfo = () => {
-    const container = document.getElementById("tv-symbol-info");
-    if (!container) return;
-    container.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-symbol-info.js";
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-      "symbol": symbol,
-      "width": "100%",
-      "locale": "en",
-      "colorTheme": "dark",
-      "isTransparent": true
-    });
-    container.appendChild(script);
-  };
-
-  const renderCompanyProfile = () => {
-    const container = document.getElementById("tv-company-profile");
-    if (!container) return;
-    container.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-symbol-profile.js";
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-      "width": "100%",
-      "height": "100%",
-      "colorTheme": "dark",
-      "isTransparent": true,
-      "symbol": symbol,
-      "locale": "en"
-    });
-    container.appendChild(script);
-  };
-
-  const renderFundamentalData = () => {
-    const container = document.getElementById("tv-fundamental-data");
-    if (!container) return;
-    container.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-financials.js";
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-      "colorTheme": "dark",
-      "isTransparent": true,
-      "largeChartUrl": "",
-      "displayMode": "regular",
-      "width": "100%",
-      "height": "100%",
-      "symbol": symbol,
-      "locale": "en"
-    });
-    container.appendChild(script);
-  };
-
-  const renderTechnicalAnalysis = () => {
-    const container = document.getElementById("tv-technical-analysis");
-    if (!container) return;
-    container.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js";
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-      "interval": "1h",
-      "width": "100%",
-      "isTransparent": true,
-      "height": "100%",
-      "symbol": symbol,
-      "showIntervalTabs": true,
-      "locale": "en",
-      "colorTheme": "dark"
-    });
-    container.appendChild(script);
-  };
-
-  const renderTimeline = () => {
-    const container = document.getElementById("tv-timeline");
-    if (!container) return;
-    container.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-timeline.js";
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-      "feedMode": "symbol",
-      "symbol": symbol,
-      "colorTheme": "dark",
-      "isTransparent": true,
-      "displayMode": "regular",
-      "width": "100%",
-      "height": "100%",
-      "locale": "en"
-    });
-    container.appendChild(script);
-  };
 
   const filteredTickers = COMMON_TICKERS.filter(t => 
     t.symbol.toLowerCase().includes(searchInput.toLowerCase()) ||
@@ -243,26 +103,28 @@ export default function ResearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col font-sans overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans overflow-hidden">
       {/* GLOBAL TICKER TAPE */}
-      <div id="tv-ticker-tape" className="h-[46px] border-b border-white/5 bg-white/[0.02] flex-shrink-0" />
+      <div className="h-[46px] border-b border-border bg-foreground/[0.02] flex-shrink-0 overflow-hidden">
+        <TVTickerTapeWidget />
+      </div>
 
       {/* SEARCH & HUD BAR */}
-      <div className="flex items-center justify-between px-8 py-5 bg-[#0A0A0A] border-b border-white/5 relative z-50">
+      <div className="flex items-center justify-between px-8 py-5 bg-card/30 backdrop-blur-md border-b border-border relative z-50">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-blue-500/10 rounded-xl border border-blue-500/20">
               <Microscope size={20} className="text-blue-400" />
             </div>
             <div>
-              <h1 className="text-xl font-black tracking-tighter uppercase italic">Intelligence Hub</h1>
-              <p className="text-[9px] text-white/30 font-mono uppercase tracking-widest">Global Asset Analysis Protocol</p>
+              <h1 className="text-xl font-black tracking-[0.02em] uppercase italic text-foreground leading-none">Market Research</h1>
+              <p className="text-[9px] text-foreground/60 font-mono uppercase tracking-widest mt-1">Institutional Intelligence Terminal</p>
             </div>
           </div>
 
           <div className="relative w-96" ref={dropdownRef}>
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
-            <input 
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input  
               type="text" 
               value={searchInput}
               onChange={(e) => {
@@ -270,38 +132,38 @@ export default function ResearchPage() {
                 setIsDropdownOpen(true);
               }}
               onFocus={() => setIsDropdownOpen(true)}
-              placeholder="Search Institutional Node... (e.g. BTC, AAPL)"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-xs font-bold uppercase tracking-wider outline-none focus:border-blue-500/50 transition-all shadow-inner"
+              placeholder="Search Symbol... (e.g. BTC, AAPL)"
+              className="w-full bg-foreground/[0.03] border border-border rounded-2xl pl-11 pr-4 py-3 text-xs font-bold uppercase tracking-wider outline-none focus:border-blue-500/50 transition-all shadow-inner placeholder:text-muted-foreground/50 text-foreground"
             />
             {isDropdownOpen && searchInput.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-[#0F0F0F] border border-white/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="max-h-80 overflow-y-auto no-scrollbar">
                   {filteredTickers.length > 0 ? (
                     filteredTickers.map((t) => (
                       <button
                         key={t.symbol}
                         onClick={() => handleSelectSymbol(t.symbol)}
-                        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-all group border-b border-white/[0.02] last:border-0"
+                        className="w-full flex items-center justify-between p-4 hover:bg-foreground/[0.03] transition-all group border-b border-border last:border-0"
                       >
                         <div className="flex items-center gap-3 text-left">
                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center font-black text-[10px] text-blue-400 border border-blue-500/20 group-hover:bg-blue-500 group-hover:text-white transition-all">
                               {t.symbol.split(":")[1]?.slice(0, 2)}
                            </div>
                            <div>
-                             <p className="text-[10px] font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-widest">{t.symbol}</p>
-                             <p className="text-[9px] text-white/30 font-bold group-hover:text-white/60 transition-colors">{t.name}</p>
+                             <p className="text-[10px] font-black text-foreground group-hover:text-blue-400 transition-colors uppercase tracking-widest">{t.symbol}</p>
+                             <p className="text-[9px] text-muted-foreground font-bold group-hover:text-foreground/80 transition-colors">{t.name}</p>
                            </div>
                         </div>
                         <div className="flex items-center gap-2">
-                           <span className="text-[8px] font-black uppercase py-1 px-2 rounded bg-white/5 text-white/40 border border-white/10 group-hover:border-blue-500/30 group-hover:text-blue-400">{t.category}</span>
-                           <ChevronRight size={14} className="text-white/10 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                           <span className="text-[8px] font-black uppercase py-1 px-2 rounded bg-foreground/[0.03] text-muted-foreground border border-border group-hover:border-blue-500/30 group-hover:text-blue-400">{t.category}</span>
+                           <ChevronRight size={14} className="text-muted-foreground group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                         </div>
                       </button>
                     ))
                   ) : (
                     <div className="p-8 text-center">
-                       <Zap size={24} className="text-white/10 mx-auto mb-2" />
-                       <p className="text-[10px] uppercase font-black tracking-widest text-white/20">No matching nodes found</p>
+                       <Zap size={24} className="text-muted-foreground/30 mx-auto mb-2" />
+                       <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">No matching nodes found</p>
                     </div>
                   )}
                 </div>
@@ -310,79 +172,87 @@ export default function ResearchPage() {
           </div>
         </div>
 
+
         <div className="flex items-center gap-4">
-           <div className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl">
-              <Activity size={14} className="text-green-400" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Selected: {symbol}</span>
+           <div className="flex items-center gap-2 px-4 py-2.5 bg-foreground/[0.03] border border-border rounded-xl">
+              <Activity size={14} className="text-blue-400 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-foreground">Live Nexus: {symbol}</span>
            </div>
         </div>
+
       </div>
 
       {/* TERMINAL VIEWPORT */}
-      <main className="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-none no-scrollbar bg-[#050505]">
+      <main className="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-none no-scrollbar bg-background relative">
         <div className="max-w-[1700px] mx-auto space-y-8 relative">
           
-          {isLoading && (
-            <div className="absolute inset-x-0 -top-8 bottom-0 z-[60] flex flex-col items-center pt-32 bg-[#050505]/60 backdrop-blur-sm pointer-events-none">
-                <Zap className="text-blue-500 animate-bounce mb-4" size={48} />
-                <div className="text-[11px] font-black text-blue-400 uppercase tracking-[0.8em] animate-pulse">Synchronizing Intelligence Mesh...</div>
-            </div>
-          )}
+          {/* Background Mesh Overlay */}
+          <div className="absolute inset-0 pointer-events-none -z-10 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.03)_0%,transparent_50%)]" />
 
-          {/* TOP ROW: SYMBOL INFO - WIDER PANEL */}
+          {/* TOP ROW: SYMBOL INFO */}
           <section className="space-y-4">
-               <h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/20 flex items-center gap-2 px-4">
-                 <Activity size={16} /> Asset Identification Node
+               <h3 className="text-xs font-black uppercase tracking-[0.4em] text-foreground/80 flex items-center gap-2 px-4">
+                 <Activity size={16} className="text-blue-400" /> Symbol Metrics
                </h3>
-               <div id="tv-symbol-info" className="h-44 rounded-3xl overflow-hidden bg-white/[0.02] border border-white/5 shadow-2xl transition-all" />
+               <div className="h-44 rounded-[2rem] overflow-hidden bg-card/30 border border-border transition-all">
+                  <TVSymbolInfoWidget symbol={symbol} />
+               </div>
           </section>
 
-          {/* SECOND ROW: PROFILE & FUNDAMENTALS (REPLACES CHART AREA) */}
+          {/* SECOND ROW: PROFILE & FUNDAMENTALS */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[500px]">
             <div className="flex flex-col h-full space-y-4 group">
-               <h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/20 flex items-center gap-2 px-4 group-hover:text-white/40 transition-all">
-                 <Info size={16} /> Entity Infrastructure
+               <h3 className="text-xs font-black uppercase tracking-[0.4em] text-foreground/80 flex items-center gap-2 px-4 group-hover:text-foreground transition-all font-bold">
+                 <Info size={16} className="text-blue-400" /> Intelligence Profile
                </h3>
-               <div id="tv-company-profile" className="flex-1 rounded-[2.5rem] bg-white/[0.02] border border-white/10 p-6 overflow-hidden hover:bg-white/[0.04] transition-all shadow-xl" />
+               <div className="flex-1 rounded-[2.5rem] bg-card/30 border border-border p-6 overflow-hidden hover:bg-card/50 transition-all group-hover:border-blue-500/20">
+                  <TVCompanyProfileWidget symbol={symbol} />
+               </div>
             </div>
             <div className="flex flex-col h-full space-y-4 group">
-               <h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/20 flex items-center gap-2 px-4 group-hover:text-white/40 transition-all">
-                 <BarChart3 size={16} /> Fundamental Ledger Analysis
+               <h3 className="text-xs font-black uppercase tracking-[0.4em] text-foreground/80 flex items-center gap-2 px-4 group-hover:text-foreground transition-all font-bold">
+                 <BarChart3 size={16} className="text-blue-400" /> Fundamental Matrix
                </h3>
-               <div id="tv-fundamental-data" className="flex-1 rounded-[2.5rem] bg-white/[0.02] border border-white/10 p-6 overflow-hidden hover:bg-white/[0.04] transition-all shadow-xl" />
+               <div className="flex-1 rounded-[2.5rem] bg-card/30 border border-border p-6 overflow-hidden hover:bg-card/50 transition-all group-hover:border-blue-500/20">
+                  <TVFundamentalDataWidget symbol={symbol} />
+               </div>
             </div>
           </div>
 
-          {/* THIRD ROW: TECHNICAL & NEWS - TAKES MORE SPACE NOW */}
+          {/* THIRD ROW: TECHNICAL & TIMELINE */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 min-h-[600px] pb-12">
              <div className="lg:col-span-2 flex flex-col h-full space-y-4 group">
-                <h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/20 flex items-center gap-2 px-4 group-hover:text-white/40 transition-all">
-                  <Activity size={16} /> Sentiment Oscillator Grid
+                <h3 className="text-xs font-black uppercase tracking-[0.4em] text-foreground/80 flex items-center gap-2 px-4 group-hover:text-foreground transition-all font-bold">
+                   <Activity size={16} className="text-blue-400" /> Quantitative Sentiment
                 </h3>
-                <div id="tv-technical-analysis" className="flex-1 rounded-[2.5rem] bg-white/[0.02] border border-white/10 p-6 overflow-hidden hover:bg-white/[0.04] transition-all shadow-xl" />
+                <div className="flex-1 rounded-[2.5rem] bg-card/30 border border-border p-6 overflow-hidden hover:bg-card/50 transition-all group-hover:border-blue-500/20">
+                   <TVTechnicalAnalysisWidget symbol={symbol} />
+                </div>
              </div>
              <div className="lg:col-span-3 flex flex-col h-full space-y-4 group">
-                <h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/20 flex items-center gap-2 px-2 group-hover:text-white/40 transition-all font-bold">
-                  <Globe size={16} /> Global Communication Timeline
+                <h3 className="text-xs font-black uppercase tracking-[0.4em] text-foreground/80 flex items-center gap-2 px-4 group-hover:text-foreground transition-all font-bold">
+                   <Globe size={16} className="text-blue-400" /> Temporal Intelligence
                 </h3>
-                <div id="tv-timeline" className="flex-1 rounded-[2.5rem] bg-white/[0.02] border border-white/10 p-6 overflow-hidden hover:bg-white/[0.04] transition-all shadow-xl" />
+                <div className="flex-1 rounded-[2.5rem] bg-card/30 border border-border p-6 overflow-hidden hover:bg-card/50 transition-all group-hover:border-blue-500/20">
+                   <TVTimelineWidget symbol={symbol} />
+                </div>
              </div>
           </div>
 
         </div>
       </main>
 
-      {/* TERMINAL FOOTER */}
-      <footer className="h-12 border-t border-white/5 bg-black flex items-center justify-between px-8 text-[9px] font-black uppercase tracking-[0.4em] text-white/20">
+      <footer className="h-12 border-t border-border bg-black/80 backdrop-blur-md flex items-center justify-between px-8 text-[9px] font-black uppercase tracking-[0.4em] text-foreground/40">
         <div className="flex items-center gap-8">
            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-              <span>Protocol: Intelligence v5.2.0</span>
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
+              <span>Network Status: Cryptographically Secure</span>
            </div>
-           <span>Mesh: Secure Terminal Node Active</span>
+           <div className="h-2 w-px bg-border" />
+           <span>Intelligence Stream: Active</span>
         </div>
-        <div className="flex items-center gap-4 italic opacity-80 font-bold border-l border-white/10 pl-8">
-           INTELLIGENCE SOURCE: TRADINGVIEW DATA MESH
+        <div className="flex items-center gap-4 italic opacity-80 font-bold border-l border-border pl-8">
+           CENTRAL DATA SOURCE: TRADINGVIEW DATA FEED
         </div>
       </footer>
     </div>

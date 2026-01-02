@@ -3,7 +3,10 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import dbConnect from '@/lib/db';
 import Trade from '@/lib/models/Trade';
+import Strategy from '@/lib/models/Strategy';
+import Portfolio from '@/lib/models/Portfolio';
 import { authOptions } from '@/lib/auth';
+import { calculateTradeMetrics } from '@/lib/utils/tradeCalculations';
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -13,6 +16,13 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const type = searchParams.get('type');
+  
+  await dbConnect();
+  
+  // Force registration of models to avoid MissingSchemaError
+  const _s = Strategy;
+  const _p = Portfolio;
+  
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
   const sort = searchParams.get('sort') || 'timestampEntry'; // default sort field
@@ -50,17 +60,20 @@ export async function GET(req: Request) {
   }
 
   if (startDate && endDate) {
-      filter.timestampEntry = {
-          $gte: new Date(startDate),
-          $lte: new Date(endDate)
-      };
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+          filter.timestampEntry = {
+              $gte: start,
+              $lte: end
+          };
+      }
   }
 
   // Calculate Skip
   const skip = (page - 1) * limit;
 
-  await dbConnect();
-  
   // Fetch Trades with Pagination
   const trades = await Trade.find(filter)
     .populate('strategyId', 'name isTemplate')
@@ -71,19 +84,47 @@ export async function GET(req: Request) {
     .lean();
     
   // Transform the populated strategy and portfolio data
-  const transformedTrades = trades.map((trade: any) => ({
-    ...trade,
-    strategy: trade.strategyId ? {
-      _id: trade.strategyId._id,
-      name: trade.strategyId.name,
-      isTemplate: trade.strategyId.isTemplate
-    } : null,
-    portfolio: trade.portfolioId ? {
-      _id: trade.portfolioId._id,
-      name: trade.portfolioId.name,
-      accountType: trade.portfolioId.accountType
-    } : null
-  }));
+  const transformedTrades = trades.map((trade: any) => {
+    let result = {
+      ...trade,
+      strategy: trade.strategyId ? {
+        _id: trade.strategyId._id,
+        name: trade.strategyId.name,
+        isTemplate: trade.strategyId.isTemplate
+      } : null,
+      portfolio: trade.portfolioId ? {
+        _id: trade.portfolioId._id,
+        name: trade.portfolioId.name,
+        accountType: trade.portfolioId.accountType
+      } : null
+    };
+
+    // Recalculate robust metrics for display to fix legacy facade issues
+    if (trade.entryPrice && trade.exitPrice && trade.quantity) {
+      try {
+        const metrics = calculateTradeMetrics({
+          entryPrice: trade.entryPrice,
+          exitPrice: trade.exitPrice,
+          stopLoss: trade.stopLoss,
+          takeProfit: trade.takeProfit,
+          quantity: trade.quantity,
+          direction: trade.direction || 'long',
+          portfolioBalance: trade.portfolioBalance || 10000,
+          fees: trade.fees || 0,
+          assetType: trade.assetType || 'forex',
+          symbol: trade.symbol || '',
+        });
+        result.pnl = metrics.netPnl;
+        result.grossPnl = metrics.grossPnl;
+        result.rMultiple = metrics.rMultiple;
+        result.actualRR = metrics.actualRR;
+      } catch (e) {
+        // Fallback to stored values
+      }
+    }
+
+    return result;
+  });
     
   // Get Total Count for Pagination UI
   const total = await Trade.countDocuments(filter);
@@ -151,7 +192,7 @@ export async function POST(req: Request) {
       'riskPercentage', 'setupGrade'
     ];
 
-    numericFields.forEach(field => {
+    numericFields.forEach((field: string) => {
       if (cleanedBody[field] !== undefined && cleanedBody[field] !== '') {
         const num = Number(cleanedBody[field]);
         if (!isNaN(num)) {
@@ -164,12 +205,51 @@ export async function POST(req: Request) {
       }
     });
 
+    // Calculate robust metrics before saving
+    if (cleanedBody.entryPrice && cleanedBody.quantity) {
+      try {
+        const metrics = calculateTradeMetrics({
+          entryPrice: cleanedBody.entryPrice,
+          exitPrice: cleanedBody.exitPrice,
+          stopLoss: cleanedBody.stopLoss,
+          takeProfit: cleanedBody.takeProfit,
+          quantity: cleanedBody.quantity,
+          direction: cleanedBody.direction || 'long',
+          portfolioBalance: cleanedBody.portfolioBalance || 10000,
+          fees: cleanedBody.fees || 0,
+          assetType: cleanedBody.assetType || 'forex',
+          symbol: cleanedBody.symbol || '',
+        });
+
+        // Use calculated metrics if not manually overridden or if naive
+        // We prioritize calculated metrics for consistency unless user explicitly provided something very different
+        cleanedBody.pnl = metrics.netPnl;
+        cleanedBody.grossPnl = metrics.grossPnl;
+        cleanedBody.rMultiple = metrics.rMultiple;
+        cleanedBody.riskAmount = metrics.riskAmount;
+        cleanedBody.accountRisk = metrics.accountRisk;
+        cleanedBody.targetRR = metrics.targetRR;
+        cleanedBody.actualRR = metrics.actualRR;
+      } catch (e) {
+        console.error("Error calculating metrics during creation:", e);
+      }
+    }
+
     const trade = await Trade.create({
       ...cleanedBody,
       tags,
       // @ts-ignore
       userId: session.user.id,
     });
+
+    // Update Portfolio Current Balance
+    const t = trade as any;
+    if (t.portfolioId && t.pnl) {
+      await Portfolio.findOneAndUpdate(
+        { _id: t.portfolioId, userId: (session.user as any).id },
+        { $inc: { currentBalance: t.pnl } }
+      );
+    }
 
     return NextResponse.json(trade, { status: 201 });
   } catch (error) {

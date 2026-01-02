@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import Trade from '@/lib/models/Trade';
 
+import { calculateTradeMetrics } from '@/lib/utils/tradeCalculations';
+
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
@@ -20,8 +22,14 @@ export async function GET(req: Request) {
   const query: any = { userId: session.user.id, inBacktest: { $ne: true } };
 
   if (portfolioId && portfolioId !== 'all') {
-    query.portfolioId = portfolioId;
+    try {
+      query.portfolioId = portfolioId;
+    } catch (e) {
+      console.error("Invalid portfolioId in calendar query:", portfolioId);
+    }
   }
+
+  console.log("Calendar API Query:", JSON.stringify(query));
 
   // If month is specified, filter by that month
   if (month) {
@@ -44,12 +52,18 @@ export async function GET(req: Request) {
   }
 
   try {
-    const trades = await Trade.find(query).lean();
+    const trades = await Trade.find(query)
+      .select('timestampEntry pnl entryPrice exitPrice quantity direction fees assetType symbol emotion')
+      .lean();
+    
+    console.log(`Fetched ${trades.length} trades for calendar`);
     
     // Group trades by date
     const calendarData: Record<string, any> = {};
     
     trades.forEach((trade: any) => {
+      if (!trade.timestampEntry) return;
+      
       const dateStr = new Date(trade.timestampEntry).toISOString().split('T')[0];
       
       if (!calendarData[dateStr]) {
@@ -61,8 +75,31 @@ export async function GET(req: Request) {
         };
       }
       
+      let pnl = Number(trade.pnl) || 0;
+      
+      // Calculate correct PnL if possible (institutional consistency)
+      if (trade.entryPrice && trade.exitPrice && trade.quantity) {
+        try {
+          const metrics = calculateTradeMetrics({
+            entryPrice: Number(trade.entryPrice),
+            exitPrice: Number(trade.exitPrice),
+            stopLoss: Number(trade.stopLoss || 0),
+            takeProfit: Number(trade.takeProfit || 0),
+            quantity: Number(trade.quantity),
+            direction: trade.direction === "short" ? "short" : "long",
+            portfolioBalance: Number(trade.portfolioBalance || 10000),
+            fees: Number(trade.fees || 0),
+            assetType: (trade.assetType || "forex").toLowerCase() as any,
+            symbol: trade.symbol || "",
+          });
+          pnl = metrics.netPnl;
+        } catch (e) {
+          // Fallback to stored pnl if calculation fails
+        }
+      }
+      
       calendarData[dateStr].trades++;
-      calendarData[dateStr].pnl += trade.pnl || 0;
+      calendarData[dateStr].pnl += pnl;
       
       if (trade.emotion && !calendarData[dateStr].emotions.includes(trade.emotion)) {
         calendarData[dateStr].emotions.push(trade.emotion);

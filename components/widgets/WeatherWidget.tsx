@@ -20,7 +20,7 @@ export default function WeatherWidget({ className = "" }: WeatherWidgetProps) {
       case "sunny":
         return <Sun size={24} className="text-yellow-400" />;
       case "cloudy":
-        return <Cloud size={24} className="text-gray-400" />;
+        return <Cloud size={24} className="text-muted-foreground" />;
       case "rainy":
         return <CloudRain size={24} className="text-blue-400" />;
       default:
@@ -33,7 +33,7 @@ export default function WeatherWidget({ className = "" }: WeatherWidgetProps) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-white">Weather</h3>
-          <p className="text-xs text-white/60 font-mono uppercase tracking-widest">
+          <p className="text-xs text-foreground/80 dark:text-muted-foreground font-mono uppercase tracking-widest">
             {weather.location}
           </p>
         </div>
@@ -45,23 +45,23 @@ export default function WeatherWidget({ className = "" }: WeatherWidgetProps) {
           <div className="text-4xl font-bold text-white mb-2">
             {weather.temperature}°C
           </div>
-          <div className="text-sm text-white/60 capitalize">
+          <div className="text-sm text-foreground/80 dark:text-muted-foreground capitalize">
             {weather.condition}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 bg-white/5 rounded-lg text-center">
-            <Thermometer size={16} className="text-white/60 mx-auto mb-1" />
+          <div className="p-3 bg-foreground/5 rounded-lg text-center">
+            <Thermometer size={16} className="text-foreground/80 dark:text-muted-foreground mx-auto mb-1" />
             <div className="text-sm font-bold text-white">
               {weather.humidity}%
             </div>
-            <div className="text-xs text-white/60">Humidity</div>
+            <div className="text-xs text-foreground/80 dark:text-muted-foreground">Humidity</div>
           </div>
-          <div className="p-3 bg-white/5 rounded-lg text-center">
-            <Cloud size={16} className="text-white/60 mx-auto mb-1" />
+          <div className="p-3 bg-foreground/5 rounded-lg text-center">
+            <Cloud size={16} className="text-foreground/80 dark:text-muted-foreground mx-auto mb-1" />
             <div className="text-sm font-bold text-white">15 km/h</div>
-            <div className="text-xs text-white/60">Wind</div>
+            <div className="text-xs text-foreground/80 dark:text-muted-foreground">Wind</div>
           </div>
         </div>
       </div>

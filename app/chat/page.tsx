@@ -112,7 +112,7 @@ export default function ChatPage() {
   const hasUsername = session?.user && session.user.username;
 
   return (
-    <div className="space-y-12 text-white font-sans relative min-h-[calc(100vh-140px)] pb-10 overflow-hidden px-4 md:px-8 flex flex-col">
+    <div className="text-white font-sans relative h-[calc(100vh-64px)] overflow-hidden flex flex-col p-4">
       {/* Institutional Background Mesh */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-blue-500/[0.03] blur-[150px] -translate-y-1/2 translate-x-1/2" />
@@ -138,8 +138,8 @@ export default function ChatPage() {
                 <div className="w-24 h-24 bg-blue-500/10 rounded-[2rem] flex items-center justify-center mx-auto mb-10 border border-blue-500/20 shadow-[0_0_50px_rgba(59,130,246,0.15)]">
                   <ShieldCheck size={48} className="text-blue-400" />
                 </div>
-                <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-6">Identity Shielded</h2>
-                <p className="text-white/30 text-xs font-black uppercase tracking-[0.4em] mb-12 italic leading-relaxed">
+                <h2 className="text-4xl font-black text-white italic uppercase tracking-[0.02em] mb-6">Identity Shielded</h2>
+                <p className="text-white/80 text-[11px] font-black uppercase tracking-[0.4em] mb-12 italic leading-relaxed">
                   "Institutional participation requires a verified handle. Initialize your terminal identity to participate in the global mesh transmission."
                 </p>
                 <a 
@@ -155,57 +155,14 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      {/* Header Mesh */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/5 pb-10 relative z-10 gap-8 flex-shrink-0">
-        <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
-               <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400">Mesh Comms 09 Live</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-white/[0.03] border border-white/5 rounded-full text-white/20">
-               <Wifi size={10} className="text-blue-500/50" />
-               <span className="text-[9px] font-black uppercase tracking-[0.3em]">Neural Sync: 100% Secure</span>
-            </div>
-          </div>
-          <h1 className="text-6xl font-black tracking-tighter italic uppercase bg-gradient-to-br from-white to-white/40 bg-clip-text text-transparent leading-none">
-            Global Matrix
-          </h1>
-          <p className="text-white/30 text-sm font-medium italic max-w-xl leading-relaxed">
-            "Peer-to-peer intelligence exchange within the institutional mesh. Broadcast market signals and operational insights across the terminal landscape."
-          </p>
-        </div>
-
-        <div className="flex items-center gap-6 relative z-10">
-          <div className="text-right flex flex-col items-end">
-            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic mb-1">Grid Status</span>
-            <div className="flex items-center gap-3 px-5 py-2.5 bg-green-500/5 border border-green-500/10 rounded-2xl">
-              <Activity size={12} className="text-green-500 animate-pulse" />
-              <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">Live Sync active</span>
-            </div>
-          </div>
-          <div className="w-px h-12 bg-white/10" />
-          <div className="flex items-center gap-4">
-             <div className="w-14 h-14 rounded-[1.5rem] bg-gradient-to-br from-white/10 to-transparent border border-white/5 p-0.5 flex items-center justify-center overflow-hidden shadow-2xl transition-transform hover:scale-105">
-                {/* @ts-ignore */}
-                {session?.user?.image ? (
-                  // @ts-ignore
-                  <img src={session.user.image} className="w-full h-full object-cover rounded-[1.4rem]" />
-                ) : (
-                  <UserIcon size={24} className="text-white/10" />
-                )}
-             </div>
-          </div>
-        </div>
-      </div>
 
       {/* Chat Terminal Area */}
-      <div className="flex-1 flex flex-col min-h-0 bg-[#0A0A0A]/40 backdrop-blur-xl border border-white/5 rounded-[3.5rem] overflow-hidden shadow-3xl relative z-10 group">
+      <div className="flex-1 flex flex-col min-h-0 bg-[#0A0A0A]/40 backdrop-blur-xl border border-white/5 rounded-3xl relative z-10 group overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] pointer-events-none" />
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/[0.02] blur-[150px] -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-blue-500/[0.04] transition-all duration-700" />
         
         {/* Messages Log */}
-        <div className="flex-1 overflow-y-auto px-8 py-10 space-y-8 scrollbar-none scroll-smooth relative z-10">
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 scrollbar-none scroll-smooth relative z-10">
             {chatMessages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center space-y-6 opacity-20 italic">
                 <Radio size={48} className="animate-pulse" />
@@ -221,13 +178,13 @@ export default function ChatPage() {
                   initial={{ opacity: 0, scale: 0.98, x: isMe ? 20 : -20 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   key={msg._id} 
-                  className={`flex gap-6 group/msg ${isMe ? "flex-row-reverse" : ""}`}
+                  className={`flex gap-3 group/msg ${isMe ? "flex-row-reverse" : ""}`}
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 flex-shrink-0 overflow-hidden group-hover/msg:scale-105 transition-transform shadow-xl relative mt-1">
+                  <div className="w-9 h-9 rounded-xl bg-white/[0.02] border border-white/5 flex-shrink-0 overflow-hidden group-hover/msg:scale-105 transition-transform shadow-xl relative mt-1">
                       {msg.userId?.image ? (
                         <img src={msg.userId.image} className="w-full h-full object-cover opacity-80" />
                       ) : (
-                        <UserIcon size={14} className="w-full h-full p-3 text-white/10" />
+                        <UserIcon size={12} className="w-full h-full p-2.5 text-white/10" />
                       )}
                       <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover/msg:opacity-100 transition-opacity" />
                   </div>
@@ -241,10 +198,10 @@ export default function ChatPage() {
                           {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
                         </span>
                       </div>
-                      <div className={`group relative text-[13px] font-medium leading-relaxed px-8 py-6 rounded-[2rem] shadow-2xl break-words whitespace-pre-wrap w-full transition-all duration-500 ${
+                      <div className={`group relative text-[13px] font-medium leading-relaxed px-5 py-3 rounded-2xl shadow-xl break-words whitespace-pre-wrap w-full transition-all duration-500 ${
                         isMe 
-                          ? "bg-white text-black border-transparent rounded-tr-[0.5rem] italic" 
-                          : "bg-white/[0.03] border border-white/5 rounded-tl-[0.5rem] text-white/80"
+                          ? "bg-white text-black border-transparent rounded-tr-sm italic" 
+                          : "bg-white/[0.03] border border-white/5 rounded-tl-sm text-white/80"
                       }`}>
                         {isMe && <div className="absolute inset-0 bg-blue-500 opacity-0 transition-opacity" />}
                         <span className="relative z-10">"{msg.content}"</span>

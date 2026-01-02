@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
+import { useSession } from "next-auth/react";
 
 interface Portfolio {
   _id: string;
@@ -27,12 +28,15 @@ const PortfolioContext = createContext<PortfolioContextType | undefined>(
 );
 
 export function PortfolioProvider({ children }: { children: React.ReactNode }) {
+  const { status } = useSession();
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>("all");
 
   const refreshPortfolios = useCallback(async () => {
+    if (status !== "authenticated") return;
     try {
+      setLoading(true);
       const res = await fetch("/api/portfolios");
       if (res.ok) {
         const data = await res.json();
@@ -43,11 +47,16 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [status]);
 
   useEffect(() => {
-    refreshPortfolios();
-  }, [refreshPortfolios]);
+    if (status === "authenticated") {
+      refreshPortfolios();
+    } else if (status === "unauthenticated") {
+      setPortfolios([]);
+      setLoading(false);
+    }
+  }, [status, refreshPortfolios]);
 
   return (
     <PortfolioContext.Provider

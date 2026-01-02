@@ -14,15 +14,15 @@ export default function PerformanceInsightsWidget({
 }: PerformanceInsightsWidgetProps) {
   return (
     <div className={`h-full ${className}`}>
-      <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
+      <div className="flex items-center justify-between mb-8 border-b border-border pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Key Trading Highlights</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/60 dark:text-muted-foreground">Key Trading Highlights</span>
           </div>
-          <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase">Performance Insights</h3>
+          <h3 className="text-2xl font-black text-foreground dark:text-foreground italic tracking-tighter uppercase">Performance Insights</h3>
         </div>
-        <div className="p-3 bg-white/5 rounded-2xl border border-white/10 text-emerald-500/80">
+        <div className="p-3 bg-foreground/5 rounded-2xl border border-border text-emerald-500/80">
           <TrendingUp size={20} />
         </div>
       </div>
@@ -62,8 +62,8 @@ export default function PerformanceInsightsWidget({
             </div>
           </div>
         ) : (
-          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-            <p className="text-sm text-white/50 text-center font-medium">
+          <div className="p-4 bg-foreground/5 border border-border rounded-2xl">
+            <p className="text-sm text-foreground/70 dark:text-muted-foreground text-center font-medium">
               No profitable days recorded yet
             </p>
           </div>
@@ -103,8 +103,8 @@ export default function PerformanceInsightsWidget({
             </div>
           </div>
         ) : (
-          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-            <p className="text-sm text-white/50 text-center font-medium">
+          <div className="p-4 bg-foreground/5 border border-border rounded-2xl">
+            <p className="text-sm text-foreground/70 dark:text-muted-foreground text-center font-medium">
               No losing days recorded yet
             </p>
           </div>
@@ -112,33 +112,33 @@ export default function PerformanceInsightsWidget({
 
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-2 gap-3 pt-2">
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/20 transition-colors">
+          <div className="p-4 bg-foreground/5 rounded-2xl border border-border hover:border-border transition-colors">
             <div className="text-xl font-bold text-white tabular-nums">
               {stats?.profitFactor?.toFixed(2) || "0.00"}
             </div>
-            <div className="text-[10px] text-white/40 uppercase tracking-[0.3em] font-black mt-1">Profit Factor</div>
+            <div className="text-[10px] text-foreground/60 dark:text-muted-foreground uppercase tracking-[0.3em] font-black mt-1">Profit Factor</div>
           </div>
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/20 transition-colors">
+          <div className="p-4 bg-foreground/5 rounded-2xl border border-border hover:border-border transition-colors">
             <div className="text-xl font-bold text-white tabular-nums">
               {stats?.averageR?.toFixed(2) || "0.00"}R
             </div>
-            <div className="text-[10px] text-white/40 uppercase tracking-[0.3em] font-black mt-1">Avg Reward</div>
+            <div className="text-[10px] text-foreground/60 dark:text-muted-foreground uppercase tracking-[0.3em] font-black mt-1">Avg Reward</div>
           </div>
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/20 transition-colors">
+          <div className="p-4 bg-foreground/5 rounded-2xl border border-border hover:border-border transition-colors">
             <div className="text-xl font-bold text-white tabular-nums">
               {stats?.averageWin > 0
                 ? `$${stats.averageWin.toFixed(0)}`
                 : "$0"}
             </div>
-            <div className="text-[10px] text-white/40 uppercase tracking-[0.3em] font-black mt-1">Avg Win</div>
+            <div className="text-[10px] text-foreground/60 dark:text-muted-foreground uppercase tracking-[0.3em] font-black mt-1">Avg Win</div>
           </div>
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/20 transition-colors">
+          <div className="p-4 bg-foreground/5 rounded-2xl border border-border hover:border-border transition-colors">
             <div className="text-xl font-bold text-white tabular-nums">
               {stats?.averageLoss > 0
                 ? `$${stats.averageLoss.toFixed(0)}`
                 : "$0"}
             </div>
-            <div className="text-[10px] text-white/40 uppercase tracking-[0.3em] font-black mt-1">Avg Loss</div>
+            <div className="text-[10px] text-foreground/60 dark:text-muted-foreground uppercase tracking-[0.3em] font-black mt-1">Avg Loss</div>
           </div>
         </div>
 
@@ -146,7 +146,7 @@ export default function PerformanceInsightsWidget({
           <div className="p-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-500/20 rounded-2xl flex items-center justify-between">
             <div>
               <p className="text-[10px] text-blue-300 uppercase tracking-widest font-bold">Expectancy</p>
-              <p className="text-xs text-white/70 font-medium">Value per trade</p>
+              <p className="text-xs text-foreground/90 dark:text-foreground font-medium">Value per trade</p>
             </div>
             <div className="text-right">
               <p className={`text-2xl font-bold ${stats.expectancy >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>

@@ -16,29 +16,45 @@ export async function PUT(
   }
 
   const { id } = await params;
-  const { name, initialBalance } = await req.json();
+  const body = await req.json();
+    const { 
+        name, 
+        initialBalance, 
+        currentBalance, 
+        goal, 
+        deposits, 
+        withdrawals, 
+        description, 
+        accountType 
+    } = body;
 
-  await dbConnect();
-  // @ts-ignore
-  const userId = session.user.id;
+    await dbConnect();
+    // @ts-ignore
+    const userId = session.user.id;
 
-  try {
-    // Ensure the portfolio belongs to the user
-    const portfolio = await Portfolio.findOne({ _id: id, userId });
-    
-    if (!portfolio) {
-      return NextResponse.json({ message: 'Portfolio not found' }, { status: 404 });
-    }
+    try {
+        // Ensure the portfolio belongs to the user
+        const portfolio = await Portfolio.findOne({ _id: id, userId });
+        
+        if (!portfolio) {
+            return NextResponse.json({ message: 'Portfolio not found' }, { status: 404 });
+        }
 
-    // Update portfolio
-    const updatedPortfolio = await Portfolio.findOneAndUpdate(
-      { _id: id, userId },
-      { 
-        ...(name && { name }),
-        ...(initialBalance !== undefined && { initialBalance })
-      },
-      { new: true }
-    );
+        // Update portfolio
+        const updatedPortfolio = await Portfolio.findOneAndUpdate(
+            { _id: id, userId },
+            { 
+                ...(name !== undefined && { name }),
+                ...(initialBalance !== undefined && { initialBalance: Number(initialBalance) }),
+                ...(currentBalance !== undefined && { currentBalance: Number(currentBalance) }),
+                ...(goal !== undefined && { goal: Number(goal) }),
+                ...(deposits !== undefined && { deposits: Number(deposits) }),
+                ...(withdrawals !== undefined && { withdrawals: Number(withdrawals) }),
+                ...(description !== undefined && { description }),
+                ...(accountType !== undefined && { accountType })
+            },
+            { new: true }
+        );
 
     return NextResponse.json(updatedPortfolio);
   } catch (error) {
