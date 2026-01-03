@@ -102,7 +102,7 @@ export default function StrategiesPage() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-12 pt-12 space-y-12">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12 pt-12 space-y-12">
         {/* Header Mesh */}
         <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-border pb-10 relative z-10 gap-8">
         <div className="space-y-4">

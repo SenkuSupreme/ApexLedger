@@ -1024,7 +1024,7 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
             <FloatingToolbar />
             {/* Header */}
             <header className="bg-[#050505]/40 border-b border-white/5 px-12 h-32 flex items-center justify-between w-full shadow-[0_10px_40px_rgba(0,0,0,0.3)]">
-                <div className="flex items-center gap-12">
+                <div className="flex items-center gap-6 md:gap-8">
                     <button onClick={onBack} className="p-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group shadow-lg">
                         <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                     </button>
@@ -1045,13 +1045,13 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
                         <input 
                             value={data.name}
                             readOnly
-                            className="bg-transparent border-none p-0 text-4xl font-black italic uppercase tracking-tighter text-white/50 cursor-default focus:ring-0 w-[600px] leading-tight"
+                            className="bg-transparent border-none p-0 text-4xl font-black italic uppercase tracking-tighter text-white/50 cursor-default focus:ring-0 w-full max-w-[450px] leading-tight truncate"
                             placeholder="PROTOCOL IDENTIFIER"
                         />
                     </div>
                 </div>
                 
-                <div className="flex items-center gap-8">
+                <div className="flex items-center gap-6">
                     <div className="flex items-center bg-black/40 p-1.5 rounded-2xl border border-white/5 shadow-inner">
                         <button 
                             onClick={() => setActiveSection('editor')}
@@ -1090,7 +1090,7 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
                 </div>
             </header>
 
-            <main className="max-w-[1600px] mx-auto px-32 py-32 space-y-32">
+            <main className="max-w-[1400px] mx-auto px-8 md:px-16 lg:px-24 py-24 space-y-24">
                 {showTemplatePicker ? (
                     <div className="max-w-3xl mx-auto space-y-12 py-20 text-center animate-in fade-in zoom-in duration-700">
                         <div className="space-y-4">
