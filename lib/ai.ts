@@ -61,6 +61,16 @@ export const PROMPTS = {
     Analyze this batch of recent trades for recurring patterns and behavioral issues.
     Output ONLY JSON: { "patterns": ["string"], "issues": ["string"], "fixes": ["string"] }.
     Trades: ${trades}
+  `,
+  GENERATE_CHECKLIST: (strategyName: string, content: string) => `
+    You are an institutional trading assistant. Analyze the following trading strategy: "${strategyName}".
+    Content:
+    "${content}"
+    
+    Based on this strategy, generate a concise, mechanical pre-trade checklist.
+    Each item must be a clear, actionable rule (e.g., "Check for HTF displacement", "Verify 15m MSS").
+    Return ONLY a JSON array of strings: ["Item 1", "Item 2", ...].
+    Aim for 5-10 most critical items.
   `
 };
 

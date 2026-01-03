@@ -90,6 +90,7 @@ const StrategySchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  checklist: [String],
 }, { timestamps: true });
 
 StrategySchema.index({ userId: 1 });

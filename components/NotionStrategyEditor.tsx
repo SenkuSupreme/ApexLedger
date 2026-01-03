@@ -837,6 +837,7 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
     const [focusedBlockId, setFocusedBlockId] = useState<string | null>(null);
     const [activeImage, setActiveImage] = useState<string | null>(null);
     const [activeSection, setActiveSection] = useState<'editor' | 'map'>('editor');
+    const [isGeneratingChecklist, setIsGeneratingChecklist] = useState(false);
     const [showTemplatePicker, setShowTemplatePicker] = useState(!strategyId);
 
     useEffect(() => {
@@ -898,6 +899,74 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
         }
     }, [isSaving, data]);
 
+    const generateChecklist = useCallback(async (manualBlocks?: Block[], manualName?: string) => {
+        if (isGeneratingChecklist) return;
+        
+        const toastId = 'generate-checklist';
+        setIsGeneratingChecklist(true);
+        toast.loading('Synthesizing institutional checklist...', { id: toastId });
+        
+        try {
+            const blocksToUse = manualBlocks || data.blocks;
+            const nameToUse = manualName || data.name;
+
+            const content = blocksToUse
+                .map(b => b.content.replace(/<[^>]*>/g, ''))
+                .filter(c => c.trim().length > 0)
+                .join('\n');
+            
+            if (!content) throw new Error('No content to analyze');
+
+            // 1. Get AI analysis
+            const aiRes = await fetch('/api/ai/generate-checklist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    strategyName: nameToUse,
+                    content 
+                })
+            });
+            
+            if (!aiRes.ok) throw new Error('Failed to generate checklist layout');
+            const { checklist } = await aiRes.json();
+            
+            // 2. Create formal checklist record
+            const createRes = await fetch('/api/checklists', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: `${nameToUse} Protocol`,
+                    strategy: nameToUse,
+                    description: `AI-Synthesized checklist derived from "${nameToUse}" strategy blueprint.`,
+                    items: checklist.map((item: string, i: number) => ({
+                        id: `ai-${Date.now()}-${i}`,
+                        text: item,
+                        completed: false
+                    })),
+                    isActive: true
+                })
+            });
+
+            if (!createRes.ok) throw new Error('Failed to propagate to checklist engine');
+            
+            toast.success('Protocol Synthesized', {
+                id: toastId,
+                description: 'Neural checklist has been added to your Checklist page.',
+                duration: 4000,
+            });
+            
+        } catch (err) {
+            console.error('Checklist propagation error:', err);
+            toast.error('Synthesis Failed', {
+                id: toastId,
+                description: err instanceof Error ? err.message : 'Unable to mechanicalize strategy. Please try again.',
+                duration: 4000,
+            });
+        } finally {
+            setIsGeneratingChecklist(false);
+        }
+    }, [isGeneratingChecklist, data]);
+
     const updateBlock = useCallback((id: string, updates: Partial<Block>) => {
         setData(prev => {
             const newBlocks = prev.blocks.map(b => b.id === id ? { ...b, ...updates } : b);
@@ -941,7 +1010,12 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
     }, []);
 
     const selectTemplate = (template: Block[]) => {
-        setData(prev => ({ ...prev, blocks: template }));
+        const name = template[0]?.type === 'h1' ? template[0].content.replace(/<[^>]*>/g, '').toUpperCase() : data.name;
+        setData(prev => ({ 
+            ...prev, 
+            blocks: template,
+            name: name
+        }));
         setShowTemplatePicker(false);
     };
 
@@ -992,6 +1066,14 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
                         >
                             <Activity size={14} strokeWidth={activeSection === 'map' ? 3 : 2} />
                             Neural Map
+                        </button>
+                        <button 
+                            onClick={() => generateChecklist()}
+                            disabled={isGeneratingChecklist}
+                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 text-amber-500 hover:text-amber-400 hover:bg-amber-500/10 disabled:opacity-50`}
+                        >
+                            <Sparkles size={14} className={isGeneratingChecklist ? "animate-spin" : ""} />
+                            {isGeneratingChecklist ? 'Synthesizing...' : 'Synthesize Checklist'}
                         </button>
                     </div>
 

@@ -87,7 +87,7 @@ export default function TradeDetailPage() {
   const [uploading, setUploading] = useState(false);
   const [calculatedMetrics, setCalculatedMetrics] =
     useState<TradeCalculationResult | null>(null);
-  const [isAiCollapsed, setIsAiCollapsed] = useState(false);
+  const [isAiCollapsed, setIsAiCollapsed] = useState(true);
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
