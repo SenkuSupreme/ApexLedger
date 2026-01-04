@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import HabitCard from "@/components/HabitCard";
 import HabitForm from "@/components/HabitForm";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { IHabit } from "@/lib/models/Habit";
 import { toast } from "sonner";
 
@@ -29,6 +30,8 @@ export default function HabitsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterActive, setFilterActive] = useState<string>("all");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [habitToDelete, setHabitToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchHabits();
@@ -98,22 +101,29 @@ export default function HabitsPage() {
     }
   };
 
-  const handleDeleteHabit = async (habitId: string) => {
-    if (!confirm("Confirm execution protocol termination?")) return;
+  const handleDeleteHabit = (habitId: string) => {
+    setHabitToDelete(habitId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!habitToDelete) return;
 
     try {
-      const response = await fetch(`/api/habits/${habitId}`, {
+      const response = await fetch(`/api/habits/${habitToDelete}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        setHabits(habits.filter((habit) => habit._id !== habitId));
+        setHabits(habits.filter((habit) => habit._id !== habitToDelete));
         toast.success("Protocol purged from matrix");
       } else {
         toast.error("Purge failure");
       }
     } catch (error) {
       toast.error("System error");
+    } finally {
+      setHabitToDelete(null);
     }
   };
 
@@ -348,6 +358,16 @@ export default function HabitsPage() {
           }}
         />
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={confirmDelete}
+        title="Terminate Protocol?"
+        description="This will permanently delete this execution protocol and all associated data. This action is irreversible."
+        confirmText="Terminate"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

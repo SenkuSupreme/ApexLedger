@@ -17,6 +17,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import GoalCard from "@/components/GoalCard";
 import GoalForm from "@/components/GoalForm";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { IGoal } from "@/lib/models/Goal";
 import { toast } from "sonner";
 
@@ -28,6 +29,8 @@ export default function GoalsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchGoals();
@@ -94,22 +97,29 @@ export default function GoalsPage() {
     }
   };
 
-  const handleDeleteGoal = async (goalId: string) => {
-    if (!confirm("Confirm objective deletion protocol?")) return;
+  const handleDeleteGoal = (goalId: string) => {
+    setGoalToDelete(goalId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!goalToDelete) return;
 
     try {
-      const response = await fetch(`/api/goals/${goalId}`, {
+      const response = await fetch(`/api/goals/${goalToDelete}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        setGoals(goals.filter((goal) => goal._id !== goalId));
+        setGoals(goals.filter((goal) => goal._id !== goalToDelete));
         toast.success("Objective purged from matrix");
       } else {
         toast.error("Purge failure");
       }
     } catch (error) {
       toast.error("Process failure");
+    } finally {
+      setGoalToDelete(null);
     }
   };
 
@@ -306,6 +316,16 @@ export default function GoalsPage() {
           }}
         />
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={confirmDelete}
+        title="Delete Objective?"
+        description="This will permanently terminate this objective protocol. This action cannot be reversed."
+        confirmText="Purge"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

@@ -55,7 +55,8 @@ import {
     Terminal,
     Command,
     Cpu,
-    Workflow
+    Workflow,
+    X
 } from 'lucide-react';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import StrategyMindMap from './StrategyMindMap';
@@ -562,14 +563,43 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
     };
 
     const handleTextChange = (v: string) => {
-        if (v === "/" || v === " /") {
+        const plainText = v.replace(/<[^>]*>/g, '').trim();
+        if (plainText === "/") {
             setIsMenuOpen(true);
+        } else if (!plainText.startsWith("/")) {
+            setIsMenuOpen(false);
         }
         updateBlock(block.id, { content: v });
     };
 
+    const SLASH_COMMANDS: Record<string, BlockType> = {
+        '/h1': 'h1',
+        '/h2': 'h2',
+        '/h3': 'h3',
+        '/text': 'text',
+        '/todo': 'todo',
+        '/check': 'todo',
+        '/checklist': 'todo',
+        '/bullet': 'bullet',
+        '/list': 'bullet',
+        '/callout': 'callout',
+        '/quote': 'quote',
+        '/code': 'code',
+        '/div': 'divider',
+        '/divider': 'divider',
+        '/img': 'image',
+        '/image': 'image'
+    };
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
+            const command = block.content.replace(/<[^>]*>/g, '').trim().toLowerCase();
+            if (SLASH_COMMANDS[command]) {
+                e.preventDefault();
+                updateBlock(block.id, { type: SLASH_COMMANDS[command], content: '' });
+                setIsMenuOpen(false);
+                return;
+            }
             e.preventDefault();
             addBlockAbove(block.id, 'text', true);
         } else if (e.key === 'Backspace' && !block.content) {
@@ -583,11 +613,11 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
     const renderContent = () => {
         switch (block.type) {
             case 'h1':
-                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-5xl font-black tracking-tight text-white mb-10 mt-6" placeholder="Main Directive... Type '/' for commands" tagName="h1" />;
+                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-5xl font-black tracking-tight text-white mb-6 mt-4" placeholder="Main Directive... Type '/' for commands" tagName="h1" />;
             case 'h2':
-                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-3xl font-black tracking-tight text-white/90 mb-6 mt-4" placeholder="Sub-System Architecture... Type '/' for commands" tagName="h2" />;
+                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-3xl font-black tracking-tight text-white/90 mb-4 mt-2" placeholder="Sub-System Architecture... Type '/' for commands" tagName="h2" />;
             case 'h3':
-                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-xl font-bold tracking-tight text-white/80 mb-4" placeholder="Variable Identifier... Type '/' for commands" tagName="h3" />;
+                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-xl font-bold tracking-tight text-white/80 mb-2" placeholder="Variable Identifier... Type '/' for commands" tagName="h3" />;
             case 'todo':
                 return (
                     <div className="flex items-start gap-3 group/todo w-full">
@@ -631,10 +661,10 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
                     </div>
                 );
             case 'divider':
-                return <div className="h-[2px] bg-white/[0.03] w-full my-12" />;
+                return <div className="h-[1px] bg-white/[0.03] w-full my-6" />;
             case 'image':
                 return (
-                    <div className="space-y-4 w-full group/image-block">
+                    <div className="space-y-4 w-full group/image-block relative z-0">
                         <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
                         {block.content ? (
                             <div 
@@ -648,7 +678,8 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
                                 <img 
                                     src={block.content} 
                                     alt="Strategy Asset" 
-                                    className="w-full h-auto object-contain transition-transform duration-700 group-hover/img:scale-[1.01] cursor-zoom-in"
+                                    draggable="false"
+                                    className="w-full h-auto object-contain transition-transform duration-700 group-hover/img:scale-[1.01] cursor-zoom-in pointer-events-none select-none"
                                     style={{ maxHeight: 'none' }}
                                     onClick={() => onImageClick(block.content)}
                                 />
@@ -764,9 +795,10 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
                 mass: 0.2,
                 layout: { type: "spring", stiffness: 1000, damping: 60, mass: 0.1 }
             }}
-            className="group relative flex items-start gap-6 px-10 py-4 rounded-[2.5rem] hover:bg-white/[0.01] transition-colors duration-150 will-change-transform"
+            style={{ zIndex: isMenuOpen ? 1000 : 1 }}
+            className={`group relative flex items-start gap-6 px-10 py-1.5 rounded-[2rem] hover:bg-white/[0.01] transition-colors duration-150 will-change-transform overflow-visible`}
         >
-            <div className="opacity-0 group-hover:opacity-100 absolute -left-4 -top-6 flex flex-row items-center gap-1 z-30 transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0 bg-[#0F0F0F] p-1 rounded-xl border border-white/5 shadow-2xl pointer-events-auto">
+            <div className={`${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 group-hover:opacity-100 -translate-y-2 group-hover:translate-y-0'} absolute -left-4 -top-6 flex flex-row items-center gap-1 z-[100] transition-all duration-300 bg-[#0F0F0F] p-1 rounded-xl border border-white/5 shadow-2xl pointer-events-auto`}>
                 <button 
                     onClick={() => addBlockAbove(block.id, 'text', true)}
                     className="p-1.5 text-white/40 hover:text-sky-400 hover:bg-sky-500/10 rounded-lg transition-all"
@@ -789,7 +821,7 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
                     <Trash2 size={14} />
                 </button>
                 {isMenuOpen && (
-                    <div className="absolute left-full ml-4 top-0 w-64 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] z-[100] p-2 overflow-hidden animate-in fade-in slide-in-from-left-2 duration-200">
+                    <div className="absolute left-full ml-4 top-0 w-64 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] z-[9999] p-2 overflow-hidden animate-in fade-in slide-in-from-left-2 duration-200">
                         <div className="px-3 py-2 mb-1 border-b border-white/5">
                             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 italic">Transformation Engine</span>
                         </div>
@@ -836,6 +868,7 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
     const [isSaving, setIsSaving] = useState(false);
     const [focusedBlockId, setFocusedBlockId] = useState<string | null>(null);
     const [activeImage, setActiveImage] = useState<string | null>(null);
+    const [zoomScale, setZoomScale] = useState(1);
     const [activeSection, setActiveSection] = useState<'editor' | 'map'>('editor');
     const [isGeneratingChecklist, setIsGeneratingChecklist] = useState(false);
     const [showTemplatePicker, setShowTemplatePicker] = useState(!strategyId);
@@ -853,6 +886,21 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
                 });
         }
     }, [strategyId]);
+
+    // Handle keyboard shortcuts (Ctrl+Z / Cmd+Z for undo)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Check for Ctrl+Z (Windows/Linux) or Cmd+Z (Mac)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                // Let the browser handle undo for contentEditable elements
+                // This ensures undo works within text blocks
+                return;
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     const handleSave = useCallback(async () => {
         if (isSaving) return;
@@ -1366,47 +1414,80 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
                     </>
                 )}
             </main>
-        <Toaster 
-                position="bottom-right" 
-                theme="dark"
-                toastOptions={{
-                    style: {
-                        background: '#0A0A0A',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        color: '#fff',
-                    },
-                }}
-            />
             
             {/* Image Lightbox Overlay */}
             <AnimatePresence>
                 {activeImage && (
                     <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-[200] flex items-center justify-center p-4 md:p-12"
-                        onClick={() => setActiveImage(null)}
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }} 
+                        exit={{ opacity: 0 }} 
+                        className="fixed inset-0 bg-black/95 backdrop-blur-3xl z-[200] flex items-center justify-center p-4 md:p-12 overflow-hidden" 
+                        onClick={() => {
+                            setActiveImage(null);
+                            setZoomScale(1);
+                        }}
                     >
-                        <div className="absolute top-8 right-8 p-4 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white cursor-pointer hover:bg-white/10 transition-all z-10">
-                             ✕
-                        </div>
                         <motion.div 
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative max-w-7xl w-full h-full flex flex-col items-center justify-center"
-                            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                            className="absolute top-8 right-8 flex items-center gap-4 z-[210]"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex bg-white/5 border border-white/10 rounded-2xl p-1 backdrop-blur-xl">
+                                <button 
+                                    onClick={() => setZoomScale(prev => Math.max(0.5, prev - 0.5))}
+                                    className="p-3 hover:bg-white/10 rounded-xl text-white/40 hover:text-white transition-all"
+                                >
+                                    <ChevronDown size={20} />
+                                </button>
+                                <div className="px-4 flex items-center justify-center min-w-[80px]">
+                                    <span className="text-[10px] font-black font-mono text-sky-400">
+                                        {Math.round(zoomScale * 100)}%
+                                    </span>
+                                </div>
+                                <button 
+                                    onClick={() => setZoomScale(prev => Math.min(5, prev + 0.5))}
+                                    className="p-3 hover:bg-white/10 rounded-xl text-white/40 hover:text-white transition-all"
+                                >
+                                    <ChevronUp size={20} />
+                                </button>
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    setActiveImage(null);
+                                    setZoomScale(1);
+                                }}
+                                className="p-4 bg-white/10 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 rounded-2xl text-white/40 hover:text-rose-500 transition-all shadow-2xl"
+                            >
+                                <X size={20} />
+                            </button>
+                        </motion.div>
+
+                        <motion.div
+                            drag={zoomScale > 1}
+                            dragConstraints={{ left: -2000, right: 2000, top: -2000, bottom: 2000 }}
+                            dragElastic={0.05}
+                            dragMomentum={false}
+                            style={{ scale: zoomScale }}
+                            onClick={(e) => e.stopPropagation()}
+                            onWheel={(e) => {
+                                if (e.deltaY < 0) setZoomScale(prev => Math.min(5, prev + 0.1));
+                                else setZoomScale(prev => Math.max(0.5, prev - 0.1));
+                            }}
+                            className="relative cursor-grab active:cursor-grabbing"
                         >
                             <img 
                                 src={activeImage} 
                                 alt="Strategy Artifact" 
-                                className="max-w-full max-h-full object-contain rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/5"
+                                draggable="false"
+                                className="max-w-full max-h-[85vh] object-contain rounded-3xl shadow-[0_50px_100px_rgba(0,0,0,0.8)] border border-white/5 pointer-events-none select-none" 
                             />
-                            <div className="absolute bottom-[-40px] px-6 py-2 bg-white/[0.03] border border-white/10 rounded-full backdrop-blur-md">
-                                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic">Visual Evidence</span>
-                            </div>
                         </motion.div>
+
+                        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 px-8 py-3 bg-white/[0.03] border border-white/10 rounded-full backdrop-blur-xl">
+                            <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] italic">
+                                Scroll to zoom • Drag to pan inside frame
+                            </span>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
