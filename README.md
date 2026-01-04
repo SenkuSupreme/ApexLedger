@@ -1,65 +1,100 @@
-# ApexLedger
+# 🌌 ApexLedger
 
-ApexLedger is an AI-augmented trade journal and backtesting platform that supports stocks, forex, and crypto. Built with Next.js, MongoDB, and OpenRouter-compatible LLMs for AI-powered tagging, sentiment analysis, strategy evaluation and entry/exit suggestions.
+> **The Institutional Trading OS.**  
+> *Where Intelligence Meets Execution.*
 
-## Features
-- Complete trade journal (manual entry, CSV import, broker adapters)
-- Multi-asset support: stocks, forex, crypto
-- Advanced backtesting engine with replay and import to journal
-- Performance analytics: equity curve, drawdown, win rate, profit factor, R-Multiple distribution
-- AI features powered by OpenRouter-compatible models: automated tagging, sentiment analysis, pattern detection, strategy scoring, entry/exit suggestions
-- Strategy management and templates
-- Secure authentication (NextAuth)
+ApexLedger is a high-performance, AI-augmented trading journal and backtesting ecosystem designed for professional speculators across **Forex, Crypto, and Equities**. 
 
-## Quickstart (local)
-1. Clone the repository:
-   ```bash
-   git clone <repo-url>
-   cd apexledger
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn
-   ```
-3. Environment variables
-   Create a `.env.local` with the following variables:
-   ```env
-   MONGODB_URI=mongodb+srv://<user>:<pass>@cluster0.mongodb.net/apexledger?retryWrites=true&w=majority
-   NEXTAUTH_SECRET=<a-strong-random-secret>
-   OPENROUTER_API_KEY=<your-openrouter-api-key>
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   DATA_PROVIDER_API_KEYS=<optional: comma-separated>
-   ```
+---
 
-4. Seed demo data (optional):
-   ```bash
-   npm run seed
-   ```
+### ⚠️ Disclaimer
+**Educational Purposes Only.**  
+This application is a conceptual project built for educational exploration. It is not financial advice, nor is it intended for professional financial management without significant auditing.
 
-5. Run the dev server:
-   ```bash
-   npm run dev
-   # visit http://localhost:3000
-   ```
+**Built with Vibe Coding™**  
+This entire platform was forged through the art of "Vibe Coding"—leveraging advanced AI agents to translate high-level creative vision and architectural "vibes" into production-grade code. It is a testament to the future of software development where intent and aesthetics drive the build.
 
-## Deployment
-- Recommended: Vercel for Next.js front-end and serverless functions. Use MongoDB Atlas for production DB.
-- Store secrets in Vercel environment variables (MONGODB_URI, NEXTAUTH_SECRET, OPENROUTER_API_KEY).
+---
 
-## AI Integration
-- ApexLedger centralizes AI calls server-side via `/lib/ai.ts`. The app expects an OpenRouter-compatible API key. Use free model access where possible; watch for rate limits and consider caching common prompts.
+## 🏛️ Key Architecture
 
-## Data Sources
-- The project includes adapters for free data sources (Alpha Vantage, Yahoo Finance, CoinGecko). Replace or extend adapters as required.
+### 🧠 The Neural Engine
+Powered by OpenRouter/LLM integration, ApexLedger doesn't just log trades—it understands them.
+- **Automated Tagging**: Real-time pattern recognition and session-based tagging.
+- **Sentiment Synthesis**: AI analysis of your trade notes to identify psychological bias.
+- **Neural Checklists**: Dynamically generated, strategy-specific checklists to ensure discipline.
+- **Strategy Scoring**: Objective AI evaluation of trades based on your predefined blueprints.
 
-## Security & Privacy
-- All AI calls are performed server-side. Users must add their own OpenRouter API key in settings to enable AI features.
-- Do not commit `.env` files or keys to version control.
+### 🗺️ The Neural Map (3D)
+Visualize your trading edge in three dimensions. Using `Three.js` and `react-force-graph-3d`, your strategies are rendered as an interactive neural network, allowing you to explore the connections between variables, triggers, and execution logic.
 
-## Contributing
-Contributions are welcome. Please open issues or pull requests and follow the code style and testing guidelines.
+### 📝 Institutional Core Blueprints
+A sophisticated, block-based strategy editor inspired by Notion.
+- **Institutional Canvas**: Design complex strategies with rich text, images, and logic blocks.
+- **Blueprint-to-Checklist**: One-click conversion of strategy logic into executable neural checklists.
+- **Synthesis Engine**: Bridge the gap between theory and execution.
 
-## License
-MIT
+### 📊 Performance Analytics
+- **Professional Metrics**: Profit Factor, R-Multiple distribution, Win/Loss ratios, and Max Drawdown.
+- **Equity Curve**: Dynamic visualization of your capital growth over time.
+- **Calendar Heatmaps**: Identify your most (and least) profitable sessions and days.
+
+### 🧪 Backtesting 2.0
+- **Simulation Mode**: Replay past price action and execute trades in a controlled environment.
+- **Direct Journaling**: Seamlessly import backtested sessions into your primary journal for comparison.
+- **Multi-Asset Support**: Built-in adapters for Forex, Crypto, and major indices.
+
+---
+
+## 🛠️ Technology Stack
+
+- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router, Server Components)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/) + [Framer Motion](https://www.framer.com/motion/)
+- **Database**: [MongoDB](https://www.mongodb.com/) with [Mongoose](https://mongoosejs.com/)
+- **AI/LLM**: [OpenRouter](https://openrouter.ai/) / [OpenAI](https://openai.com/)
+- **Visuals**: [Three.js](https://threejs.org/) & [React Force Graph 3D](https://github.com/vasturiano/react-force-graph-3d)
+- **Auth**: [NextAuth.js](https://next-auth.js.org/)
+
+---
+
+## 🚀 Quick Start
+
+### 1. Requirements
+- Node.js 20+
+- MongoDB instance (Local or Atlas)
+- OpenRouter/OpenAI API Key
+
+### 2. Installation
+```bash
+git clone https://github.com/yourusername/apexledger.git
+cd apexledger
+npm install
+```
+
+### 3. Environment Setup
+Create a `.env.local` file in the root:
+```env
+MONGODB_URI=your_mongodb_connection_string
+NEXTAUTH_SECRET=your_nextauth_secret
+OPENROUTER_API_KEY=your_key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### 4. Launch
+```bash
+npm run dev
+```
+Visit `http://localhost:3000` to enter the terminal.
+
+---
+
+## 🎨 Design Philosophy
+ApexLedger prioritizes a **Minimal/Institutional Aesthetic**. We avoid cluttered interfaces in favor of high-contrast, typography-driven designs with subtle micro-animations and a deep "Midnight Terminal" theme.
+
+---
+
+## 📜 License
+MIT © ApexLedger
+
+---
+*Stay disciplined. Stay objective.*
