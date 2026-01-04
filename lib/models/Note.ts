@@ -13,7 +13,6 @@ const NoteSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: true,
   },
   tags: [{
     type: String,
@@ -55,6 +54,35 @@ const NoteSchema = new mongoose.Schema({
     type: String,
   }],
   reminderDate: Date,
+  isDetailed: {
+    type: Boolean,
+    default: false,
+  },
+  blocks: [{
+    id: String,
+    type: { 
+        type: String, 
+        enum: ['h1', 'h2', 'h3', 'text', 'todo', 'callout', 'divider', 'image', 'quote', 'bullet', 'code'] 
+    },
+    content: String,
+    checked: Boolean, // for todo
+    metadata: mongoose.Schema.Types.Mixed // for any additional block data
+  }],
+  canvasElements: [{
+    id: String,
+    type: { type: String, enum: ['image', 'note', 'shape'] },
+    content: String, // URL for image, text for note
+    position: {
+      x: Number,
+      y: Number,
+    },
+    size: {
+      width: Number,
+      height: Number,
+    },
+    rotation: Number,
+    zIndex: Number,
+  }],
   isArchived: {
     type: Boolean,
     default: false,
@@ -82,4 +110,9 @@ NoteSchema.virtual('formattedDate').get(function() {
   });
 });
 
-export default mongoose.models.Note || mongoose.model('Note', NoteSchema);
+if (mongoose.models.Note) {
+  delete mongoose.models.Note;
+}
+
+const Note = mongoose.model('Note', NoteSchema);
+export default Note;

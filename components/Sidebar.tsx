@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Book,
+  BookOpen,
   TrendingUp,
   Layers,
   BarChart3,
@@ -83,6 +84,7 @@ const navGroups = [
       { href: "/goals", icon: Target, label: "Goals" },
       { href: "/habits", icon: Activity, label: "Habits" },
       { href: "/notebook", icon: Notebook, label: "Notebook" },
+      { href: "/notes-detailed", icon: BookOpen, label: "Notes (detailed)" },
       { href: "/activity-log", icon: StickyNote, label: "Activity Log" },
     ],
   },

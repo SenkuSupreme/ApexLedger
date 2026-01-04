@@ -4,6 +4,44 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import Note from "@/lib/models/Note";
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await dbConnect();
+    const { id } = await params;
+
+    const note = await Note.findOne({
+      _id: id,
+      userId: (session.user as any).id,
+    });
+
+    if (!note) {
+      return NextResponse.json(
+        { success: false, error: "Note not found or unauthorized" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      note,
+    });
+  } catch (error) {
+    console.error("Note GET error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch note" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

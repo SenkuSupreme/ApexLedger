@@ -19,11 +19,17 @@ export async function GET(req: NextRequest) {
     const isQuickNote = searchParams.get("isQuickNote");
     const category = searchParams.get("category");
     const search = searchParams.get("search");
+    const isDetailed = searchParams.get("isDetailed");
 
     const query: any = {
       // @ts-ignore
       userId: session.user.id,
     };
+
+    if (isDetailed !== null) {
+      if (isDetailed === "true") query.isDetailed = true;
+      if (isDetailed === "false") query.isDetailed = false;
+    }
 
     if (isQuickNote !== null) {
       if (isQuickNote === "true") query.isQuickNote = true;
@@ -68,17 +74,22 @@ export async function POST(req: NextRequest) {
   try {
     await dbConnect();
     const body = await req.json();
-    const { title, content, category, tags, isQuickNote, priority, color } =
-      body;
+    const { 
+      title, content, category, tags, isQuickNote, priority, color, 
+      isDetailed, blocks, canvasElements 
+    } = body;
 
     const note = await Note.create({
       title,
-      content,
+      content: content || "",
       category: category || "other",
       tags: tags || [],
       isQuickNote: isQuickNote || false,
       priority: priority || "medium",
       color: color || "#fef3c7",
+      isDetailed: isDetailed || false,
+      blocks: blocks || [],
+      canvasElements: canvasElements || [],
       // @ts-ignore
       userId: session.user.id,
       isPinned: false,
