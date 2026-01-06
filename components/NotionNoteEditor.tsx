@@ -57,6 +57,11 @@ import {
     Command,
     Cpu,
     Workflow,
+    Table as TableIcon,
+    ChevronRight as ChevronRightIcon,
+    Link2,
+    Copy,
+    ExternalLink,
     X
 } from 'lucide-react';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
@@ -64,7 +69,7 @@ import { toast, Toaster } from 'sonner';
 
 // --- TYPES ---
 
-export type BlockType = 'h1' | 'h2' | 'h3' | 'text' | 'todo' | 'callout' | 'divider' | 'image' | 'quote' | 'bullet' | 'code';
+export type BlockType = 'h1' | 'h2' | 'h3' | 'text' | 'todo' | 'callout' | 'divider' | 'image' | 'quote' | 'bullet' | 'code' | 'table' | 'toggle' | 'number' | 'bookmark';
 
 export interface Block {
     id: string;
@@ -130,14 +135,22 @@ const TRADING_LESSON_TEMPLATE: Block[] = [
 const FloatingToolbar = () => {
     const [position, setPosition] = useState<{ top: number, left: number } | null>(null);
     const [isVisible, setIsVisible] = useState(false);
-    
+    const [activeStyles, setActiveStyles] = useState({ bold: false, italic: false, underline: false });
+
     useEffect(() => {
         const handleSelectionChange = () => {
             const selection = window.getSelection();
-            if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+            if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
                 setIsVisible(false);
                 return;
             }
+
+            // Check active styles
+            setActiveStyles({
+                bold: document.queryCommandState('bold'),
+                italic: document.queryCommandState('italic'),
+                underline: document.queryCommandState('underline')
+            });
 
             const range = selection.getRangeAt(0);
             const rect = range.getBoundingClientRect();
@@ -186,13 +199,25 @@ const FloatingToolbar = () => {
                 onMouseDown={(e) => e.preventDefault()}
             >
                 <div className="flex items-center gap-0.5">
-                    <button onClick={() => format('bold')} className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors" title="Bold">
+                    <button 
+                        onClick={() => format('bold')} 
+                        className={`p-2 rounded-lg transition-colors ${activeStyles.bold ? 'bg-sky-500/20 text-sky-400' : 'text-white/70 hover:text-white hover:bg-white/10'}`} 
+                        title="Bold"
+                    >
                         <span className="font-black font-sans">B</span>
                     </button>
-                    <button onClick={() => format('italic')} className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors" title="Italic">
+                    <button 
+                        onClick={() => format('italic')} 
+                        className={`p-2 rounded-lg transition-colors ${activeStyles.italic ? 'bg-sky-500/20 text-sky-400' : 'text-white/70 hover:text-white hover:bg-white/10'}`} 
+                        title="Italic"
+                    >
                         <span className="italic font-serif">I</span>
                     </button>
-                    <button onClick={() => format('underline')} className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors" title="Underline">
+                    <button 
+                        onClick={() => format('underline')} 
+                        className={`p-2 rounded-lg transition-colors ${activeStyles.underline ? 'bg-sky-500/20 text-sky-400' : 'text-white/70 hover:text-white hover:bg-white/10'}`} 
+                        title="Underline"
+                    >
                         <span className="underline font-serif underline-offset-4 decoration-white/30">U</span>
                     </button>
                 </div>
@@ -257,11 +282,14 @@ const ContentBlock = React.forwardRef(({ html, tagName: Tag = 'div', className, 
                 if (typeof ref === 'function') ref(node);
                 else if (ref) (ref as React.MutableRefObject<HTMLElement | null>).current = node;
             }}
-            className={`outline-none min-h-[1.5em] empty:before:content-[attr(data-placeholder)] empty:before:text-white/20 px-1 transition-all duration-200 ${className} [&>b]:text-sky-400 [&>b]:font-black [&>i]:text-purple-400 [&>u]:decoration-sky-500 [&>mark]:bg-amber-500/20 [&>mark]:text-amber-500 [&>mark]:px-1 [&>mark]:rounded-md`}
+            className={`outline-none min-h-[1.5em] focus:empty:before:content-[attr(data-placeholder)] empty:before:text-white/20 px-1 transition-all duration-200 ${className} [&>b]:font-black [&>i]:italic [&>u]:underline [&>mark]:bg-amber-500/20 [&>mark]:text-amber-500 [&>mark]:px-1 [&>mark]:rounded-md`}
             contentEditable
             suppressContentEditableWarning
             onInput={handleInput}
             onKeyDown={onKeyDown}
+            onFocus={() => {
+                if (props.onFocus) props.onFocus();
+            }}
             data-placeholder={placeholder}
             {...props}
         />
@@ -281,6 +309,10 @@ const BlockIcon = ({ type }: { type: BlockType }) => {
         case 'bullet': return <List size={14} strokeWidth={2.5} />;
         case 'image': return <ImageIcon size={14} strokeWidth={2.5} />;
         case 'code': return <Terminal size={14} strokeWidth={2.5} />;
+        case 'table': return <TableIcon size={14} strokeWidth={2.5} />;
+        case 'toggle': return <ChevronRightIcon size={14} strokeWidth={3} />;
+        case 'number': return <span className="text-[10px] font-black">1.</span>;
+        case 'bookmark': return <Link2 size={14} strokeWidth={2.5} />;
         default: return <Type size={14} strokeWidth={2.5} />;
     }
 };
@@ -315,7 +347,7 @@ const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, any>(({ value, 
 });
 AutoResizeTextarea.displayName = "AutoResizeTextarea";
 
-const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove, isLast, isFocused, onImageClick, onFocus, onRemoveWithFocus, blockIndex }: any) => {
+const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove, isLast, isFocused, onImageClick, onFocus, onRemoveWithFocus, blockIndex, allBlocks }: any) => {
     const dragControls = useDragControls();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0, showAbove: false });
@@ -349,11 +381,11 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
             const spaceAbove = rect.top;
             
             // Determine if menu should show above or below
-            const showAbove = spaceBelow < menuHeight && spaceAbove > spaceBelow;
+            const showAbove = spaceBelow < menuHeight;
             
             setMenuPosition({
                 top: showAbove ? rect.top - 8 : rect.bottom + 8,
-                left: rect.left + 40,
+                left: rect.left,
                 showAbove
             });
         }
@@ -389,7 +421,20 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
         } else if (!plainText.startsWith("/")) {
             setIsMenuOpen(false);
         }
+
         updateBlock(block.id, { content: v });
+    };
+
+    const calculateListNumber = (currentIndex: number) => {
+        let count = 1;
+        for (let i = currentIndex - 1; i >= 0; i--) {
+            if (allBlocks[i].type === 'number') {
+                count++;
+            } else {
+                break;
+            }
+        }
+        return count;
     };
 
     const SLASH_COMMANDS: Record<string, BlockType> = {
@@ -408,10 +453,23 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
         '/div': 'divider',
         '/divider': 'divider',
         '/img': 'image',
-        '/image': 'image'
+        '/image': 'image',
+        '/table': 'table',
+        '/toggle': 'toggle',
+        '/collapsible': 'toggle',
+        '/number': 'number',
+        '/numbered': 'number',
+        '/bookmark': 'bookmark',
+        '/link': 'bookmark'
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight') {
+             if (document.queryCommandState('bold')) document.execCommand('bold', false);
+             if (document.queryCommandState('italic')) document.execCommand('italic', false);
+             if (document.queryCommandState('underline')) document.execCommand('underline', false);
+        }
+
         if (e.key === 'Enter' && !e.shiftKey) {
             const command = block.content.replace(/<[^>]*>/g, '').trim().toLowerCase();
             if (SLASH_COMMANDS[command]) {
@@ -420,15 +478,34 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
                 setIsMenuOpen(false);
                 return;
             }
+            if (block.type === 'bullet') {
+                e.preventDefault();
+                addBlockAbove(block.id, 'bullet', true);
+                return;
+            }
+            if (block.type === 'number') {
+                e.preventDefault();
+                addBlockAbove(block.id, 'number', true);
+                return;
+            }
+            if (block.type === 'todo') {
+                e.preventDefault();
+                addBlockAbove(block.id, 'todo', true);
+                return;
+            }
             e.preventDefault();
             addBlockAbove(block.id, 'text', true);
-        } else if (e.key === 'Backspace' && !block.content) {
-            e.preventDefault();
-            // Focus previous block before removing
-            if (blockIndex > 0) {
-                onRemoveWithFocus(block.id, blockIndex - 1);
-            } else {
-                removeBlock(block.id);
+            const selection = window.getSelection();
+            const range = selection?.getRangeAt(0);
+            const isAtStart = range?.startOffset === 0;
+
+            if (isAtStart && selection?.isCollapsed) {
+                e.preventDefault();
+                if (blockIndex > 0) {
+                    onRemoveWithFocus(block.content ? null : block.id, blockIndex - 1);
+                } else if (!block.content && block.type !== 'text') {
+                    updateBlock(block.id, { type: 'text' });
+                }
             }
         } else if (e.key === 'ArrowUp') {
             // Navigate to previous block when at the beginning of content
@@ -466,51 +543,128 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
     const renderContent = () => {
         switch (block.type) {
             case 'h1':
-                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-5xl font-black tracking-tight text-white mb-6 mt-4" placeholder="Note Title... Type '/' for commands" tagName="h1" />;
+                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-4xl md:text-6xl font-black tracking-tight text-white mb-8 mt-6" placeholder="Directive Header..." tagName="h1" />;
             case 'h2':
-                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-3xl font-black tracking-tight text-white/90 mb-4 mt-2" placeholder="Section Header... Type '/' for commands" tagName="h2" />;
+                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-3xl md:text-4xl font-black tracking-tight text-white/90 mb-6 mt-4" placeholder="Sub-System Detail..." tagName="h2" />;
             case 'h3':
-                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-xl font-bold tracking-tight text-white/80 mb-2" placeholder="Sub-header... Type '/' for commands" tagName="h3" />;
+                return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-xl md:text-2xl font-bold tracking-tight text-white/80 mb-4 mt-2" placeholder="Component Logic..." tagName="h3" />;
             case 'todo':
                 return (
-                    <div className="flex items-start gap-3 group/todo w-full">
+                    <div className="flex items-start gap-4 group/todo w-full">
                         <button 
                             onClick={() => updateBlock(block.id, { checked: !block.checked })}
-                            className={`mt-1.5 w-5 h-5 rounded-md flex items-center justify-center transition-all ${block.checked ? 'bg-sky-500 text-black' : 'bg-white/5 hover:bg-white/10 text-white/20'}`}
+                            className={`mt-1 w-6 h-6 rounded-lg flex items-center justify-center transition-all ${block.checked ? 'bg-sky-500 text-black shadow-[0_0_15px_rgba(14,165,233,0.4)]' : 'bg-white/10 hover:bg-white/20 text-white/30'}`}
                         >
                             {block.checked && <ListChecks size={14} strokeWidth={3} />}
                         </button>
-                        <ContentBlock 
-                            ref={textareaRef}
-                            html={block.content} 
-                            onChange={handleTextChange} 
-                            onKeyDown={handleKeyDown} 
-                            onFocus={() => onFocus(block.id)}
-                            className={`text-[15px] font-medium leading-relaxed ${block.checked ? 'text-white/30 line-through' : 'text-white/80'}`} 
-                            placeholder="To-do... Type '/' for commands" 
-                        />
+                        <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className={`text-lg font-medium leading-relaxed ${block.checked ? 'text-white/40 line-through' : 'text-white/90'}`} placeholder="Verification step..." />
                     </div>
                 );
             case 'callout':
                 return (
-                    <div className="flex items-start gap-6 p-10 bg-white/[0.02] backdrop-blur-3xl rounded-[2.5rem] w-full border border-sky-500/5 group/callout hover:bg-sky-500/[0.03] transition-all duration-500">
-                        <div className="mt-1 p-3 bg-sky-500/10 text-sky-500 rounded-2xl shadow-[0_0_15px_rgba(14,165,233,0.1)]">
+                    <div className="flex items-center gap-6 p-8 md:p-12 bg-white/[0.03] backdrop-blur-3xl rounded-[2.5rem] w-full border border-sky-500/10 group/callout hover:bg-sky-500/[0.05] transition-all duration-500">
+                        <div className="p-3.5 bg-sky-500/10 text-sky-400 rounded-2xl shadow-[0_0_20px_rgba(14,165,233,0.15)] group-hover/callout:scale-110 transition-transform">
                             <AlertCircle size={24} />
                         </div>
-                        <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-base font-medium leading-relaxed text-white/80" placeholder="Important insight... Type '/' for commands" />
+                        <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-lg font-medium leading-relaxed text-white/90" placeholder="Operational mandate..." />
+                    </div>
+                );
+            case 'number':
+                return (
+                    <div className="flex items-start gap-3 w-full">
+                        <div className="mt-1.5 text-[11px] font-black text-sky-500/60 shrink-0 w-5 select-none">{calculateListNumber(blockIndex)}.</div>
+                        <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-lg font-medium leading-relaxed text-white/90" placeholder="Step in series..." />
+                    </div>
+                );
+            case 'toggle':
+                const isOpen = block.metadata?.isOpen ?? false;
+                return (
+                    <div className="w-full space-y-2">
+                        <div className="flex items-center gap-2 group/toggle-head">
+                            <button 
+                                onClick={() => updateBlock(block.id, { metadata: { ...block.metadata, isOpen: !isOpen } })}
+                                className={`p-1.5 hover:bg-white/10 rounded-lg transition-transform duration-200 ${isOpen ? 'rotate-90' : ''} text-white/30 hover:text-white`}
+                            >
+                                <ChevronRightIcon size={14} />
+                            </button>
+                            <ContentBlock 
+                                ref={textareaRef} 
+                                html={block.content} 
+                                onChange={handleTextChange} 
+                                onKeyDown={(e: React.KeyboardEvent) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        updateBlock(block.id, { metadata: { ...block.metadata, isOpen: true } });
+                                        // Focus logic would ideally go here, but for now we open it
+                                    } else {
+                                        handleKeyDown(e);
+                                    }
+                                }} 
+                                onFocus={() => onFocus(block.id)} 
+                                className="text-lg font-bold text-white/90 flex-1" 
+                                placeholder="Toggle Header..." 
+                            />
+                        </div>
+                        {isOpen && (
+                            <div className="pl-8 border-l border-white/5 space-y-2 ml-3">
+                                <ContentBlock 
+                                    html={block.metadata?.details || ''} 
+                                    onChange={(v: string) => updateBlock(block.id, { metadata: { ...block.metadata, details: v } })} 
+                                    className="text-[16px] leading-relaxed text-white/70 min-h-[1.5em]" 
+                                    placeholder="Nested details..." 
+                                />
+                            </div>
+                        )}
                     </div>
                 );
             case 'quote':
                 return (
-                    <div className="pl-10 border-l-[6px] border-sky-500/30 italic py-4 mb-2">
-                        <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-xl font-medium text-white/60 leading-relaxed" placeholder="Insightful quote... Type '/' for commands" />
+                    <div className="pl-10 border-l-[6px] border-sky-500/40 italic py-6 mb-4 bg-sky-500/[0.03] backdrop-blur-md rounded-r-[2rem] relative overflow-hidden group/quote">
+                        <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.5)] opacity-50 group-hover/quote:opacity-100 transition-opacity" />
+                        <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-xl font-medium text-white/90 leading-relaxed drop-shadow-sm" placeholder="Institutional wisdom..." />
                     </div>
                 );
-            case 'bullet':
+            case 'code':
                 return (
-                    <div className="flex items-start gap-3 w-full">
-                        <div className="mt-2.5 w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
-                        <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-[15px] font-medium leading-relaxed text-white/80" placeholder="Bullet point... Type '/' for commands" />
+                    <div className="group/code relative font-mono text-sm bg-black/40 backdrop-blur-2xl rounded-[2.5rem] p-10 overflow-hidden border border-white/5">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-sky-500/50" />
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.2em] text-white/30">
+                                <Terminal size={12} />
+                                <span>Algorithmic Logic / PineScript</span>
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    navigator.clipboard.writeText(block.content);
+                                    toast.success('Strategy Logic Copied');
+                                }}
+                                className="opacity-0 group-hover/code:opacity-100 p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/30 hover:text-white transition-all shadow-xl"
+                            >
+                                <Copy size={12} />
+                            </button>
+                        </div>
+                        <AutoResizeTextarea 
+                            value={block.content} 
+                            onChange={handleTextChange} 
+                            onKeyDown={handleKeyDown} 
+                            className="text-sky-400 font-mono text-[13px] leading-relaxed" 
+                            placeholder="// Paste technical logic here..." 
+                        />
+                    </div>
+                );
+            case 'bookmark':
+                return (
+                    <div className="group/bookmark relative w-full border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-all rounded-[2.5rem] p-8 md:p-12 flex items-center gap-8 group/link">
+                        <div className="p-5 bg-sky-500/10 rounded-[2rem] text-sky-400 group-hover/link:scale-110 transition-transform">
+                            <Link2 size={28} />
+                        </div>
+                        <div className="flex-1">
+                            <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-lg font-bold text-white mb-2" placeholder="Paste URL or link title..." />
+                            <p className="text-[10px] font-black uppercase tracking-widest text-sky-500/50 group-hover:text-sky-400 transition-colors">Institutional Web Resource</p>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded-full text-white/20 opacity-0 group-hover/bookmark:opacity-100 transition-opacity">
+                            <ExternalLink size={16} />
+                        </div>
                     </div>
                 );
             case 'divider':
@@ -525,7 +679,8 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
                                 style={{ 
                                     width: block.metadata?.width || '100%',
                                     maxWidth: '100%',
-                                    minWidth: '200px'
+                                    minWidth: '200px',
+                                    margin: '0 auto'
                                 }}
                             >
                                 <img 
@@ -537,78 +692,77 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
                                     onClick={() => onImageClick(block.content)}
                                 />
                                 
-                                {/* Resize Handle */}
+                                {/* Notion-style Edge Resize Handles */}
                                 <div 
-                                    className="absolute bottom-2 right-2 w-6 h-6 bg-sky-500/20 hover:bg-sky-500/40 border-2 border-sky-500/50 rounded-lg cursor-nwse-resize opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center"
+                                    className="absolute inset-y-0 right-0 w-2 hover:w-4 bg-sky-500/0 hover:bg-sky-500/20 cursor-ew-resize transition-all z-[60] flex items-center justify-center group/side-resizer"
                                     onMouseDown={(e) => {
                                         e.preventDefault();
                                         const startX = e.clientX;
                                         const startWidth = (e.currentTarget.parentElement as HTMLElement).offsetWidth;
-                                        
-                                        const handleMouseMove = (moveEvent: MouseEvent) => {
-                                            const newWidth = startWidth + (moveEvent.clientX - startX);
+                                        const handleMouseMove = (mv: MouseEvent) => {
+                                            const newWidth = startWidth + (mv.clientX - startX) * 2;
                                             if (newWidth >= 200 && newWidth <= 1200) {
-                                                updateBlock(block.id, { 
-                                                    metadata: { 
-                                                        ...block.metadata, 
-                                                        width: `${newWidth}px` 
-                                                    } 
-                                                });
+                                                updateBlock(block.id, { metadata: { ...block.metadata, width: `${newWidth}px` } });
                                             }
                                         };
-                                        
                                         const handleMouseUp = () => {
                                             document.removeEventListener('mousemove', handleMouseMove);
                                             document.removeEventListener('mouseup', handleMouseUp);
                                         };
-                                        
                                         document.addEventListener('mousemove', handleMouseMove);
                                         document.addEventListener('mouseup', handleMouseUp);
                                     }}
                                 >
-                                    <div className="w-1 h-1 bg-sky-500 rounded-full" />
+                                    <div className="w-1 h-12 bg-sky-500/30 rounded-full opacity-0 group-hover/side-resizer:opacity-100 transition-opacity" />
                                 </div>
 
-                                <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover/img:opacity-100 transition-all transform translate-y-2 group-hover/img:translate-y-0 flex items-center justify-between">
-                                     <div className="flex items-center gap-3">
-                                         <div className="p-2 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
-                                             <ImageIcon size={16} className="text-white" />
-                                         </div>
-                                         <p className="text-[10px] font-black uppercase tracking-widest text-white/70">Attached Image</p>
-                                     </div>
-                                     <div className="flex items-center gap-2">
-                                         <button 
-                                             onClick={() => updateBlock(block.id, { metadata: { ...block.metadata, width: '100%' } })} 
-                                             className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-white transition-all shadow-lg active:scale-95 text-[9px] font-black uppercase tracking-wider"
-                                         >
-                                             Reset Size
-                                         </button>
-                                         <button 
-                                             onClick={() => onImageClick(block.content)}
-                                             className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-white transition-all shadow-lg active:scale-95"
-                                             title="Expand Image"
-                                         >
-                                             <Maximize2 size={16} />
-                                         </button>
-                                         <button onClick={() => fileInputRef.current?.click()} className="p-2.5 bg-sky-500 hover:bg-sky-400 rounded-xl text-black transition-all shadow-lg active:scale-95">
-                                             <Edit3 size={16} />
-                                         </button>
-                                     </div>
+                                <div 
+                                    className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover/img:opacity-100 transition-all transform translate-y-4 group-hover/img:translate-y-0 flex items-center justify-between pointer-events-none"
+                                >
+                                    <div className="flex items-center gap-4 pointer-events-auto">
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                fileInputRef.current?.click();
+                                            }}
+                                            className="px-6 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl text-white/70 hover:text-white transition-all text-[10px] font-black uppercase tracking-[0.2em] border border-white/10"
+                                        >
+                                            Modify Intel
+                                        </button>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                updateBlock(block.id, { metadata: { ...block.metadata, width: '100%'} });
+                                            }}
+                                            className="px-6 py-2.5 bg-sky-500/10 hover:bg-sky-500/20 backdrop-blur-md rounded-xl text-sky-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-[0.2em] border border-sky-500/20"
+                                        >
+                                            Reset Grid
+                                        </button>
+                                    </div>
+                                    <div 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onImageClick(block.content);
+                                        }}
+                                        className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white/40 hover:text-white transition-all pointer-events-auto cursor-pointer border border-white/10 shadow-2xl"
+                                    >
+                                        <Maximize2 size={16} />
+                                    </div>
                                 </div>
                             </div>
                         ) : (
-                            <button 
+                            <div 
                                 onClick={() => fileInputRef.current?.click()}
-                                className="w-full flex flex-col items-center justify-center gap-5 py-16 bg-white/[0.02] border border-dashed border-white/10 rounded-[2rem] hover:bg-sky-500/[0.03] hover:border-sky-500/30 transition-all text-white/30 hover:text-sky-400 group/upload"
+                                className="w-full h-48 border-2 border-dashed border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 hover:border-sky-500/40 hover:bg-sky-500/[0.02] transition-all cursor-pointer group/upload"
                             >
-                                <div className="p-5 bg-white/5 rounded-2xl group-hover/upload:bg-sky-500/10 group-hover/upload:scale-110 transition-all duration-500 border border-white/5 group-hover/upload:border-sky-500/20">
-                                    <ImageIcon size={32} strokeWidth={1.5} />
+                                <div className="p-5 bg-white/5 rounded-[2rem] text-white/20 group-hover/upload:text-sky-400 group-hover/upload:bg-sky-500/10 transition-all ring-1 ring-white/10 group-hover/upload:ring-sky-500/20 translate-y-2 group-hover/upload:translate-y-0">
+                                    <Camera size={28} strokeWidth={1.5} />
                                 </div>
                                 <div className="text-center">
-                                    <span className="text-[11px] font-black uppercase tracking-[0.25em] block mb-1">Add Image</span>
-                                    <span className="text-[9px] text-white/20 uppercase tracking-widest">Attach visual data to your note</span>
+                                    <p className="text-[11px] font-black uppercase tracking-[0.3em] text-white/30 group-hover/upload:text-white/60 transition-colors">Capture Intelligence Evidence</p>
+                                    <p className="text-[9px] font-medium text-white/10 mt-1">Select valid chart asset or data visualization</p>
                                 </div>
-                            </button>
+                            </div>
                         )}
                         <AutoResizeTextarea 
                             value={block.metadata?.caption || ''} 
@@ -635,6 +789,68 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
                         />
                     </div>
                 );
+            case 'table':
+                const rows = block.metadata?.rows || 3;
+                const cols = block.metadata?.cols || 3;
+                const tableData = block.metadata?.data || Array(rows).fill(0).map(() => Array(cols).fill(''));
+
+                return (
+                    <div className="w-full bg-white/[0.02] border border-white/10 rounded-[2.5rem] p-8 md:p-12 overflow-hidden group/table">
+                         <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
+                                <div className="p-2.5 bg-sky-500/10 rounded-xl text-sky-400">
+                                    <TableIcon size={16} />
+                                </div>
+                                <span>Architecture Data Matrix</span>
+                            </div>
+                            <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 opacity-0 group-hover/table:opacity-100 transition-opacity">
+                                <button 
+                                    onClick={() => {
+                                        const newData = tableData.map((r: any) => [...r, '']);
+                                        updateBlock(block.id, { metadata: { ...block.metadata, cols: cols + 1, data: newData } });
+                                    }}
+                                    className="p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-all text-[9px] font-black uppercase tracking-wider px-3"
+                                >
+                                    + Column
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        const newData = [...tableData, Array(cols).fill('')];
+                                        updateBlock(block.id, { metadata: { ...block.metadata, rows: rows + 1, data: newData } });
+                                    }}
+                                    className="p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-all text-[9px] font-black uppercase tracking-wider px-3"
+                                >
+                                    + Row
+                                </button>
+                            </div>
+                         </div>
+                         <div className="overflow-x-auto scrollbar-hide">
+                            <table className="w-full border-collapse">
+                                <tbody>
+                                    {tableData.map((row: any, rIdx: number) => (
+                                        <tr key={rIdx} className="group/row">
+                                            {row.map((cell: string, cIdx: number) => (
+                                                <td key={cIdx} className="border border-white/5 p-0 min-w-[120px]">
+                                                    <ContentBlock 
+                                                        html={cell}
+                                                        onChange={(v: string) => {
+                                                            const newData = [...tableData];
+                                                            newData[rIdx][cIdx] = v;
+                                                            updateBlock(block.id, { metadata: { ...block.metadata, data: newData } });
+                                                        }}
+                                                        onFocus={() => onFocus(block.id)}
+                                                        className="p-4 text-xs font-medium text-white/70 focus:bg-white/[0.03] transition-colors"
+                                                        placeholder="Data cell..."
+                                                    />
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                         </div>
+                    </div>
+                );
             default:
                 return <ContentBlock ref={textareaRef} html={block.content} onChange={handleTextChange} onKeyDown={handleKeyDown} onFocus={() => onFocus(block.id)} className="text-[15px] font-medium leading-relaxed text-white/70" placeholder="Empty block. Type '/' for commands..." />;
         }
@@ -657,55 +873,78 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAbove
                 layout: { type: "spring", stiffness: 1000, damping: 60, mass: 0.1 }
             }}
             style={{ zIndex: isMenuOpen ? 1000 : 1 }}
-            className={`group relative flex items-start gap-6 px-10 py-2 rounded-[2rem] hover:bg-white/[0.01] transition-colors duration-150 will-change-transform overflow-visible`}
+            className="group/block relative flex items-start gap-6 px-10 py-2 rounded-[2rem] hover:bg-white/[0.01] transition-colors duration-150 will-change-transform overflow-visible"
         >
-            <div 
-                ref={menuButtonRef}
-                className={`${isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 group-hover:opacity-100 -translate-y-2 group-hover:translate-y-0'} absolute -left-4 -top-6 flex flex-row items-center gap-1 z-[100] transition-all duration-300 bg-[#0F0F0F] p-1 rounded-xl border border-white/5 shadow-2xl pointer-events-auto`}
-            >
-                <button onClick={() => addBlockAbove(block.id, 'text', true)} className="p-1.5 text-white/40 hover:text-sky-400 hover:bg-sky-500/10 rounded-lg transition-all" title="Add block below">
-                    <Plus size={14} />
+            <div className="absolute left-[-80px] top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover/block:opacity-100 transition-all duration-200 z-[100]">
+                <button 
+                    onClick={() => addBlockAbove(block.id, 'text', false)}
+                    className="p-1.5 hover:bg-white/20 rounded-md text-white/40 hover:text-white transition-all shadow-sm"
+                >
+                    <Plus size={18} strokeWidth={2.5} />
                 </button>
-                <div onPointerDown={(e) => dragControls.start(e)} className="cursor-grab p-1.5 text-white/40 hover:text-sky-400 hover:bg-sky-500/10 rounded-lg active:cursor-grabbing transition-all border-x border-white/5 px-2" title="Drag to reorder">
-                    <GripVertical size={14} />
+                <div 
+                    onPointerDown={(e) => dragControls.start(e)}
+                    className="p-1.5 hover:bg-white/20 rounded-md cursor-grab active:cursor-grabbing text-white/40 hover:text-white transition-all"
+                >
+                    <GripVertical size={18} strokeWidth={2.5} />
                 </div>
-                <button onClick={() => removeBlock(block.id)} className="p-1.5 text-white/40 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all" title="Delete block">
-                    <Trash2 size={14} />
+                <button 
+                    onClick={() => removeBlock(block.id)}
+                    className="p-1.5 hover:bg-rose-500/20 rounded-md text-white/40 hover:text-rose-400 transition-all"
+                >
+                    <Trash2 size={18} strokeWidth={2.5} />
                 </button>
             </div>
             <div className="flex-1 min-w-0">
                 {renderContent()}
             </div>
             
-            {/* Portal the menu to escape stacking context - positions above or below based on viewport space */}
             {typeof window !== 'undefined' && isMenuOpen && createPortal(
                 <div 
-                    className={`fixed w-72 bg-[#0A0A0A]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] z-[9999] p-2 overflow-hidden animate-in fade-in ${menuPosition.showAbove ? 'slide-in-from-bottom-2' : 'slide-in-from-top-2'} duration-200`}
                     style={{
-                        top: menuPosition.showAbove ? 'auto' : `${menuPosition.top}px`,
-                        bottom: menuPosition.showAbove ? `${window.innerHeight - menuPosition.top + 8}px` : 'auto',
+                        position: 'fixed',
+                        top: menuPosition.showAbove ? `${menuPosition.top - 8}px` : `${menuPosition.top}px`,
                         left: `${menuPosition.left}px`,
-                        maxHeight: menuPosition.showAbove ? `${menuPosition.top - 20}px` : `${window.innerHeight - menuPosition.top - 20}px`
+                        transform: menuPosition.showAbove ? 'translateY(-100%)' : 'none',
+                        zIndex: 10000
                     }}
+                    className="w-72 bg-zinc-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-2 animate-in fade-in duration-200"
                 >
-                    <div className="px-3 py-2 mb-1 border-b border-white/5">
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 italic">Transform Block</span>
-                    </div>
+                    <div className="px-4 py-2 text-[10px] font-black text-white/20 uppercase tracking-[0.2em] border-b border-white/5 mb-2">Basic Blocks</div>
                     <div className="max-h-[350px] overflow-y-auto scrollbar-hide py-1">
-                        {(['h1', 'h2', 'h3', 'text', 'todo', 'callout', 'bullet', 'quote', 'image', 'code', 'divider'] as BlockType[]).map(t => (
+                        {[
+                            { type: 'text', icon: <Type size={14} />, label: 'Text', desc: 'Plain text architecture' },
+                            { type: 'h1', icon: <Heading1 size={14} />, label: 'Heading 1', desc: 'Large system header' },
+                            { type: 'h2', icon: <Heading2 size={14} />, label: 'Heading 2', desc: 'Medium section header' },
+                            { type: 'h3', icon: <Heading3 size={14} />, label: 'Heading 3', desc: 'Small details header' },
+                            { type: 'todo', icon: <CheckSquare size={14} />, label: 'To-do List', desc: 'Mechanical checklist' },
+                            { type: 'bullet', icon: <List size={14} />, label: 'Bullet List', desc: 'Simple bullet flow' },
+                            { type: 'number', icon: <span className="text-[10px] font-black">1.</span>, label: 'Numbered List', desc: 'Sequential logic steps' },
+                            { type: 'toggle', icon: <ChevronRightIcon size={14} />, label: 'Collapsible Toggle', desc: 'Nested hidden details' },
+                            { type: 'callout', icon: <AlertCircle size={14} />, label: 'Callout', desc: 'Emphasis / mandate' },
+                            { type: 'quote', icon: <Quote size={14} />, label: 'Quote', desc: 'Trading wisdom' },
+                            { type: 'divider', icon: <Minus size={14} />, label: 'Divider', desc: 'Visual separation' },
+                            { type: 'image', icon: <ImageIcon size={14} />, label: 'Image', desc: 'Chart intel evidence' },
+                            { type: 'table', icon: <TableIcon size={14} />, label: 'Table Matrix', desc: 'Structural data grid' },
+                            { type: 'code', icon: <Terminal size={14} />, label: 'Code', desc: 'Algorithmic logic' },
+                            { type: 'bookmark', icon: <Link2 size={14} />, label: 'Web Bookmark', desc: 'External resource link' },
+                        ].map((cmd) => (
                             <button 
-                                key={t}
-                                onClick={() => {
-                                    updateBlock(block.id, { type: t, content: block.content === '/' || block.content === ' /' ? '' : block.content });
+                                key={cmd.type}
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    updateBlock(block.id, { type: cmd.type as BlockType, content: '' });
                                     setIsMenuOpen(false);
                                 }}
-                                className="w-full text-left px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-white/50 hover:text-white hover:bg-white/5 rounded-xl flex items-center gap-4 transition-all group/item"
+                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left group/item"
                             >
-                                <div className="p-1.5 bg-white/5 rounded-lg group-hover/item:text-sky-400 group-hover/item:bg-sky-500/10 transition-all">
-                                    <BlockIcon type={t} />
+                                <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-white/40 group-hover/item:text-sky-400 group-hover/item:bg-sky-400/10 transition-all">
+                                    <BlockIcon type={cmd.type as BlockType} />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="capitalize">{t === 'text' ? 'Paragraph' : t === 'todo' ? 'Checklist' : t === 'image' ? 'Image Attachment' : t === 'bullet' ? 'Unordered List' : t}</span>
+                                    <span className="text-sm font-bold text-white/90">{cmd.label}</span>
+                                    <span className="text-[10px] text-white/30 uppercase tracking-wider">{cmd.desc}</span>
                                 </div>
                             </button>
                         ))}
@@ -729,6 +968,7 @@ export default function NotionNoteEditor({ noteId, onBack }: { noteId?: string, 
     const [focusedBlockId, setFocusedBlockId] = useState<string | null>(null);
     const [activeImage, setActiveImage] = useState<string | null>(null);
     const [zoomScale, setZoomScale] = useState(1);
+    const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
     const [showTemplatePicker, setShowTemplatePicker] = useState(!noteId);
 
     useEffect(() => {
@@ -754,27 +994,17 @@ export default function NotionNoteEditor({ noteId, onBack }: { noteId?: string, 
         }
     }, [noteId]);
 
-    // Handle keyboard shortcuts (Ctrl+Z / Cmd+Z for undo)
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            // Check for Ctrl+Z (Windows/Linux) or Cmd+Z (Mac)
-            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-                // Let the browser handle undo for contentEditable elements
-                // This ensures undo works within text blocks
-                return;
-            }
-        };
+    const handleSave = useCallback(async (isSilent: any = false) => {
+        // Handle case where it's called from onClick (isSilent would be the React event)
+        const silent = typeof isSilent === 'boolean' ? isSilent : false;
 
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
-    }, []);
-
-    const handleSave = useCallback(async () => {
         if (isSaving) return;
         
         const toastId = 'save-note';
-        setIsSaving(true);
-        toast.loading('Synchronizing note...', { id: toastId });
+        if (!silent) {
+            setIsSaving(true);
+            toast.loading('Synchronizing note...', { id: toastId });
+        }
         
         try {
             const url = data._id ? `/api/notes/${data._id}` : '/api/notes';
@@ -788,27 +1018,66 @@ export default function NotionNoteEditor({ noteId, onBack }: { noteId?: string, 
             
             const updated = await res.json();
             const note = updated.note || updated;
-            setData({
-                ...note,
-                blocks: note.blocks || data.blocks || [],
-            });
             
-            toast.success('Note Stored', {
-                id: toastId,
-                description: 'Your detailed note has been synced successfully.',
-                duration: 3000,
-            });
+            // Avoid triggering another auto-save by checking if content actually changed
+            setData(prev => ({
+                ...note,
+                blocks: note.blocks || prev.blocks || [],
+            }));
+            setLastSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            
+            if (!silent) {
+                toast.success('Note Stored', {
+                    id: toastId,
+                    description: 'Your detailed note has been synced successfully.',
+                    duration: 3000,
+                });
+            }
         } catch (err) {
             console.error('Save error:', err);
-            toast.error('Sync Failed', {
-                id: toastId,
-                description: 'Unable to sync your note. Please try again.',
-                duration: 4000,
-            });
+            if (!silent) {
+                toast.error('Sync Failed', {
+                    id: toastId,
+                    description: 'Unable to sync your note. Please try again.',
+                    duration: 4000,
+                });
+            }
         } finally {
-            setIsSaving(false);
+            if (!silent) setIsSaving(false);
         }
     }, [isSaving, data]);
+
+    // Handle keyboard shortcuts (Ctrl+Z / Cmd+Z for undo, Ctrl+S for save)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Check for Ctrl+S (Windows/Linux) or Cmd+S (Mac)
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                handleSave(false);
+                return;
+            }
+
+            // Check for Ctrl+Z (Windows/Linux) or Cmd+Z (Mac)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                // Let the browser handle undo for contentEditable elements
+                return;
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [handleSave]);
+
+    // Auto-save logic
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (data._id && !isSaving) {
+                handleSave(true); // silent save
+            }
+        }, 15000); // Auto-save after 15s of inactivity
+
+        return () => clearTimeout(timer);
+    }, [data, handleSave, isSaving]);
 
     const updateBlock = useCallback((id: string, updates: Partial<Block>) => {
         setData(prev => {
@@ -902,18 +1171,23 @@ export default function NotionNoteEditor({ noteId, onBack }: { noteId?: string, 
                     </button>
                     <div className="h-12 w-px bg-white/5" />
                     <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2.5 px-3 py-1 bg-sky-500/10 border border-sky-500/20 rounded-full shadow-[0_0_20px_rgba(14,165,233,0.1)]">
-                                <div className="w-1 h-1 bg-sky-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(14,165,233,0.8)]" />
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-400 italic">Detailed Intel Active</span>
-                            </div>
-                        </div>
-                        <input 
-                            value={data.title}
-                            onChange={(e) => setData(prev => ({ ...prev, title: e.target.value }))}
-                            className="bg-transparent border-none p-0 text-4xl font-black italic uppercase tracking-tighter text-white/50 cursor-text focus:ring-0 w-full max-w-[600px] leading-tight truncate outline-none"
-                            placeholder="NOTE IDENTIFIER"
-                        />
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2.5 px-3 py-1 bg-sky-500/10 border border-sky-500/20 rounded-full shadow-[0_0_20px_rgba(14,165,233,0.1)]">
+                                        <div className="w-1.5 h-1.5 bg-sky-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(14,165,233,0.8)]" />
+                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-400 italic">Detailed Intel Active</span>
+                                    </div>
+                                    {lastSavedTime && (
+                                        <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest hidden md:block">
+                                            Last Synchronized: {lastSavedTime}
+                                        </span>
+                                    )}
+                                </div>
+                                <input 
+                                    value={data.title}
+                                    onChange={(e) => setData(prev => ({ ...prev, title: e.target.value }))}
+                                    className="bg-transparent border-none p-0 text-4xl font-black italic uppercase tracking-tighter text-white/50 cursor-text focus:ring-0 w-full max-w-[600px] leading-tight truncate outline-none"
+                                    placeholder="NOTE IDENTIFIER"
+                                />
                     </div>
                 </div>
                 
@@ -929,7 +1203,7 @@ export default function NotionNoteEditor({ noteId, onBack }: { noteId?: string, 
                 </div>
             </header>
 
-            <main className="max-w-[1400px] mx-auto px-8 md:px-16 lg:px-24 py-24">
+            <main className="max-w-[1400px] mx-auto px-12 md:px-24 lg:px-44 py-24">
                 {showTemplatePicker ? (
                     <div className="max-w-3xl mx-auto space-y-12 py-20 text-center animate-in fade-in zoom-in duration-700">
                         <div className="space-y-4">
@@ -981,6 +1255,7 @@ export default function NotionNoteEditor({ noteId, onBack }: { noteId?: string, 
                                     isFocused={focusedBlockId === block.id}
                                     onFocus={setFocusedBlockId}
                                     onImageClick={setActiveImage}
+                                    allBlocks={data.blocks}
                                 />
                             ))}
                         </Reorder.Group>
