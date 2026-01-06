@@ -242,15 +242,6 @@ export async function POST(req: Request) {
       userId: session.user.id,
     });
 
-    // Update Portfolio Current Balance
-    const t = trade as any;
-    if (t.portfolioId && t.pnl !== null && t.pnl !== undefined) {
-      await Portfolio.findOneAndUpdate(
-        { _id: t.portfolioId, userId: (session.user as any).id },
-        { $inc: { currentBalance: t.pnl } }
-      );
-    }
-
     return NextResponse.json(trade, { status: 201 });
   } catch (error) {
     console.error('Create trade error:', error);
