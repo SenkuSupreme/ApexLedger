@@ -698,8 +698,9 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, isLast, isFoc
             const spaceAbove = rect.top - 20;
             
             // Determine if menu should show above or below
-            // If space below is tight (less than 320px), show above, provided there is space.
-            const showAbove = spaceBelow < 320 && spaceAbove > spaceBelow;
+            // Determine if menu should show above or below
+            // If space below is tight (less than 500px), show above, provided there is space.
+            const showAbove = spaceBelow < 500 && spaceAbove > spaceBelow;
             
             setMenuPosition({
                 top: rect.top,
@@ -1358,13 +1359,13 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, isLast, isFoc
                         cursor: 'move',
                         maxHeight: menuPosition.showAbove ? `${menuPosition.top - 40}px` : `${window.innerHeight - menuPosition.bottom - 40}px`,
                     }}
-                    className="w-72 bg-zinc-900/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_30px_60px_-12px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in duration-200"
+                    className="w-72 bg-zinc-900/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_30px_60px_-12px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in duration-200 flex flex-col"
                 >
-                    <div className="px-5 py-3 text-[9px] font-black text-white/20 uppercase tracking-[0.3em] border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                    <div className="px-5 py-3 text-[9px] font-black text-white/20 uppercase tracking-[0.3em] border-b border-white/5 bg-white/[0.02] flex items-center justify-between shrink-0">
                         <span>Strategy Components</span>
                         <Move size={10} className="opacity-50" />
                     </div>
-                    <div className="max-h-[400px] overflow-y-auto scrollbar-hide py-2">
+                    <div className="overflow-y-auto scrollbar-hide py-2 flex-1 min-h-0">
                             {[
                                 { type: 'text', icon: <Type size={14} />, label: 'Text', desc: 'Plain text architecture' },
                                 { type: 'h1', icon: <Heading1 size={14} />, label: 'Heading 1', desc: 'Large system header' },
