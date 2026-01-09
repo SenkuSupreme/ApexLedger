@@ -29,6 +29,10 @@ export async function GET(req: NextRequest) {
     if (isDetailed !== null) {
       if (isDetailed === "true") query.isDetailed = true;
       if (isDetailed === "false") query.isDetailed = false;
+    } else {
+      // Default to returning ONLY notebook notes (not detailed) 
+      // if the parameter is missing (e.g., standard notebook view)
+      query.isDetailed = false;
     }
 
     if (isQuickNote !== null) {

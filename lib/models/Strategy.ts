@@ -80,7 +80,7 @@ const StrategySchema = new mongoose.Schema({
     id: String,
     type: { 
         type: String, 
-        enum: ['h1', 'h2', 'h3', 'text', 'todo', 'callout', 'divider', 'image', 'quote', 'bullet', 'code'] 
+        enum: ['h1', 'h2', 'h3', 'text', 'todo', 'callout', 'divider', 'image', 'quote', 'bullet', 'code', 'table', 'toggle', 'number', 'bookmark'] 
     },
     content: String,
     checked: Boolean, // for todo

@@ -646,10 +646,10 @@ AutoResizeTextarea.displayName = "AutoResizeTextarea";
 
 // --- BLOCK COMPONENT ---
 
-const EditorBlock = React.memo(({ block, updateBlock, removeBlock, isLast, isFocused, onImageClick, onFocus, onRemoveWithFocus, blockIndex, addBlockAt, allBlocks }: any) => {
+const EditorBlock = React.memo(({ block, updateBlock, removeBlock, isLast, isFocused, onImageClick, onFocus, onRemoveWithFocus, blockIndex, addBlockAt, allBlocks, triggerSave }: any) => {
     const dragControls = useDragControls();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0, showAbove: false });
+    const [menuPosition, setMenuPosition] = useState({ top: 0, bottom: 0, left: 0, showAbove: false });
     const fileInputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<any>(null);
     const blockRef = useRef<HTMLLIElement>(null);
@@ -681,7 +681,8 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, isLast, isFoc
             const showAbove = spaceBelow < menuHeight;
             
             setMenuPosition({
-                top: showAbove ? rect.top - 8 : rect.bottom + 8,
+                top: rect.top,
+                bottom: rect.bottom,
                 left: rect.left,
                 showAbove
             });
@@ -704,14 +705,42 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, isLast, isFoc
         }
     }, [isMenuOpen]);
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            updateBlock(block.id, { content: reader.result as string });
-        };
-        reader.readAsDataURL(file);
+
+        const toastId = toast.loading('Uploading Strategy Asset...');
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!res.ok) throw new Error('Upload failed');
+
+            const { url } = await res.json();
+            updateBlock(block.id, { content: url });
+            toast.success('Strategy Intel Stored', { id: toastId });
+
+            // Critical: Force an immediate database commit for cloud assets
+            if (triggerSave) {
+                setTimeout(() => triggerSave(true), 100);
+            }
+        } catch (error) {
+            console.error('File upload error:', error);
+            toast.error('Upload Failed. Falling back to local.', { id: toastId });
+            
+            // Fallback to base64
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                updateBlock(block.id, { content: reader.result as string });
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleTextChange = (v: string) => {
@@ -1235,61 +1264,76 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, isLast, isFoc
 
     return (
         <Reorder.Item 
+            ref={blockRef}
             value={block} 
             id={block.id}
-            ref={blockRef}
             dragListener={false}
             dragControls={dragControls}
             layout="position"
-            whileDrag={{ zIndex: 1000 }}
-            style={{ 
-                zIndex: isMenuOpen ? 1000 : 1,
-                willChange: "transform"
+            whileDrag={{ 
+                scale: 1,
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+                zIndex: 999 
             }}
             transition={{ 
                 type: "spring", 
-                stiffness: 1000, 
-                damping: 60, 
-                mass: 0.2,
-                layout: { type: "spring", stiffness: 1000, damping: 60, mass: 0.1 }
+                stiffness: 1200, 
+                damping: 80,
+                mass: 0.1
             }}
-            className="group/block relative flex items-start gap-6 px-10 py-2 rounded-[2rem] hover:bg-white/[0.01] transition-colors duration-150 will-change-transform overflow-visible mb-1"
+            style={{ zIndex: isMenuOpen ? 1000 : 1, touchAction: 'none' }}
+            className="group/block relative flex items-start gap-6 px-10 py-2 rounded-[2rem] hover:bg-white/[0.02] transition-colors duration-150 will-change-transform overflow-visible"
         >
-            <div className="absolute left-[-80px] top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover/block:opacity-100 transition-all duration-200 z-[100]">
-                <button 
-                    onClick={() => addBlockAt(block.id, 'text', false)}
-                    className="p-1.5 hover:bg-white/20 rounded-md text-white/40 hover:text-white transition-all shadow-sm"
-                >
-                    <Plus size={18} strokeWidth={2.5} />
-                </button>
+            <div className="absolute left-[-80px] top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 lg:group-hover/block:opacity-100 transition-all duration-300 z-[100] translate-x-4 lg:group-hover/block:translate-x-0">
                 <div 
-                    onPointerDown={(e) => dragControls.start(e)}
-                    className="p-1.5 hover:bg-white/20 rounded-md cursor-grab active:cursor-grabbing text-white/40 hover:text-white transition-all"
+                    onPointerDown={(e) => {
+                        dragControls.start(e);
+                    }}
+                    className="p-2 hover:bg-sky-500/20 rounded-xl cursor-grab active:cursor-grabbing text-white/30 hover:text-sky-400 transition-all flex items-center justify-center shrink-0"
+                    title="Drag to Move"
                 >
-                    <GripVertical size={18} strokeWidth={2.5} />
+                    <GripVertical size={16} strokeWidth={3} />
                 </div>
                 <button 
-                    onClick={() => removeBlock(block.id)}
-                    className="p-1.5 hover:bg-rose-500/20 rounded-md text-white/40 hover:text-rose-400 transition-all"
+                    onClick={() => addBlockAt(block.id, 'text', false)}
+                    className="p-2 hover:bg-white/10 rounded-xl text-white/20 hover:text-white transition-all flex items-center justify-center"
+                    title="Add Block Above"
                 >
-                    <Trash2 size={18} strokeWidth={2.5} />
+                    <Plus size={16} strokeWidth={3} />
+                </button>
+                <button 
+                    onClick={() => removeBlock(block.id)}
+                    className="p-2 hover:bg-rose-500/10 rounded-xl text-white/20 hover:text-rose-400 transition-all flex items-center justify-center"
+                    title="Delete Block"
+                >
+                    <Trash2 size={16} strokeWidth={3} />
                 </button>
             </div>
 
             <div className="flex-1 w-full relative">
                 {typeof window !== 'undefined' && isMenuOpen && createPortal(
-                    <div 
-                        style={{ 
-                            position: 'fixed',
-                            top: menuPosition.showAbove ? `${menuPosition.top - 8}px` : `${menuPosition.top}px`,
-                            left: `${menuPosition.left}px`,
-                            transform: menuPosition.showAbove ? 'translateY(-100%)' : 'none',
-                            zIndex: 10000
-                        }}
-                        className="w-72 bg-zinc-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-2 animate-in fade-in duration-200"
-                    >
-                        <div className="px-4 py-2 text-[10px] font-black text-white/20 uppercase tracking-[0.2em] border-b border-white/5 mb-2">Basic Blocks</div>
-                        <div className="max-h-[350px] overflow-y-auto scrollbar-hide py-1">
+                <motion.div 
+                    ref={menuRef}
+                    drag
+                    dragMomentum={false}
+                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    style={{ 
+                        position: 'fixed',
+                        top: menuPosition.showAbove ? `${menuPosition.top - 8}px` : `${menuPosition.bottom + 8}px`,
+                        left: `${Math.min(menuPosition.left, window.innerWidth - 300)}px`,
+                        transform: menuPosition.showAbove ? 'translateY(-100%)' : 'none',
+                        zIndex: 10000,
+                        cursor: 'move'
+                    }}
+                    className="w-72 bg-zinc-900/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_30px_60px_-12px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in duration-200"
+                >
+                    <div className="px-5 py-3 text-[9px] font-black text-white/20 uppercase tracking-[0.3em] border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                        <span>Strategy Components</span>
+                        <Move size={10} className="opacity-50" />
+                    </div>
+                    <div className="max-h-[400px] overflow-y-auto scrollbar-hide py-2">
                             {[
                                 { type: 'text', icon: <Type size={14} />, label: 'Text', desc: 'Plain text architecture' },
                                 { type: 'h1', icon: <Heading1 size={14} />, label: 'Heading 1', desc: 'Large system header' },
@@ -1326,10 +1370,10 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, isLast, isFoc
                                     </div>
                                 </button>
                             ))}
-                        </div>
-                    </div>,
-                    document.body
-                )}
+                    </div>
+                </motion.div>,
+                document.body
+            )}
                 {renderContent()}
             </div>
         </Reorder.Item>
@@ -1425,9 +1469,9 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
             setLastSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
             
             if (!silent) {
-                toast.success('Strategy Stored', {
+                toast.success('Database Verified Sync', {
                     id: toastId,
-                    description: 'Your playback protocols have been successfully synchronized.',
+                    description: 'Your playback protocols have been successfully etched into the central database.',
                     duration: 3000,
                 });
             }
@@ -1483,7 +1527,7 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
             if (data._id && !isSaving) {
                 handleSave(true);
             }
-        }, 15000); // Auto-save after 15s of inactivity (matched to Note Editor)
+        }, 5000); // Auto-save after 5s of inactivity (matched to Note Editor)
 
         return () => clearTimeout(timer);
     }, [data, handleSave, isSaving]);
@@ -1982,6 +2026,7 @@ export default function NotionStrategyEditor({ strategyId, onBack, initialIsTemp
                                             onRemoveWithFocus={removeBlockWithFocus}
                                             blockIndex={idx}
                                             allBlocks={data.blocks}
+                                            triggerSave={handleSave}
                                         />
                                     ))}
 

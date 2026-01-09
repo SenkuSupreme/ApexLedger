@@ -55,10 +55,14 @@ export async function PUT(
     await dbConnect();
     const { id } = await params;
     const body = await request.json();
+    
+    // Safety: Strip protected fields that shouldn't be overwritten via PUT
+    // or that might cause Mongo immutable field errors
+    const { _id, userId, ...updateData } = body;
 
     const note = await Note.findOneAndUpdate(
       { _id: id, userId: (session.user as any).id },
-      { $set: body },
+      { $set: updateData },
       { new: true, runValidators: true }
     );
 

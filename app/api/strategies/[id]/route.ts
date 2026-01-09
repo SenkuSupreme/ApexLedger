@@ -50,13 +50,16 @@ export async function PUT(
     const body = await req.json();
     await dbConnect();
 
+    // Safety: Strip protected fields
+    const { _id, userId, ...updateData } = body;
+
     const strategy = await Strategy.findOneAndUpdate(
       { 
         _id: id, 
         // @ts-ignore
         userId: session.user.id 
       },
-      { $set: body },
+      { $set: updateData },
       { new: true }
     );
 

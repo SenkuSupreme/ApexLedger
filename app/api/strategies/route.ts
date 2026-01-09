@@ -55,7 +55,7 @@ export async function PUT(req: Request) {
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
-        const { _id, ...updateData } = body;
+        const { _id, userId, ...updateData } = body;
 
         if (!_id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
