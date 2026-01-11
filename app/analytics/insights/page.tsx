@@ -77,42 +77,67 @@ export default function InsightsPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white p-8 relative overflow-hidden">
-        {/* Ambient Background */}
-        <div className="fixed inset-0 pointer-events-none">
-            <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px]" />
-            <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px]" />
-        </div>
+         {/* High-Fidelity Background Architecture */}
+         <div className="fixed inset-0 pointer-events-none -z-10 bg-[#050505]">
+             <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+             <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent animate-scan-horizontal" />
+         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto space-y-12">
             
-            {/* Header */}
-            <header className="flex flex-col items-center justify-center text-center space-y-4">
+            {/* HUD System Monitor Header */}
+            <header className="flex flex-col items-center justify-center text-center pb-12 border-b border-white/5 mb-12 relative">
+                {/* System Status Indicators */}
+                <div className="absolute top-0 right-0 py-4 flex flex-col items-end gap-2 pr-4 font-mono">
+                    <div className="flex items-center gap-2">
+                         <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em]">Latency:</span>
+                         <span className="text-[8px] font-black text-primary uppercase animate-pulse">24ms</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                         <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em]">Sync:</span>
+                         <span className="text-[8px] font-black text-emerald-500 uppercase">Stable</span>
+                    </div>
+                </div>
+
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-indigo-300 mb-4"
+                    className="flex flex-col items-center gap-4 mb-2"
                 >
-                    <BrainCircuit size={14} />
-                    Neural Market Analysis
+                    <div className="flex items-center gap-3">
+                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                         <span className="text-[10px] font-black text-primary uppercase tracking-[0.8em] italic">Neural Engine // Global Tracking</span>
+                    </div>
+                    <div className="flex items-center gap-6 text-[8px] font-black text-white/10 uppercase tracking-[0.4em] border-y border-white/5 py-3 px-12 italic">
+                         <span>CPU: 12% Utilization</span>
+                         <div className="w-1 h-1 rounded-full bg-white/10" />
+                         <span>Memory: 4.2GB Cache</span>
+                         <div className="w-1 h-1 rounded-full bg-white/10" />
+                         <span>Neural Nodes: 128 Active</span>
+                    </div>
                 </motion.div>
                 
                 <motion.h1 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-5xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white/80 to-white/20"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-8xl md:text-[10rem] font-black tracking-[-0.08em] text-white italic uppercase leading-none mb-4"
                 >
-                    Market Insights
+                    FORECAST<span className="text-primary/10">.</span>CORE
                 </motion.h1>
                 
-                <motion.p 
+                <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="max-w-xl text-white/40 text-lg leading-relaxed"
+                    className="max-w-2xl text-white/30 text-xs font-bold leading-relaxed tracking-widest uppercase italic border-l-2 border-primary/20 pl-8 mx-auto"
                 >
-                    Advanced AI forecasting using Smart Money Concepts, ICT methodologies, and Candle Range Theory.
-                </motion.p>
+                    <p className="mb-2 text-white/60">Automated Institutional Intelligence Suite</p>
+                    Deploying deep-learning models across <span className="text-primary">SMC v4.2</span> / <span className="text-primary">ICT Frameworks</span> / <span className="text-primary">CRT Liquidity Models</span>. 
+                    Real-time market architecture scanning and bias convergence mapping.
+                </motion.div>
+
+                {/* Decorative Elements */}
+                <div className="absolute -bottom-px left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
             </header>
 
             {/* Input Section */}

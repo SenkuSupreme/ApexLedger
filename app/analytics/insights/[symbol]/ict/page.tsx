@@ -26,6 +26,7 @@ interface BiasTableRow { timeframe: string; structure: string; bias: string; liq
 interface StrategySetup { 
     name: string; methodology: 'SMC' | 'ICT' | 'ORB' | 'CRT'; setup: string; logic: string; confidence: number; entry: number; sl: number; tp1: number; tp2: number; 
     entryConditions: { htfBias: boolean; liqSweep: boolean; confluence: boolean; session: boolean; volatility: boolean; };
+    explanation: { why: string; target: string; invalidation: string; controlTf: string; narrative: string };
 }
 
 interface TimeframeSMC { 
@@ -39,10 +40,17 @@ interface TimeframeSMC {
     po3: { phase: string; accumulationRange: number; };
 }
 
+interface MethodologySpecifics {
+    orb?: { orh: number; orl: number; midpoint: number; duration: string; session: string; };
+    crt?: { high: number; low: number; midpoint: number; referenceCandle: string; expansion: boolean; };
+    ict?: { pdh: number; pdl: number; midnightOpen: number; silverBullet: { active: boolean; zone: string }; killZone: string | null; };
+}
+
 interface AdvancedSMC { 
     htfBias: { trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL'; confluenceScore: number; keyLevel: number; description: string; }; 
     timeframes: TimeframeSMC[]; 
     biasTable: BiasTableRow[];
+    methodologySpecifics?: MethodologySpecifics;
     sessions: { asian: SessionData; london: SessionData; ny: SessionData; };
     indicators: { vwap: number; rsi: number; ema20: number; ema50: number; };
     symbolIntelligence: { adr: number; bestSession: string; manipulationTime: string; newsSensitivity: 'HIGH' | 'MEDIUM' | 'LOW'; };
@@ -53,9 +61,16 @@ interface AdvancedSMC {
 
 interface AnalysisResult { symbol: string; currentPrice: number; trend: string; probability: number; smc_advanced: AdvancedSMC; analyzedAt: string; }
 
-const fmt = (val: number | undefined, decimals: number = 2): string => {
-    if (val === undefined || val === null || isNaN(val)) return '0.00';
-    return val.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+const fmt = (val: number | undefined, decimals?: number): string => {
+    if (val === undefined || val === null || isNaN(val)) return '0.00000';
+    let d = decimals;
+    if (d === undefined) {
+        if (Math.abs(val) > 1000) d = 2;
+        else if (Math.abs(val) > 100) d = 3;
+        else if (Math.abs(val) > 1) d = 5;
+        else d = 6;
+    }
+    return val.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 };
 
 export default function ICTMasterclassPage() {
@@ -177,9 +192,8 @@ export default function ICTMasterclassPage() {
     return (
         <div className="min-h-screen bg-[#050505] text-foreground p-4 md:p-12 font-sans pb-32 relative overflow-hidden selection:bg-primary/30">
             {/* Ambient Background */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-                <div className="absolute top-0 right-0 w-[1400px] h-[1400px] bg-primary/[0.03] blur-[150px] -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute inset-0 opacity-[0.06] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+            <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10 bg-[#050505]">
+                <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
             </div>
 
             <div className="max-w-[1800px] mx-auto space-y-12">
@@ -252,9 +266,13 @@ export default function ICTMasterclassPage() {
 
                 {/* MAIN INSTITUTIONAL MATRIX */}
                 <div className="space-y-10">
+                    {/* Collapsible AI Narrative Panel */}
+                    <div className="w-full">
+                        <AINarrativePanel strategy={bestStrategy} loading={loading} />
+                    </div>
+
                     {/* 1. Tactical Execution Protocol (FULL WIDTH) */}
-                    <div className="bg-card/80 border border-white/10 rounded-[4rem] p-12 shadow-3xl relative overflow-hidden backdrop-blur-[100px] w-full">
-                        <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-primary/[0.04] rounded-full blur-[150px] -translate-y-1/2 translate-x-1/2" />
+                    <div className="bg-[#0A0A0A] border border-white/10 rounded-[2rem] p-12 relative overflow-hidden w-full">
                         
                         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12">
                             <div className="lg:col-span-8 space-y-10">
@@ -290,11 +308,42 @@ export default function ICTMasterclassPage() {
                                 <div className="space-y-6">
                                     <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground italic">Matrix Conditions</h4>
                                     <div className="grid grid-cols-1 gap-3">
-                                        <ConditionItem label="HTF Bias Alignment" active={bestStrategy?.entryConditions?.htfBias} />
-                                        <ConditionItem label="Liquidity Sweep Confirmed" active={bestStrategy?.entryConditions?.liqSweep} />
-                                        <ConditionItem label="OB/FVG Confluence" active={bestStrategy?.entryConditions?.confluence} />
-                                        <ConditionItem label="Kill Zone Window" active={bestStrategy?.entryConditions?.session} />
-                                        <ConditionItem label="Acceptable Volatility" active={bestStrategy?.entryConditions?.volatility} />
+                                        {viewMode === 'SMC' && (
+                                            <>
+                                                <ConditionItem label="SMC Structure Alignment" active={bestStrategy?.entryConditions?.htfBias} />
+                                                <ConditionItem label="External Liquidity Purge" active={bestStrategy?.entryConditions?.liqSweep} />
+                                                <ConditionItem label="Fair Value Convergence" active={bestStrategy?.entryConditions?.confluence} />
+                                                <ConditionItem label="Power of 3 (PO3) State" active={tfData.po3?.phase !== 'ACCUMULATION'} />
+                                                <ConditionItem label="Silver Bullet Kill Zone" active={bestStrategy?.entryConditions?.session} />
+                                            </>
+                                        )}
+                                        {viewMode === 'ICT' && (
+                                            <>
+                                                <ConditionItem label="Power of 3 (PO3) State" active={tfData.po3?.phase !== 'ACCUMULATION'} />
+                                                <ConditionItem label="Silver Bullet Window" active={bestStrategy?.entryConditions?.session} />
+                                                <ConditionItem label="Judas Swing Detected" active={bestStrategy?.entryConditions?.liqSweep} />
+                                                <ConditionItem label="Liquidity Run Maturity" active={bestStrategy?.entryConditions?.confluence} />
+                                                <ConditionItem label="Fair Value Convergence" active={bestStrategy?.entryConditions?.htfBias} />
+                                            </>
+                                        )}
+                                        {viewMode === 'ORB' && (
+                                            <>
+                                                <ConditionItem label="Opening Range Zone" active={bestStrategy?.entryConditions?.session} />
+                                                <ConditionItem label="Breakout Momentum" active={bestStrategy?.entryConditions?.volatility} />
+                                                <ConditionItem label="Volume Confirmation" active={bestStrategy?.entryConditions?.confluence} />
+                                                <ConditionItem label="Session Wrap Sync" active={bestStrategy?.entryConditions?.htfBias} />
+                                                <ConditionItem label="30M Range Validity" active={bestStrategy?.entryConditions?.liqSweep} />
+                                            </>
+                                        )}
+                                        {viewMode === 'CRT' && (
+                                            <>
+                                                <ConditionItem label="Range Compression" active={tfData.volatility?.isContraction} />
+                                                <ConditionItem label="Expansion Gap Shift" active={bestStrategy?.entryConditions?.volatility} />
+                                                <ConditionItem label="Manipulation Wick" active={bestStrategy?.entryConditions?.liqSweep} />
+                                                <ConditionItem label="Volatility Spike Sync" active={bestStrategy?.entryConditions?.confluence} />
+                                                <ConditionItem label="Accumulation Rejection" active={bestStrategy?.entryConditions?.htfBias} />
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="pt-8 border-t border-white/5 space-y-4">
@@ -310,7 +359,7 @@ export default function ICTMasterclassPage() {
 
                     {/* 2. Bias Alignment & Market Intel (BELOW EXECUTION) */}
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                        <div className="xl:col-span-2 bg-card/40 border border-white/5 rounded-[4rem] p-10 backdrop-blur-2xl h-full flex flex-col">
+                        <div className="xl:col-span-2 bg-[#0A0A0A] border border-white/5 rounded-[2rem] p-10 h-full flex flex-col">
                             <div className="flex items-center justify-between mb-8">
                                 <div className="flex items-center gap-4">
                                     <Layout size={20} className="text-primary" />
@@ -334,7 +383,7 @@ export default function ICTMasterclassPage() {
                             </div>
                         </div>
 
-                        <div className="bg-card/40 border border-white/5 rounded-[4rem] p-10 backdrop-blur-2xl h-full flex flex-col">
+                        <div className="bg-[#0A0A0A] border border-white/5 rounded-[2rem] p-10 h-full flex flex-col">
                              <div className="flex items-center gap-4 mb-8">
                                 <Compass size={20} className="text-primary" />
                                 <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground italic">Institutional Indicators</h3>
@@ -365,40 +414,107 @@ export default function ICTMasterclassPage() {
 
                 {/* 3. Technical Forensics & Structure */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <TechnicalSection title="Forensics & OHLC" icon={CandlestickChart}>
-                        <div className="grid grid-cols-2 gap-x-8 gap-y-6 p-2">
-                            <TechnicalMetric label="Body Size" value={fmt(tfData.metrics?.bodySize, 4)} subValue={`${(((tfData.metrics?.bodySize||0) / (tfData.metrics?.range||1))*100).toFixed(1)}% Ratio`} />
-                            <TechnicalMetric label="Upper Wick" value={fmt(tfData.metrics?.upperWick, 4)} subValue="Pressure Delta" />
-                            <TechnicalMetric label="Lower Wick" value={fmt(tfData.metrics?.lowerWick, 4)} subValue="Support Delta" />
-                            <TechnicalMetric label="Total Range" value={fmt(tfData.metrics?.range, 4)} subValue="Point Expansion" />
-                            <div className="col-span-2 pt-4 border-t border-white/5 mt-2 grid grid-cols-2 gap-4">
-                                 <div className="flex justify-between text-[10px] font-mono"><span className="text-muted-foreground/40 italic">OPEN:</span> <span className="font-black text-primary">${fmt(tfData.metrics?.ohlc?.o)}</span></div>
-                                 <div className="flex justify-between text-[10px] font-mono"><span className="text-muted-foreground/40 italic">HIGH:</span> <span className="font-black text-primary">${fmt(tfData.metrics?.ohlc?.h)}</span></div>
-                                 <div className="flex justify-between text-[10px] font-mono"><span className="text-muted-foreground/40 italic">LOW:</span> <span className="font-black text-primary">${fmt(tfData.metrics?.ohlc?.l)}</span></div>
-                                 <div className="flex justify-between text-[10px] font-mono"><span className="text-muted-foreground/40 italic">CLOSE:</span> <span className="font-black text-primary">${fmt(tfData.metrics?.ohlc?.c)}</span></div>
+                    <TechnicalSection title="Core Market Data" icon={CandlestickChart}>
+                         <div className="space-y-8">
+                            {/* OHLC Snapshot */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-8 border-b border-white/5">
+                                 <OHLC_Item label="OPEN" value={fmt(tfData.metrics?.ohlc?.o)} />
+                                 <OHLC_Item label="HIGH" value={fmt(tfData.metrics?.ohlc?.h)} />
+                                 <OHLC_Item label="LOW" value={fmt(tfData.metrics?.ohlc?.l)} />
+                                 <OHLC_Item label="CLOSE" value={fmt(tfData.metrics?.ohlc?.c)} />
                             </div>
-                        </div>
-                        <div className="mt-8 p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex items-center justify-between">
-                            <div className="space-y-1">
-                                <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Active Pattern</div>
-                                <div className="text-sm font-black italic uppercase tracking-tight text-primary">{tfData.metrics?.type || 'NEUTRAL'} Signature</div>
+
+                            {/* Candle Architecture */}
+                            <div className="grid grid-cols-2 gap-x-8 gap-y-8 p-2">
+                                <TechnicalMetric 
+                                    label="Candle Body Size" 
+                                    value={fmt(tfData.metrics?.bodySize, 4)} 
+                                    subValue={`${(((tfData.metrics?.bodySize||0) / (tfData.metrics?.range||1))*100).toFixed(1)}% Fill Ratio`} 
+                                />
+                                <TechnicalMetric 
+                                    label="Total Range (H-L)" 
+                                    value={fmt(tfData.metrics?.range, 4)} 
+                                    subValue="Point Expansion" 
+                                />
+                                <TechnicalMetric 
+                                    label="Wick Size (Upper)" 
+                                    value={fmt(tfData.metrics?.upperWick, 4)} 
+                                    subValue="Rejection Delta" 
+                                />
+                                <TechnicalMetric 
+                                    label="Wick Size (Lower)" 
+                                    value={fmt(tfData.metrics?.lowerWick, 4)} 
+                                    subValue="Absorption Delta" 
+                                />
+                                <TechnicalMetric 
+                                    label="Volatility (ATR)" 
+                                    value={fmt(tfData.volatility?.atr14, 5)} 
+                                    subValue={`${tfData.volatility?.atrPercent.toFixed(2)}% Intensity`} 
+                                />
+                                <TechnicalMetric 
+                                    label="Range State" 
+                                    value={tfData.volatility?.isExpansion ? 'Expansion' : tfData.volatility?.isContraction ? 'Contraction' : 'Normal'} 
+                                    subValue="Structural Phase" 
+                                />
                             </div>
-                            <div className={`p-4 rounded-full ${tfData.metrics?.type === 'BULLISH' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
-                                {tfData.metrics?.type === 'BULLISH' ? <TrendingUp size={24} /> : <TrendingDown size={24} />}
+                            
+                            <div className="p-8 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest border-b border-primary/20 pb-1 mb-2 w-fit">Candle Signature</div>
+                                    <div className="text-xl font-black italic uppercase tracking-tight text-primary">{tfData.metrics?.type || 'NEUTRAL'} TYPE</div>
+                                </div>
+                                <div className={`p-5 rounded-full ${tfData.metrics?.type === 'BULLISH' ? 'bg-emerald-500/10 text-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)]' : 'bg-rose-500/10 text-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.2)]'}`}>
+                                    {tfData.metrics?.type === 'BULLISH' ? <TrendingUp size={28} /> : <TrendingDown size={28} />}
+                                </div>
                             </div>
-                        </div>
+                         </div>
 
                         {/* Candle Patterns */}
                         {tfData.candlePatterns && tfData.candlePatterns.length > 0 && (
-                            <div className="mt-4 flex flex-wrap gap-2">
+                            <div className="mt-8 flex flex-wrap gap-2 pt-8 border-t border-white/5">
                                 {tfData.candlePatterns.map((p, i) => (
                                     <span key={i} className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-[9px] font-black uppercase tracking-widest text-primary italic">
-                                        {p} Pattern
+                                        {p} Pattern Detected
                                     </span>
                                 ))}
                             </div>
                         )}
                     </TechnicalSection>
+
+                    {/* ICT SPECIFICS SECTION */}
+                    {viewMode === 'ICT' && smc.methodologySpecifics?.ict && (
+                        <TechnicalSection title="Institutional Dealing Range" icon={Target}>
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
+                                     <div className="p-4 bg-white/[0.02] border border-white/5 rounded-[1.5rem] flex flex-col items-center">
+                                         <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Silver Bullet</span>
+                                         <span className={`text-xs font-black uppercase italic ${smc.methodologySpecifics.ict.silverBullet.active ? 'text-emerald-500' : 'text-muted-foreground'}`}>
+                                            {smc.methodologySpecifics.ict.silverBullet.active ? 'ACTIVE' : 'INACTIVE'}
+                                         </span>
+                                         <span className="text-[8px] font-bold text-muted-foreground/40 mt-1 uppercase tracking-widest">{smc.methodologySpecifics.ict.silverBullet.zone}</span>
+                                     </div>
+                                     <div className="p-4 bg-white/[0.02] border border-white/5 rounded-[1.5rem] flex flex-col items-center">
+                                         <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Active Kill Zone</span>
+                                         <span className="text-xs font-black text-primary uppercase italic">{smc.methodologySpecifics.ict.killZone || 'NO ACTIVE ZONE'}</span>
+                                     </div>
+                                </div>
+                                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] space-y-4">
+                                     <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Prev Day High (PDH)</span>
+                                         <span className="text-sm font-black text-emerald-500 font-mono italic">${fmt(smc.methodologySpecifics.ict.pdh)}</span>
+                                     </div>
+                                     <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Midnight Open (00:00)</span>
+                                         <span className="text-sm font-black text-muted-foreground font-mono italic">${fmt(smc.methodologySpecifics.ict.midnightOpen)}</span>
+                                     </div>
+                                     <div className="flex justify-between items-center">
+                                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Prev Day Low (PDL)</span>
+                                         <span className="text-sm font-black text-rose-500 font-mono italic">${fmt(smc.methodologySpecifics.ict.pdl)}</span>
+                                     </div>
+                                </div>
+                            </div>
+                        </TechnicalSection>
+                    )}
 
                     <TechnicalSection title={getDynamicLabel('Structure')} icon={TrendingUp}>
                          <div className="flex items-center justify-between px-6 py-4 bg-white/[0.02] border border-white/5 rounded-full mb-6 text-[10px] font-black uppercase tracking-widest">
@@ -524,6 +640,107 @@ export default function ICTMasterclassPage() {
     );
 }
 
+
+function AINarrativePanel({ strategy, loading }: { strategy: StrategySetup | undefined; loading: boolean }) {
+    const [isOpen, setIsOpen] = useState(true);
+
+    if (loading || !strategy) return null;
+
+    return (
+        <div className="border border-primary/30 bg-primary/5 rounded-[3rem] overflow-hidden transition-all duration-500 relative group/narrative">
+             <div 
+                className="flex items-center justify-between p-8 cursor-pointer hover:bg-primary/10 transition-colors"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <div className="flex items-center gap-6">
+                    <div className="p-4 bg-primary/20 rounded-[1.5rem] shadow-lg shadow-primary/10 group-hover/narrative:scale-110 transition-transform duration-500">
+                        <Zap size={24} className="text-primary" />
+                    </div>
+                    <div>
+                        <h3 className="text-[12px] font-black uppercase tracking-[0.5em] text-primary/60 italic mb-1">Neural Narrative Processor</h3>
+                        <div className="text-2xl font-black italic uppercase tracking-tighter text-foreground/90 leading-none">
+                            {strategy.name} <span className="text-primary/40 text-lg">Execution Protocol</span>
+                        </div>
+                    </div>
+                </div>
+                <div className={`p-3 rounded-full border border-white/5 bg-white/5 transition-all duration-500 ${isOpen ? 'rotate-180 bg-primary/20 border-primary/30' : ''}`}>
+                    <ArrowLeft size={16} className="-rotate-90 text-primary/50" />
+                </div>
+            </div>
+
+            {isOpen && (
+                <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.5, ease: "circOut" }}
+                    className="px-10 pb-10"
+                >
+                    <div className="space-y-10 pt-8 border-t border-white/10">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:items-center">
+                            <div className="lg:col-span-8 space-y-6">
+                                <div className="space-y-4">
+                                    <div className="text-[10px] font-black text-primary uppercase tracking-[0.5em] flex items-center gap-3">
+                                        <Globe size={12} className="text-primary/60" /> Market Context & Institutional Narrative
+                                    </div>
+                                    <p className="text-xl font-medium text-foreground/90 leading-relaxed italic border-l-[3px] border-primary/40 pl-8 py-2 relative">
+                                        <span className="absolute left-0 top-0 text-6xl text-primary/10 select-none">"</span>
+                                        {strategy.explanation?.narrative || 'Aggregating order flow data and structural shifts for synthesis...'}
+                                        <span className="absolute bottom-0 right-0 text-6xl text-primary/10 select-none">"</span>
+                                    </p>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="text-[10px] font-black text-primary/60 uppercase tracking-[0.5em] flex items-center gap-3">
+                                        <CheckCircle2 size={12} className="text-primary/40" /> Validation Logic
+                                    </div>
+                                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest leading-loose max-w-3xl">
+                                        {strategy.explanation?.why}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="lg:col-span-4 bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 space-y-8">
+                                <div className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.4em] italic text-center pb-4 border-b border-white/5">
+                                    Tactical Profile
+                                </div>
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="space-y-2">
+                                        <div className="text-[9px] font-black text-primary/40 uppercase tracking-widest">Target Objective</div>
+                                        <div className="text-[11px] font-black text-emerald-400 uppercase tracking-widest leading-snug">{strategy.explanation?.target}</div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="text-[9px] font-black text-primary/40 uppercase tracking-widest">Invalidation Profile</div>
+                                        <div className="text-[11px] font-black text-rose-400 uppercase tracking-widest leading-snug">{strategy.explanation?.invalidation}</div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="text-[9px] font-black text-primary/40 uppercase tracking-widest">Controlling Timeframes</div>
+                                        <div className="text-[11px] font-black text-amber-400 uppercase tracking-widest">{strategy.explanation?.controlTf}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-6 bg-gradient-to-r from-primary/10 via-transparent to-transparent border border-primary/20 rounded-2xl overflow-hidden">
+                            <div className="flex items-center gap-6">
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-primary/60 uppercase tracking-[0.5em] mb-1">Convergence Index</span>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-4xl font-black italic tracking-tighter text-primary">{(strategy.confidence || 0).toFixed(0)}%</span>
+                                        <span className="text-[10px] font-bold text-muted-foreground italic uppercase tracking-widest">Algorithmic Confidence</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] italic pr-4">
+                                Neural engine enforces strict validation
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+        </div>
+    );
+}
+
 // ===== COMPONENTS =====
 
 function TopMetric({ label, value, color }: any) {
@@ -538,7 +755,7 @@ function TopMetric({ label, value, color }: any) {
 
 function TechnicalSection({ title, icon: Icon, count, children }: any) {
     return (
-        <div className="bg-card/40 border border-white/5 rounded-[4rem] p-10 shadow-2xl relative group backdrop-blur-3xl overflow-hidden min-h-[400px] flex flex-col h-full">
+        <div className="bg-[#0A0A0A] border border-white/5 rounded-[2.5rem] p-10 relative group overflow-hidden min-h-[400px] flex flex-col h-full">
             <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-4">
                     <div className="p-4 rounded-[1.5rem] bg-primary/10 border border-primary/20 text-primary">
@@ -592,7 +809,7 @@ function ExplanationItem({ label, value }: any) {
 function ConditionItem({ label, active }: any) {
     return (
         <div className="flex items-center gap-4 group">
-            <div className={`w-2.5 h-2.5 rounded-full transition-all ${active ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-red-500/20'}`} />
+            <div className={`w-2 h-2 rounded-full transition-all ${active ? 'bg-emerald-500' : 'bg-white/10'}`} />
             <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${active ? 'text-foreground/90' : 'text-muted-foreground/30'}`}>{label}</span>
             {active && <CheckCircle2 size={12} className="text-emerald-500 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />}
         </div>
@@ -758,6 +975,15 @@ function SmallStat({ label, value }: any) {
         <div className="p-4 bg-white/[0.02] border border-white/5 rounded-[1.8rem] text-center group hover:border-primary/20 transition-all">
             <div className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mb-1.5 italic transition-colors group-hover:text-primary/40">{label}</div>
             <div className="text-xs font-black italic tracking-tighter text-foreground/80">{value}</div>
+        </div>
+    );
+}
+
+function OHLC_Item({ label, value }: any) {
+    return (
+        <div className="text-center group">
+            <div className="text-[8px] font-black text-muted-foreground/30 uppercase tracking-[0.4em] mb-1.5 italic group-hover:text-primary/40 transition-colors">{label}</div>
+            <div className="text-sm font-black italic tracking-tighter text-foreground/80 font-mono">${value}</div>
         </div>
     );
 }

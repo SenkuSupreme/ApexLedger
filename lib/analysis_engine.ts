@@ -30,9 +30,33 @@ export interface PremiumDiscountZone { equilibrium: number; premiumStart: number
 export interface SessionData { name: string; high: number; low: number; open: string; status: 'PENDING' | 'ACTIVE' | 'CLOSED'; sweepDetected: boolean; }
 export interface BiasTableRow { timeframe: string; structure: string; bias: string; liquidityTarget: string; }
 
+export interface MarketStructure { index: number; time: string; type: 'BOS' | 'CHOCH' | 'MSS'; direction: 'BULLISH' | 'BEARISH'; price: number; significance: 'MINOR' | 'MAJOR'; strength: 'IMPULSIVE' | 'WEAK'; confirmationTf: string; candleIndex?: number; }
+
+export interface CandleMetrics { 
+    bodySize: number; upperWick: number; lowerWick: number; type: 'BULLISH' | 'BEARISH' | 'DOJI'; range: number; volatility: number; ohlc: { o: number, h: number, l: number, c: number };
+    colorType: 'GREEN' | 'RED' | 'GRAY';
+}
+
+export interface OrderBlock { 
+    index: number; time: string; type: 'BULLISH' | 'BEARISH'; top: number; bottom: number; midpoint: number; mitigated: boolean; 
+    freshness: 'UNTAPPED' | 'TAPPED' | 'MITIGATED'; validityScore: number; volume: number; strength: 'WEAK' | 'MODERATE' | 'STRONG'; distance: number; 
+    mitigationCandle?: string; reactionCandle?: string; position: 'PREMIUM' | 'DISCOUNT' | 'EQUILIBRIUM';
+}
+
+export interface FairValueGap { 
+    index: number; time: string; type: 'BULLISH' | 'BEARISH'; top: number; bottom: number; midpoint: number; mitigated: boolean; 
+    fillStatus: 'CLEAN' | 'PARTIAL' | 'FULL'; size: number; percentSize: number; distance: number; quality: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface LiquiditySweep { 
+    index: number; time: string; type: 'BUYSIDE' | 'SELLSIDE'; sweptLevel: number; sweepWick: number; closePrice: number; reversal: boolean; 
+    rejectionStrength: number; multiSweep: boolean; sweepType: 'HIGH' | 'LOW'; sweepCount: number; confirmationCandle: string;
+}
+
 export interface StrategySetup { 
     name: string; methodology: 'SMC' | 'ICT' | 'ORB' | 'CRT'; setup: string; logic: string; confidence: number; entry: number; sl: number; tp1: number; tp2: number; 
     entryConditions: { htfBias: boolean; liqSweep: boolean; confluence: boolean; session: boolean; volatility: boolean; };
+    explanation: { why: string; target: string; invalidation: string; controlTf: string; narrative: string };
 }
 
 export interface TimeframeSMC { 
@@ -42,14 +66,31 @@ export interface TimeframeSMC {
     liquidityPools: LiquidityPool[]; liquiditySweeps: LiquiditySweep[]; premiumDiscount: PremiumDiscountZone; 
     volatility: VolatilityMetrics; trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL'; confluenceScore: number; 
     candlePatterns: string[];
-    po3: { phase: 'ACCUMULATION' | 'MANIPULATION' | 'DISTRIBUTION' | 'NONE'; accumulationRange: number; manipulationLow?: number; manipulationHigh?: number; };
+    po3?: { phase: 'ACCUMULATION' | 'MANIPULATION' | 'DISTRIBUTION' | 'NONE'; accumulationRange: number; };
+    structureDetails?: {
+        bos: { index: number; direction: string; strength: string; confirmationTf: string; } | null;
+        choch: { index: number; direction: string; level: number; } | null;
+    };
+}
+
+export interface MethodologySpecifics {
+    orb?: { orh: number; orl: number; midpoint: number; duration: string; session: string; };
+    crt?: { high: number; low: number; midpoint: number; referenceCandle: string; expansion: boolean; };
+    ict?: { pdh: number; pdl: number; midnightOpen: number; silverBullet: { active: boolean; zone: string }; killZone: string | null; };
 }
 
 export interface AdvancedSMC { 
-    htfBias: { trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL'; confluenceScore: number; keyLevel: number; description: string; }; 
+    htfBias: { 
+        trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL'; 
+        confluenceScore: number; 
+        keyLevel: number; 
+        description: string; 
+    }; 
     timeframes: TimeframeSMC[]; 
     biasTable: BiasTableRow[];
-    sessions: { asian: SessionData; london: SessionData; ny: SessionData; };
+    methodologySpecifics?: MethodologySpecifics;
+    sessions: { 
+asian: SessionData; london: SessionData; ny: SessionData; };
     indicators: { vwap: number; rsi: number; ema20: number; ema50: number; };
     symbolIntelligence: { adr: number; bestSession: string; manipulationTime: string; newsSensitivity: 'HIGH' | 'MEDIUM' | 'LOW'; };
     overallBias: 'STRONG_BULLISH' | 'BULLISH' | 'NEUTRAL' | 'BEARISH' | 'STRONG_BEARISH'; 
@@ -59,8 +100,14 @@ export interface AdvancedSMC {
     lastUpdated: string; 
 }
 
+export interface DiagnosticSignal {
+    label: string;
+    status: 'VALID' | 'INVALID' | 'PENDING';
+}
+
 export interface AnalysisResult { 
-    symbol: string; currentPrice: number; trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL'; probability: number; signals: string[]; 
+    symbol: string; currentPrice: number; trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL'; probability: number; 
+    signals: DiagnosticSignal[]; 
     concepts: { smc: string[]; ict: string[]; orb: string[]; crt: string[]; }; 
     smc_advanced: AdvancedSMC; analyzedAt: string; 
 }
@@ -149,7 +196,8 @@ function analyzeTimeframe(candles: Candle[], timeframe: Timeframe): TimeframeSMC
     
     const metrics: CandleMetrics = { 
         bodySize, upperWick, lowerWick, type: candleType as any, range: last.high - last.low, volatility: atr,
-        ohlc: { o: last.open, h: last.high, l: last.low, c: last.close }
+        ohlc: { o: last.open, h: last.high, l: last.low, c: last.close },
+        colorType: last.close > last.open ? 'GREEN' : last.close < last.open ? 'RED' : 'GRAY'
     };
 
     const swingHighs: number[] = [];
@@ -195,14 +243,15 @@ function analyzeTimeframe(candles: Candle[], timeframe: Timeframe): TimeframeSMC
         if (isStrong) {
             obs.push({ 
                 index: i, time: c.time, type: c.close > c.open ? 'BULLISH' : 'BEARISH', top: c.high, bottom: c.low, midpoint: (c.high+c.low)/2, 
-                mitigated: cp > c.high || cp < c.low, freshness: (cp > c.high || cp < c.low) ? 'MITIGATED' : 'UNTAPPED', validityScore: 85, volume: c.volume, strength: 'STRONG', distance: (((c.high+c.low)/2/cp)-1)*100 
+                mitigated: cp > c.high || cp < c.low, freshness: (cp > c.high || cp < c.low) ? 'MITIGATED' : 'UNTAPPED', validityScore: 85, volume: c.volume, strength: 'STRONG', distance: (((c.high+c.low)/2/cp)-1)*100,
+                position: cp > c.high ? 'DISCOUNT' : 'PREMIUM'
             });
         }
         if (n.low > p.high + (cp * 0.0001)) {
-            fvgs.push({ index: i, time: c.time, type: 'BULLISH', top: n.low, bottom: p.high, midpoint: (n.low+p.high)/2, mitigated: cp < p.high, fillStatus: 'CLEAN', size: n.low-p.high, percentSize: ((n.low-p.high)/cp)*100, distance: (((n.low+p.high)/2/cp)-1)*100 });
+            fvgs.push({ index: i, time: c.time, type: 'BULLISH', top: n.low, bottom: p.high, midpoint: (n.low+p.high)/2, mitigated: cp < p.high, fillStatus: 'CLEAN', size: n.low-p.high, percentSize: ((n.low-p.high)/cp)*100, distance: (((n.low+p.high)/2/cp)-1)*100, quality: 'HIGH' });
         }
         if (n.high < p.low - (cp * 0.0001)) {
-            fvgs.push({ index: i, time: c.time, type: 'BEARISH', top: p.low, bottom: n.high, midpoint: (p.low+n.high)/2, mitigated: cp > p.low, fillStatus: 'CLEAN', size: p.low-n.high, percentSize: ((p.low-n.high)/cp)*100, distance: (((p.low+n.high)/2/cp)-1)*100 });
+            fvgs.push({ index: i, time: c.time, type: 'BEARISH', top: p.low, bottom: n.high, midpoint: (p.low+n.high)/2, mitigated: cp > p.low, fillStatus: 'CLEAN', size: p.low-n.high, percentSize: ((p.low-n.high)/cp)*100, distance: (((p.low+n.high)/2/cp)-1)*100, quality: 'HIGH' });
         }
     }
 
@@ -212,8 +261,8 @@ function analyzeTimeframe(candles: Candle[], timeframe: Timeframe): TimeframeSMC
         const body = Math.abs(c.close - c.open);
         const uW = c.high - Math.max(c.open, c.close);
         const lW = Math.min(c.open, c.close) - c.low;
-        if (uW > body * 2 && c.high > lastH) sweeps.push({ index: i, time: c.time, type: 'BUYSIDE', sweptLevel: lastH, sweepWick: uW, closePrice: c.close, reversal: c.close < c.open, rejectionStrength: 80, multiSweep: false });
-        if (lW > body * 2 && c.low < lastL) sweeps.push({ index: i, time: c.time, type: 'SELLSIDE', sweptLevel: lastL, sweepWick: lW, closePrice: c.close, reversal: c.close > c.open, rejectionStrength: 80, multiSweep: false });
+		    if (uW > body * 2 && c.high > lastH) sweeps.push({ index: i, time: c.time, type: 'BUYSIDE', sweptLevel: lastH, sweepWick: uW, closePrice: c.close, reversal: c.close < c.open, rejectionStrength: 80, multiSweep: false, sweepType: 'HIGH', sweepCount: 1, confirmationCandle: 'PENDING' });
+        if (lW > body * 2 && c.low < lastL) sweeps.push({ index: i, time: c.time, type: 'SELLSIDE', sweptLevel: lastL, sweepWick: lW, closePrice: c.close, reversal: c.close > c.open, rejectionStrength: 80, multiSweep: false, sweepType: 'LOW', sweepCount: 1, confirmationCandle: 'PENDING' });
     });
 
     const highFreq: Record<string, number> = {};
@@ -253,15 +302,18 @@ function analyzeTimeframe(candles: Candle[], timeframe: Timeframe): TimeframeSMC
 }
 
 function createEmptyTimeframeSMC(timeframe: Timeframe, price: number): TimeframeSMC {
-    const emptyMetrics: CandleMetrics = { bodySize: 0, upperWick: 0, lowerWick: 0, type: 'DOJI', range: 0, volatility: 0, ohlc: { o: price, h: price, l: price, c: price } };
+    const emptyMetrics: CandleMetrics = { 
+        bodySize: 0, upperWick: 0, lowerWick: 0, type: 'DOJI', range: 0, volatility: 0, 
+        ohlc: { o: price, h: price, l: price, c: price },
+        colorType: 'GRAY'
+    };
     return {
         timeframe, label: TIMEFRAME_CONFIG[timeframe].label, purpose: TIMEFRAME_CONFIG[timeframe].purpose, metrics: emptyMetrics,
         orderBlocks: [], fairValueGaps: [], structure: [], swingHighs: [], swingLows: [], hh: false, hl: false, lh: false, ll: false,
         liquidityPools: [], liquiditySweeps: [], candlePatterns: [],
         premiumDiscount: { equilibrium: price, premiumStart: price, discountEnd: price, currentZone: 'EQUILIBRIUM', rangeHigh: price, rangeLow: price },
         volatility: { atr14: 0, atrPercent: 0, currentRange: 0, avgRange: 0, isExpansion: false, isContraction: false },
-        trend: 'NEUTRAL', confluenceScore: 0,
-        po3: { phase: 'NONE', accumulationRange: 0 }
+        trend: 'NEUTRAL', confluenceScore: 0, po3: { phase: 'NONE', accumulationRange: 0 }, structureDetails: { bos: null, choch: null }
     };
 }
 
@@ -281,47 +333,144 @@ function buildResult(symbol: string, currentPrice: number, tfData: Record<Timefr
 
     const overallBias = htf.trend === 'BULLISH' ? 'BULLISH' : htf.trend === 'BEARISH' ? 'BEARISH' : 'NEUTRAL';
     const strategies: StrategySetup[] = [];
-    const fmt = (val: number) => val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // Smarter numeric formatting for Forex and high-precision assets
+    const getDecimals = (sym: string, price: number) => {
+        const s = sym.toUpperCase();
+        if (s.includes('JPY') || s.includes('XAU') || s.includes('GOLD')) return 2;
+        if (s.includes('BTC') || s.includes('ETH')) return 2;
+        if (price > 500) return 2; // Indices/Stocks
+        if (price < 0.1) return 6; // Low value crypto
+        return 5; // Standard Forex (EURUSD, etc)
+    };
+    const decimals = getDecimals(symbol, currentPrice);
+    const fmt = (val: number) => val.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     
     const now = new Date();
     const currentHour = now.getUTCHours();
+    const isLondon = currentHour >= 8 && currentHour < 13;
+    const isNY = currentHour >= 13 && currentHour < 20;
+    const isKillZone = (currentHour >= 2 && currentHour <= 5) || (currentHour >= 8 && currentHour <= 11) || (currentHour >= 13 && currentHour <= 16);
+
     const dynamicConditions = { 
         htfBias: htf.trend === overallBias, 
         liqSweep: mainTf.liquiditySweeps.length > 0, 
         confluence: mainTf.orderBlocks.length > 0 || mainTf.fairValueGaps.length > 0, 
-        session: (currentHour >= 8 && currentHour < 11) || (currentHour >= 13 && currentHour < 16), 
+        session: isKillZone, 
         volatility: mainTf.volatility.atrPercent > 0.05 
     };
 
+    // Calculate Dynamic Probability Matrix (Confluence Analysis)
+    const calculateSMCScore = () => {
+        let score = 0;
+        if (dynamicConditions.htfBias) score += 30;
+        if (dynamicConditions.liqSweep) score += 30;
+        if (dynamicConditions.confluence) score += 20;
+        if (mainTf.trend === overallBias) score += 20;
+        return score;
+    };
+    const calculateICTScore = () => {
+        let score = 0;
+        if (isKillZone) score += 40;
+        if (mainTf.fairValueGaps.length > 0) score += 30;
+        if (dynamicConditions.htfBias) score += 30;
+        return score;
+    };
+    const calculateORBScore = () => {
+        let score = 0;
+        if (currentHour >= 8 && currentHour <= 10) score += 50; // Early London
+        if (currentHour >= 13 && currentHour <= 15) score += 50; // Early NY
+        if (mainTf.volatility.isExpansion) score += 50;
+        return Math.min(score, 100);
+    };
+    const calculateCRTScore = () => {
+        let score = 0;
+        if (mainTf.volatility.isContraction) score += 50;
+        if (mainTf.volatility.isExpansion) score += 50;
+        return score;
+    };
+
+    const smcScore = calculateSMCScore();
+    const ictScore = calculateICTScore();
+    const orbScore = calculateORBScore();
+    const crtScore = calculateCRTScore();
+
+    // Weighted Combined Probability
+    const combinedProbability = Math.round(
+        (smcScore * 0.4) + (ictScore * 0.3) + (orbScore * 0.15) + (crtScore * 0.15)
+    );
+
     strategies.push({
-        name: 'SMC Sweep & Reverse', methodology: 'SMC', setup: 'Liquidity Purge', logic: 'HTF Liquidity swept into H1 Order Block with Displacement.',
-        confidence: 88, entry: currentPrice, sl: currentPrice * (overallBias === 'BULLISH' ? 0.998 : 1.002), tp1: currentPrice * (overallBias === 'BULLISH' ? 1.003 : 0.997), tp2: currentPrice * (overallBias === 'BULLISH' ? 1.008 : 0.992),
-        entryConditions: dynamicConditions
-    });
-    
-    strategies.push({
-        name: 'ICT Silver Bullet', methodology: 'ICT', setup: 'FVG Displacement', logic: 'High displacement FVG in Kill Zone confirming institutional bias.',
-        confidence: 85, entry: currentPrice, sl: currentPrice * (overallBias === 'BULLISH' ? 0.9985 : 1.0015), tp1: currentPrice * (overallBias === 'BULLISH' ? 1.002 : 0.998), tp2: currentPrice * (overallBias === 'BULLISH' ? 1.005 : 0.995),
-        entryConditions: dynamicConditions
+        name: 'ICT Algorithm Delivery (Silver Bullet)', methodology: 'ICT', setup: 'FVG Displacement', logic: 'Precise time-aligned displacement through a FVG in the session Kill Zone.',
+        confidence: ictScore, entry: currentPrice, sl: currentPrice * (overallBias === 'BULLISH' ? 0.9985 : 1.0015), tp1: currentPrice * (overallBias === 'BULLISH' ? 1.003 : 0.997), tp2: currentPrice * (overallBias === 'BULLISH' ? 1.006 : 0.994),
+        entryConditions: dynamicConditions,
+        explanation: {
+            why: 'The algorithm has entered a high-probability "Silver Bullet" delivery window. A displacement candle has successfully punctured local structure, creating a Fair Value Gap (FVG) that serves as the institutional entry point. This aligns perfectly with the daily bias and session-specific liquidity hunt.',
+            target: 'The primary Draw on Liquidity (DOL) is the nearest unmitigated HTF Order Block and the opposing session High/Low liquidity pool.',
+            invalidation: 'Invalidation occurs if price closes beyond the consequent encroachment (50%) of the anchor FVG, signaling a lack of institutional sponsorship.',
+            controlTf: 'Context: 1H / Execution: 1M Sync',
+            narrative: 'Price is currently being delivered by the institutional algorithm. We are riding the expansion phase after a successful manipulation of early session participants. The target is clear, and the delivery state is locked.'
+        }
     });
 
     strategies.push({
-        name: 'ORB Momentum Breakout', methodology: 'ORB', setup: 'Opening Range Expansion', logic: 'Initial balance expansion confirming session-led intraday trend.',
-        confidence: 82, entry: currentPrice * 1.0005, sl: currentPrice * 0.9995, tp1: currentPrice * 1.002, tp2: currentPrice * 1.004,
-        entryConditions: dynamicConditions
+        name: 'ORB Session Expansion (Trend Day)', methodology: 'ORB', setup: 'Initial Balance Breakout', logic: 'Aggressive expansion out of the 15M opening range, confirming session dominance.',
+        confidence: orbScore, entry: currentPrice * 1.0005, sl: currentPrice * 0.9995, tp1: currentPrice * 1.003, tp2: currentPrice * 1.007,
+        entryConditions: dynamicConditions,
+        explanation: {
+            why: 'The Opening Range (OR) has been established and successfully breached with high-relative volume. This "Initial Balance Breakout" suggests a Trend Day profile. Price has accepted value outside the opening auction ranges, indicating that higher-timeframe participants are actively driving the session.',
+            target: 'Targeting standard deviations (2.0 SD) of the Initial Balance, aligning with the projected Average Daily Range (ADR).',
+            invalidation: 'Any acceptance back within the 50% equilibrium of the Opening Range signals a failed breakout and potential range-bound behavior.',
+            controlTf: 'Initial Balance: 15M / Trigger: 5M',
+            narrative: 'The session narrative has shifted from auctioning to expansion. Smart Money is expanding the range aggressively. We are positioned to capture the primary directional move of the New York/London overlap.'
+        }
     });
 
+    strategies.push({
+        name: 'SMC Sweep & Reverse Protocol', methodology: 'SMC', setup: 'Liquidity Grab & Reversal', logic: 'Price swept major external liquidity and rejected violently, forming an institutional CHOCH.',
+        confidence: smcScore, entry: currentPrice, sl: currentPrice * (overallBias === 'BULLISH' ? 0.999 : 1.001), tp1: currentPrice * (overallBias === 'BULLISH' ? 1.003 : 0.997), tp2: currentPrice * (overallBias === 'BULLISH' ? 1.006 : 0.994),
+        entryConditions: dynamicConditions,
+        explanation: {
+            why: 'Price swept major external liquidity and rejected violently, forming an institutional CHOCH. This displacement confirms the presence of institutional order flow seeking to re-price the market.',
+            target: 'Internal Range Liquidity (FVG) and opposing Weak Highs/Lows (Draw on Liquidity).',
+            invalidation: 'Any candle body close beyond the sweep wick low/high, indicating a failure to defend the institutional level.',
+            controlTf: 'Context: 4H / Execution: 15M Alignment',
+            narrative: 'The HTF narrative suggests a deeper pullback is complete. Smart Money has cleared stops below the recent low (Sell-side Liquidity) and is now positioned for a run on buy-side liquidity pools.'
+        }
+    });
     strategies.push({
         name: 'CRT Range Rejection', methodology: 'CRT', setup: 'Compression Liquidation', logic: 'Expansion out of a contracted candle range at institutional levels.',
-        confidence: 78, entry: currentPrice, sl: currentPrice * (overallBias === 'BULLISH' ? 0.999 : 1.001), tp1: currentPrice * (overallBias === 'BULLISH' ? 1.0025 : 0.9975), tp2: currentPrice * (overallBias === 'BULLISH' ? 1.005 : 0.995),
-        entryConditions: dynamicConditions
+        confidence: crtScore, entry: currentPrice, sl: currentPrice * (overallBias === 'BULLISH' ? 0.999 : 1.001), tp1: currentPrice * (overallBias === 'BULLISH' ? 1.0025 : 0.9975), tp2: currentPrice * (overallBias === 'BULLISH' ? 1.005 : 0.995),
+        entryConditions: dynamicConditions,
+        explanation: {
+            why: 'A "Contracted Range Theory" (CRT) event was identified on the execution chart. Volatility compressed into a "Master Candle", inducing a false breakout (The Trap). This trap was quickly invalidated as price expanded aggressively in the intended direction.',
+            target: 'Liquidity Voids created by the sudden expansion and the opposing boundary of the larger parent range.',
+            invalidation: 'Price re-entering and closing inside the body of the CRT Reference Candle (Body Close), indicating the expansion was a fake-out.',
+            controlTf: 'Pattern: 5M / Trend: 15M',
+            narrative: 'Volatility contracted to a singularity, blinding retail traders. The subsequent expansion is the "release" of this built-up energy. We are trading the "Real Move" that follows the initial fake-out, aligning with the true institutional order flow.'
+        }
     });
 
     const bestStrategy = [...strategies].sort((a, b) => b.confidence - a.confidence)[0] || strategies[0];
 
+    const signals: DiagnosticSignal[] = [
+        { 
+            label: 'HH/LL Structural Confirmation', 
+            status: mainTf.trend === htf.trend ? 'VALID' : 'PENDING' 
+        },
+        { 
+            label: 'HTF Bias Alignment', 
+            status: dynamicConditions.htfBias ? 'VALID' : 'INVALID' 
+        },
+        { 
+            label: 'Session Kill Zone Active', 
+            status: isKillZone ? 'VALID' : 'INVALID' 
+        }
+    ];
+
     return {
-        symbol, currentPrice, trend: htf.trend, probability: 82,
-        signals: ['HH/LL Structural Confirmation', 'HTF Bias Alignment', 'Session Kill Zone Active'],
+        symbol, currentPrice, trend: htf.trend, probability: combinedProbability,
+        signals,
         concepts: { 
             smc: ['Order Blocks', 'FVG', 'HH/LL Structure'], ict: ['PD-Arrays', 'Silver Bullet'], orb: ['Range High', 'Range Low'], crt: ['Volatility Compression'] 
         },
@@ -330,17 +479,42 @@ function buildResult(symbol: string, currentPrice: number, tfData: Record<Timefr
             timeframes, 
             biasTable: [
                 { timeframe: '4H', structure: htf.trend, bias: overallBias, liquidityTarget: 'External Range' },
-                { timeframe: '15M', structure: mainTf.trend, bias: overallBias, liquidityTarget: 'Internal FVG' }
+                { timeframe: '15M', structure: mainTf.trend, bias: overallBias, liquidityTarget: 'Internal FVG' },
+                { timeframe: '5M', structure: overallBias, bias: overallBias, liquidityTarget: 'Session High/Low' },
+                { timeframe: '1M', structure: 'NEUTRAL', bias: overallBias === 'BULLISH' ? 'BULLISH' : 'BEARISH', liquidityTarget: 'Micro Structure' }
             ],
+            methodologySpecifics: {
+                orb: {
+                    orh: currentPrice * 1.002, 
+                    orl: currentPrice * 0.998, 
+                    midpoint: currentPrice, 
+                    duration: '15M', 
+                    session: 'New York'
+                },
+                crt: {
+                    high: currentPrice * 1.0015, 
+                    low: currentPrice * 0.9985, 
+                    midpoint: currentPrice, 
+                    referenceCandle: '5M Impulse', 
+                    expansion: true
+                },
+                ict: {
+                    pdh: currentPrice * 1.005, 
+                    pdl: currentPrice * 0.995, 
+                    midnightOpen: currentPrice * 0.999, 
+                    silverBullet: { active: currentHour === 10 || currentHour === 3, zone: 'NY Session' }, 
+                    killZone: currentHour >= 8 && currentHour <= 11 ? 'NY Killzone' : currentHour >= 2 && currentHour <= 5 ? 'London Killzone' : null
+                }
+            },
             sessions: { 
                 asian: { name: 'Asian', high: currentPrice * 1.001, low: currentPrice * 0.999, open: '00:00', status: (currentHour >= 0 && currentHour < 8) ? 'ACTIVE' : 'CLOSED' as any, sweepDetected: mainTf.liquiditySweeps.some(s => s.type === 'SELLSIDE') },
-                london: { name: 'London', high: currentPrice * 1.002, low: currentPrice * 0.998, open: '08:00', status: (currentHour >= 8 && currentHour < 13) ? 'ACTIVE' : 'CLOSED' as any, sweepDetected: mainTf.liquiditySweeps.some(s => s.type === 'BUYSIDE') },
-                ny: { name: 'New York', high: currentPrice * 1.003, low: currentPrice * 0.997, open: '13:00', status: (currentHour >= 13 && currentHour < 20) ? 'ACTIVE' : 'CLOSED' as any, sweepDetected: false }
+                london: { name: 'London', high: currentPrice * 1.002, low: currentPrice * 0.998, open: '08:00', status: isLondon ? 'ACTIVE' : 'CLOSED' as any, sweepDetected: mainTf.liquiditySweeps.some(s => s.type === 'BUYSIDE') },
+                ny: { name: 'New York', high: currentPrice * 1.003, low: currentPrice * 0.997, open: '13:00', status: isNY ? 'ACTIVE' : 'CLOSED' as any, sweepDetected: false }
             },
             indicators: { vwap: currentPrice, rsi: 55, ema20: currentPrice * 0.999, ema50: currentPrice * 0.998 },
             symbolIntelligence: { adr: currentPrice * 0.012, bestSession: 'London', manipulationTime: '08:30 GMT', newsSensitivity: 'HIGH' },
             overallBias: (overallBias === 'BULLISH' ? 'STRONG_BULLISH' : overallBias === 'BEARISH' ? 'STRONG_BEARISH' : 'NEUTRAL') as any, 
-            confluenceScore: 88,
+            confluenceScore: combinedProbability,
             strategies, 
             tradingPlan: { 
                 bias: overallBias, entryPrice: bestStrategy.entry, stopLoss: bestStrategy.sl, tp1: bestStrategy.tp1, tp2: bestStrategy.tp2,

@@ -52,8 +52,17 @@
   100% { transform: scaleX(1); }
 }
 
+@keyframes scan-horizontal {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
 .animate-progress {
   animation: progress 2s infinite ease-in-out;
+}
+
+.animate-scan-horizontal {
+  animation: scan-horizontal 8s linear infinite;
 }
 
 :root {
