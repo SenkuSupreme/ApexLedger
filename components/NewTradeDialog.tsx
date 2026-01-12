@@ -1518,12 +1518,26 @@ export default function NewTradeDialog({
                         className="hidden"
                         onChange={async (e) => {
                           const files = Array.from(e.target.files || []);
-                          for (const file of files) {
-                            const formData = new FormData();
-                            formData.append("file", file);
+                          
+                          // 1. Obtain cryptographic signature from institutional gateway
+                          const sigRes = await fetch('/api/upload/signature');
+                          if (!sigRes.ok) {
+                            console.error('Could not obtain upload signature');
+                            return;
+                          }
+                          const { signature, timestamp, apiKey, cloudName, folder } = await sigRes.json();
 
+                          for (const file of files) {
                             try {
-                              const res = await fetch("/api/upload", {
+                              // 2. Transmit binary payload directly to Cloudinary
+                              const formData = new FormData();
+                              formData.append("file", file);
+                              formData.append("api_key", apiKey);
+                              formData.append("timestamp", timestamp.toString());
+                              formData.append("signature", signature);
+                              formData.append("folder", folder);
+
+                              const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
                                 method: "POST",
                                 body: formData,
                               });
@@ -1532,11 +1546,11 @@ export default function NewTradeDialog({
                                 const data = await res.json();
                                 setForm((prev: any) => ({
                                   ...prev,
-                                  screenshots: [...prev.screenshots, data.url],
+                                  screenshots: [...prev.screenshots, data.secure_url],
                                 }));
                               }
                             } catch (error) {
-                              console.error("Upload failed:", error);
+                              console.error("Direct upload failed:", error);
                             }
                           }
                         }}

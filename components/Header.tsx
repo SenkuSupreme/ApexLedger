@@ -2,7 +2,7 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { Bell, Search, User, Zap, LayoutDashboard, Calculator, Calendar as CalendarIcon, Book, BookOpen, BarChart2, BarChart3, Layers, Goal, CheckSquare, Settings, LogOut, FileText, Activity, Eye, Timer, Microscope, TrendingUp, Newspaper, Target, StickyNote, Notebook, Clock as ClockIcon, Maximize2, Minimize2 } from 'lucide-react';
+import { Bell, Search, User, Zap, Sparkles, LayoutDashboard, Calculator, Calendar as CalendarIcon, Book, BookOpen, BarChart2, BarChart3, Layers, Goal, CheckSquare, Settings, LogOut, FileText, Activity, Eye, Timer, Microscope, TrendingUp, Newspaper, Target, StickyNote, Notebook, Clock as ClockIcon, Maximize2, Minimize2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -217,6 +217,18 @@ const Header = React.memo(function Header() {
         };
     }, [session]);
 
+    // Telemetry Core for Institutional Data Lookups
+    const [stats, setStats] = useState<any>(null);
+
+    useEffect(() => {
+        if (open) {
+            fetch('/api/stats/overview')
+                .then(res => res.json())
+                .then(data => setStats(data))
+                .catch(err => console.error('Telemetry fetch failure', err));
+        }
+    }, [open]);
+
     const runCommand = (command: () => void) => {
       setOpen(false)
       command()
@@ -331,109 +343,170 @@ const Header = React.memo(function Header() {
             </header>
 
             <CommandDialog open={open} onOpenChange={setOpen}>
-                <CommandInput placeholder="Type a command or search..." />
-                <CommandList>
-                    <CommandEmpty>No results found.</CommandEmpty>
-                    <CommandGroup heading="Analytics">
-                        <CommandItem onSelect={() => runCommand(() => router.push('/dashboard'))}>
-                            <LayoutDashboard className="mr-2 h-4 w-4" />
-                            <span>Dashboard</span>
-                        </CommandItem>
-                        <CommandItem onSelect={() => runCommand(() => router.push('/journal'))}>
-                            <Book className="mr-2 h-4 w-4" />
-                            <span>Journal</span>
-                        </CommandItem>
-                        <CommandItem onSelect={() => runCommand(() => router.push('/calendar'))}>
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            <span>Calendar</span>
+                <CommandInput placeholder="Access institutional sectors (CMD+K)..." />
+                <CommandList className="scrollbar-hide pb-4">
+                    <CommandEmpty>No institutional sectors found.</CommandEmpty>
+                    
+                    <CommandGroup heading="Neural Core">
+                        <CommandItem onSelect={() => runCommand(() => router.push('/chat-with-ai'))} className="flex items-center justify-between py-3">
+                            <div className="flex items-center">
+                                <Sparkles className="mr-3 h-4 w-4 text-indigo-400" />
+                                <span className="font-bold">AI Companion</span>
+                            </div>
+                            <span className="text-[10px] font-black text-indigo-500/50 uppercase tracking-widest">Active Connection</span>
                         </CommandItem>
                     </CommandGroup>
-                    <CommandSeparator />
-                    <CommandGroup heading="Performance">
+
+                    <CommandSeparator className="bg-white/5" />
+
+                    <CommandGroup heading="Operational Analytics">
+                        <CommandItem onSelect={() => runCommand(() => router.push('/dashboard'))} className="flex items-center justify-between py-3">
+                            <div className="flex items-center">
+                                <LayoutDashboard className="mr-3 h-4 w-4 text-sky-400" />
+                                <span className="font-bold">Dashboard</span>
+                            </div>
+                            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest leading-none">Global Overview</span>
+                        </CommandItem>
+                        <CommandItem onSelect={() => runCommand(() => router.push('/journal'))} className="flex items-center justify-between py-3">
+                            <div className="flex items-center">
+                                <Book className="mr-3 h-4 w-4 text-emerald-400" />
+                                <span className="font-bold">Journal</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest leading-none">{stats?.journalEntries || 0} Entries</span>
+                            </div>
+                        </CommandItem>
+                        <CommandItem onSelect={() => runCommand(() => router.push('/calendar'))} className="flex items-center justify-between py-3">
+                            <div className="flex items-center">
+                                <CalendarIcon className="mr-3 h-4 w-4 text-amber-400" />
+                                <span className="font-bold">Calendar</span>
+                            </div>
+                            <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Time Analysis</span>
+                        </CommandItem>
+                        <CommandItem onSelect={() => runCommand(() => router.push('/analytics/insights'))} className="flex items-center justify-between py-3">
+                            <div className="flex items-center">
+                                <Sparkles className="mr-3 h-4 w-4 text-purple-400" />
+                                <span className="font-bold">Market Insights</span>
+                            </div>
+                            <span className="text-[10px] font-black text-purple-500/50 uppercase tracking-widest">SMC/ICT/CRT/ORB</span>
+                        </CommandItem>
+                    </CommandGroup>
+
+                    <CommandSeparator className="bg-white/5" />
+
+                    <CommandGroup heading="Performance Forensics">
                         <CommandItem onSelect={() => runCommand(() => router.push('/bias'))}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            <span>Bias</span>
+                            <Eye className="mr-2 h-4 w-4 text-white/60" />
+                            <span>Bias Decryption</span>
                         </CommandItem>
                         <CommandItem onSelect={() => runCommand(() => router.push('/sessions'))}>
-                            <Timer className="mr-2 h-4 w-4" />
-                            <span>Sessions</span>
+                            <Timer className="mr-2 h-4 w-4 text-white/60" />
+                            <span>Session Telemetry</span>
                         </CommandItem>
                         <CommandItem onSelect={() => runCommand(() => router.push('/strategy'))}>
-                            <Layers className="mr-2 h-4 w-4" />
-                            <span>Strategy</span>
+                            <Layers className="mr-2 h-4 w-4 text-white/60" />
+                            <span>Strategy Architecture</span>
                         </CommandItem>
                         <CommandItem onSelect={() => runCommand(() => router.push('/market-environment'))}>
-                            <Microscope className="mr-2 h-4 w-4" />
+                            <Microscope className="mr-2 h-4 w-4 text-white/60" />
                             <span>Market Environment</span>
                         </CommandItem>
                         <CommandItem onSelect={() => runCommand(() => router.push('/execution-architecture'))}>
-                            <Activity className="mr-2 h-4 w-4" />
+                            <Activity className="mr-2 h-4 w-4 text-white/60" />
                             <span>Execution Architecture</span>
                         </CommandItem>
                         <CommandItem onSelect={() => runCommand(() => router.push('/signal-trigger'))}>
-                            <Zap className="mr-2 h-4 w-4" />
-                            <span>Signal Trigger</span>
+                            <Zap className="mr-2 h-4 w-4 text-white/60" />
+                            <span>Signal Triggers</span>
                         </CommandItem>
                         <CommandItem onSelect={() => runCommand(() => router.push('/technical-confluence'))}>
-                            <BarChart3 className="mr-2 h-4 w-4" />
-                            <span>Technical Confluence</span>
+                            <BarChart3 className="mr-2 h-4 w-4 text-white/60" />
+                            <span>Technical Confluences</span>
                         </CommandItem>
                     </CommandGroup>
-                    <CommandSeparator />
-                    <CommandGroup heading="Strategy">
-                        <CommandItem onSelect={() => runCommand(() => router.push('/strategies'))}>
-                            <Layers className="mr-2 h-4 w-4" />
-                            <span>Strategies</span>
+
+                    <CommandSeparator className="bg-white/5" />
+
+                    <CommandGroup heading="Institutional Systems">
+                        <CommandItem onSelect={() => runCommand(() => router.push('/strategies'))} className="flex items-center justify-between py-3">
+                            <div className="flex items-center">
+                                <Layers className="mr-3 h-4 w-4 text-orange-400" />
+                                <span className="font-bold">Core Strategies</span>
+                            </div>
+                            <span className="text-[10px] font-black text-orange-500/50 uppercase tracking-widest">{stats?.strategies || 0} Blueprints</span>
                         </CommandItem>
-                        <CommandItem onSelect={() => runCommand(() => router.push('/checklists'))}>
-                            <CheckSquare className="mr-2 h-4 w-4" />
-                            <span>Checklists</span>
+                        <CommandItem onSelect={() => runCommand(() => router.push('/checklists'))} className="flex items-center justify-between py-3">
+                            <div className="flex items-center">
+                                <CheckSquare className="mr-3 h-4 w-4 text-sky-400" />
+                                <span className="font-bold">Checklists</span>
+                            </div>
+                            <span className="text-[10px] font-black text-sky-500/50 uppercase tracking-widest">{stats?.checklists || 0} Neural Maps</span>
                         </CommandItem>
                         <CommandItem onSelect={() => runCommand(() => router.push('/backtester'))}>
-                            <TrendingUp className="mr-2 h-4 w-4" />
-                            <span>Backtester</span>
+                            <TrendingUp className="mr-2 h-4 w-4 text-white/60" />
+                            <span>Backtest Engine</span>
                         </CommandItem>
                     </CommandGroup>
-                    <CommandSeparator />
-                    <CommandGroup heading="Tools">
+
+                    <CommandSeparator className="bg-white/5" />
+
+                    <CommandGroup heading="Analysis Tools">
                        <CommandItem onSelect={() => runCommand(() => router.push('/chart'))}>
-                            <BarChart3 className="mr-2 h-4 w-4" />
-                            <span>Live Charts</span>
+                            <BarChart3 className="mr-2 h-4 w-4 text-rose-400" />
+                            <span>Terminal Chart</span>
                         </CommandItem>
                         <CommandItem onSelect={() => runCommand(() => router.push('/news'))}>
-                            <Newspaper className="mr-2 h-4 w-4" />
-                            <span>News</span>
+                            <Newspaper className="mr-2 h-4 w-4 text-white/60" />
+                            <span>Economic Pulse</span>
                         </CommandItem>
                         <CommandItem onSelect={() => runCommand(() => router.push('/research'))}>
-                            <Microscope className="mr-2 h-4 w-4" />
-                            <span>Research</span>
+                            <Microscope className="mr-2 h-4 w-4 text-white/60" />
+                            <span>Research Bay</span>
                         </CommandItem>
                        <CommandItem onSelect={() => runCommand(() => router.push('/calculator'))}>
-                            <Calculator className="mr-2 h-4 w-4" />
-                            <span>Position Calculator</span>
+                            <Calculator className="mr-2 h-4 w-4 text-white/60" />
+                            <span>Position Risk Calculator</span>
                         </CommandItem>
                     </CommandGroup>
-                    <CommandSeparator />
-                    <CommandGroup heading="Productivity">
-                         <CommandItem onSelect={() => runCommand(() => router.push('/tasks'))}>
-                            <CheckSquare className="mr-2 h-4 w-4" />
-                            <span>Tasks</span>
+
+                    <CommandSeparator className="bg-white/5" />
+
+                    <CommandGroup heading="Productivity & Intel">
+                         <CommandItem onSelect={() => runCommand(() => router.push('/tasks'))} className="flex items-center justify-between py-3">
+                            <div className="flex items-center">
+                                <CheckSquare className="mr-3 h-4 w-4 text-pink-400" />
+                                <span className="font-bold">Tasks</span>
+                            </div>
+                            <span className="text-[10px] font-black text-pink-500/50 uppercase tracking-widest">{stats?.tasks || 0} Pending</span>
                         </CommandItem>
-                        <CommandItem onSelect={() => runCommand(() => router.push('/goals'))}>
-                            <Target className="mr-2 h-4 w-4" />
-                            <span>Goals</span>
+                        <CommandItem onSelect={() => runCommand(() => router.push('/goals'))} className="flex items-center justify-between py-3">
+                            <div className="flex items-center">
+                                <Target className="mr-3 h-4 w-4 text-rose-400" />
+                                <span className="font-bold">Goals</span>
+                            </div>
+                            <span className="text-[10px] font-black text-rose-500/50 uppercase tracking-widest">{stats?.goals || 0} Targets</span>
                         </CommandItem>
-                         <CommandItem onSelect={() => runCommand(() => router.push('/habits'))}>
-                            <Activity className="mr-2 h-4 w-4" />
-                            <span>Habits</span>
+                        <CommandItem onSelect={() => runCommand(() => router.push('/habits'))}>
+                            <Activity className="mr-2 h-4 w-4 text-white/60" />
+                            <span>Discipline Tracking</span>
+                        </CommandItem>
+                         <CommandItem onSelect={() => runCommand(() => router.push('/notebook'))} className="flex items-center justify-between py-3">
+                            <div className="flex items-center">
+                                <Notebook className="mr-3 h-4 w-4 text-indigo-400" />
+                                <span className="font-bold">Notebook</span>
+                            </div>
+                            <span className="text-[10px] font-black text-indigo-500/50 uppercase tracking-widest">{stats?.notebook || 0} Files</span>
+                        </CommandItem>
+                        <CommandItem onSelect={() => runCommand(() => router.push('/notes-detailed'))} className="flex items-center justify-between py-3">
+                            <div className="flex items-center">
+                                <BookOpen className="mr-3 h-4 w-4 text-indigo-400" />
+                                <span className="font-bold">Detailed Intel</span>
+                            </div>
+                            <span className="text-[10px] font-black text-indigo-500/50 uppercase tracking-widest">{stats?.notesDetailed || 0} Dossiers</span>
                         </CommandItem>
                          <CommandItem onSelect={() => runCommand(() => router.push('/activity-log'))}>
-                            <StickyNote className="mr-2 h-4 w-4" />
-                            <span>Activity Log</span>
-                        </CommandItem>
-                         <CommandItem onSelect={() => runCommand(() => router.push('/notebook'))}>
-                            <Notebook className="mr-2 h-4 w-4" />
-                            <span>Notebook</span>
+                            <StickyNote className="mr-2 h-4 w-4 text-white/60" />
+                            <span>Activity Ledger</span>
                         </CommandItem>
                     </CommandGroup>
                 </CommandList>

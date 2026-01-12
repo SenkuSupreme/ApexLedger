@@ -536,22 +536,30 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, addBlockAt, i
         const toastId = toast.loading('Uploading Intel Attachment...');
         
         try {
+            // 1. Get Signature from our institutional gateway
+            const sigRes = await fetch('/api/upload/signature');
+            if (!sigRes.ok) throw new Error('Could not obtain upload signature');
+            const { signature, timestamp, apiKey, cloudName, folder } = await sigRes.json();
+
+            // 2. Perform direct neural upload to Cloudinary (Bypassing Vercel Origin)
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('api_key', apiKey);
+            formData.append('timestamp', timestamp.toString());
+            formData.append('signature', signature);
+            formData.append('folder', folder);
             
-            const res = await fetch('/api/upload', {
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
                 method: 'POST',
                 body: formData,
             });
             
-            if (!res.ok) throw new Error('Upload failed');
+            if (!res.ok) throw new Error('Cloud storage rejection');
             
-            const { url } = await res.json();
-            updateBlock(block.id, { content: url });
-            toast.success('Evidence Stored in Cloud', { id: toastId });
+            const { secure_url } = await res.json();
+            updateBlock(block.id, { content: secure_url });
+            toast.success('Evidence Stored in Cloud (Direct Sync)', { id: toastId });
             
-            // Critical: Force an immediate database sync after image upload
-            // to ensure the URL isn't just 'cached' in local state
             if (triggerSave) {
                 setTimeout(() => triggerSave(true), 100);
             }

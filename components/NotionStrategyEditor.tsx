@@ -744,21 +744,30 @@ const EditorBlock = React.memo(({ block, updateBlock, removeBlock, isLast, isFoc
         const toastId = toast.loading('Uploading Strategy Asset...');
 
         try {
+            // 1. Obtain cryptographic signature from institutional gateway
+            const sigRes = await fetch('/api/upload/signature');
+            if (!sigRes.ok) throw new Error('Could not obtain upload signature');
+            const { signature, timestamp, apiKey, cloudName, folder } = await sigRes.json();
+
+            // 2. Transmit binary payload directly to Cloudinary (Bypassing Vercel Lambda Outbound)
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('api_key', apiKey);
+            formData.append('timestamp', timestamp.toString());
+            formData.append('signature', signature);
+            formData.append('folder', folder);
 
-            const res = await fetch('/api/upload', {
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
                 method: 'POST',
                 body: formData,
             });
 
-            if (!res.ok) throw new Error('Upload failed');
+            if (!res.ok) throw new Error('Cloud storage rejection');
 
-            const { url } = await res.json();
-            updateBlock(block.id, { content: url });
-            toast.success('Strategy Intel Stored', { id: toastId });
+            const { secure_url } = await res.json();
+            updateBlock(block.id, { content: secure_url });
+            toast.success('Strategy Intel Stored (Direct Sync)', { id: toastId });
 
-            // Critical: Force an immediate database commit for cloud assets
             if (triggerSave) {
                 setTimeout(() => triggerSave(true), 100);
             }

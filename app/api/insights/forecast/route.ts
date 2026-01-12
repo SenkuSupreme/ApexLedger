@@ -29,7 +29,12 @@ export async function GET(req: Request) {
         return NextResponse.json(null); 
     }
 
-    return NextResponse.json(existingForecast.analysis);
+    const response = NextResponse.json(existingForecast.analysis);
+    
+    // Inject Institutional Edge Caching (1 min fresh, 2 min stale-while-revalidate)
+    response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
+    
+    return response;
 
   } catch (error) {
     console.error('[FORECAST_GET]', error);

@@ -212,25 +212,35 @@ export default function TradeForm({
 
     setUploading(true);
     try {
+      // 1. Fetch authorized cryptographic signature
+      const sigRes = await fetch('/api/upload/signature');
+      if (!sigRes.ok) throw new Error('Could not obtain upload signature');
+      const { signature, timestamp, apiKey, cloudName, folder } = await sigRes.json();
+
       const uploadPromises = Array.from(files).map(async (file) => {
+        // 2. Direct-to-Cloud Transmission
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("api_key", apiKey);
+        formData.append("timestamp", timestamp.toString());
+        formData.append("signature", signature);
+        formData.append("folder", folder);
 
-        const response = await fetch("/api/upload", {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
           method: "POST",
           body: formData,
         });
 
-        if (!response.ok) throw new Error("Upload failed");
+        if (!response.ok) throw new Error("Cloud rejection");
         const data = await response.json();
-        return data.url;
+        return data.secure_url;
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
       setScreenshots((prev) => [...prev, ...uploadedUrls]);
     } catch (error) {
-      console.error("Upload failed:", error);
-      alert("Failed to upload images");
+      console.error("Direct upload failed:", error);
+      alert("Failed to store evidence in cloud");
     } finally {
       setUploading(false);
     }
