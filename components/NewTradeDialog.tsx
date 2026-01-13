@@ -45,6 +45,7 @@ interface NewTradeDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  trade?: any;
 }
 
 const DEFAULT_OPTIONS = {
@@ -119,6 +120,7 @@ export default function NewTradeDialog({
   isOpen,
   onClose,
   onSuccess,
+  trade,
 }: NewTradeDialogProps) {
   const { portfolios, refreshPortfolios } = usePortfolios();
   const [activeTab, setActiveTab] = useState<TabId>("basic");
@@ -136,6 +138,64 @@ export default function NewTradeDialog({
     }));
   };
 
+const DEFAULT_FORM = {
+  symbol: "",
+  assetType: "forex",
+  portfolioId: "all",
+  strategyId: "",
+  status: "Closed",
+  timestampEntry: new Date().toISOString().slice(0, 16),
+  timestampExit: "",
+  direction: "long",
+  newsImpact: "None",
+  dailyBias: "",
+  marketCondition: [],
+  marketEnvironment: "",
+  executionArchitecture: "",
+  signalTrigger: "",
+  technicalConfluence: "",
+  tradeType: "",
+  entryTimeframe: "",
+  sessions: [],
+  entrySignal: [],
+  confluences: [],
+  keyLevels: [],
+  exchange: "",
+  tags: [],
+  notes: "",
+  orderType: "Market",
+  entryPrice: "",
+  exitPrice: "",
+  quantity: "1",
+  stopLoss: "",
+  stopLossUnit: "$",
+  riskPercentage: "",
+  leverage: "1:1",
+  slManagement: [],
+  targetRR: "",
+  actualRR: "",
+  maxRR: "",
+  tpManagement: [],
+  accountRisk: "",
+  riskAmount: "",
+  portfolioBalance: "",
+  rMultiple: "",
+  positionValue: "",
+  takeProfit: "",
+  grossPnl: "",
+  fees: "0",
+  pnl: "",
+  pnlUnit: "$",
+  outcome: "",
+  setupGrade: 3,
+  emotion: "",
+  mistakes: "",
+  description: "",
+  noteToSelf: "",
+  screenshots: [],
+  chartLink: "",
+};
+
   const handleDeleteOption = (
     key: keyof typeof DEFAULT_OPTIONS,
     val: string
@@ -146,67 +206,7 @@ export default function NewTradeDialog({
     }));
   };
 
-  const [form, setForm] = useState<any>({
-    // Basic
-    symbol: "",
-    assetType: "forex",
-    portfolioId: "all",
-    strategyId: "",
-    status: "Closed",
-    timestampEntry: new Date().toISOString().slice(0, 16),
-    timestampExit: "",
-    direction: "long",
-
-    // Analysis
-    newsImpact: "None",
-    dailyBias: "",
-    marketCondition: [],
-    tradeType: "",
-    entryTimeframe: "",
-    sessions: [],
-    entrySignal: [],
-    confluences: [],
-    keyLevels: [],
-
-    // Execution
-    orderType: "Market",
-    entryPrice: "",
-    exitPrice: "",
-    quantity: "1",
-    stopLoss: "",
-    stopLossUnit: "$",
-    riskPercentage: "",
-    leverage: "1:1",
-
-    // Risk
-    slManagement: [],
-    targetRR: "",
-    actualRR: "",
-    maxRR: "",
-    tpManagement: [],
-
-    // Auto-calculated fields
-    accountRisk: "",
-    riskAmount: "",
-    portfolioBalance: "",
-    rMultiple: "",
-    positionValue: "",
-    takeProfit: "",
-
-    // Results
-    grossPnl: "",
-    fees: "0",
-    pnl: "",
-    pnlUnit: "$",
-    outcome: "",
-    setupGrade: 3,
-    emotion: "",
-    mistakes: "",
-    description: "",
-    noteToSelf: "",
-    screenshots: [],
-    chartLink: "",
-  });
+  const [form, setForm] = useState<any>(DEFAULT_FORM);
 
   useEffect(() => {
     fetch("/api/strategies")
@@ -214,13 +214,22 @@ export default function NewTradeDialog({
       .then((data) => setStrategies(Array.isArray(data) ? data : []));
   }, []);
 
-  // Reset form when dialog is closed
+  // Reset form when dialog is closed or populate when editing
   useEffect(() => {
-    if (!isOpen) {
-      // Only reset active tab, keep form data until user explicitly closes
+    if (isOpen) {
+      if (trade) {
+        setForm({
+          ...DEFAULT_FORM,
+          ...trade,
+          timestampEntry: trade.timestampEntry ? new Date(trade.timestampEntry).toISOString().slice(0, 16) : DEFAULT_FORM.timestampEntry,
+          timestampExit: trade.timestampExit ? new Date(trade.timestampExit).toISOString().slice(0, 16) : "",
+        });
+      } else {
+        resetForm();
+      }
       setActiveTab("basic");
     }
-  }, [isOpen]);
+  }, [isOpen, trade]);
 
   // Auto-calculation effect
   const calculateMetrics = useCallback(() => {
@@ -305,67 +314,7 @@ export default function NewTradeDialog({
   }, [activeTab]);
 
   const resetForm = () => {
-    setForm({
-      // Basic
-      symbol: "",
-      assetType: "forex",
-      portfolioId: "all",
-      strategyId: "",
-      status: "Closed",
-      timestampEntry: new Date().toISOString().slice(0, 16),
-      timestampExit: "",
-      direction: "long",
-
-      // Analysis
-      newsImpact: "None",
-      dailyBias: "",
-      marketCondition: [],
-      tradeType: "",
-      entryTimeframe: "",
-      sessions: [],
-      entrySignal: [],
-      confluences: [],
-      keyLevels: [],
-
-      // Execution
-      orderType: "Market",
-      entryPrice: "",
-      exitPrice: "",
-      quantity: "1",
-      stopLoss: "",
-      stopLossUnit: "$",
-      riskPercentage: "",
-      leverage: "1:1",
-
-      // Risk
-      slManagement: [],
-      targetRR: "",
-      actualRR: "",
-      maxRR: "",
-      tpManagement: [],
-
-      // Auto-calculated fields
-      accountRisk: "",
-      riskAmount: "",
-      portfolioBalance: "",
-      rMultiple: "",
-      positionValue: "",
-      takeProfit: "",
-
-      // Results
-      grossPnl: "",
-      fees: "0",
-      pnl: "",
-      pnlUnit: "$",
-      outcome: "",
-      setupGrade: 3,
-      emotion: "",
-      mistakes: "",
-      description: "",
-      noteToSelf: "",
-      screenshots: [],
-      chartLink: "",
-    });
+    setForm(DEFAULT_FORM);
     setActiveTab("basic");
   };
 
@@ -419,14 +368,17 @@ export default function NewTradeDialog({
 
       console.log("Submitting trade with payload:", payload);
 
-      const res = await fetch("/api/trades", {
-        method: "POST",
+      const url = trade ? `/api/trades/${trade._id}` : "/api/trades";
+      const method = trade ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (res.ok) {
         onSuccess?.();
-        resetForm(); // Reset form after successful submission
+        if (!trade) resetForm(); // Only reset if it was a new trade
         onClose();
       }
     } catch (err) {
@@ -451,10 +403,10 @@ export default function NewTradeDialog({
           <div className="flex items-center justify-between">
             <div className="max-w-xl">
               <DialogTitle className="text-2xl font-black tracking-tight">
-                Trade Documentation
+                Documentation
               </DialogTitle>
               <DialogDescription className="text-white/60 font-mono text-[10px] uppercase tracking-[0.25em] mt-1.5">
-                Institutional Grade Journaling
+                Record and Analyze Trade Data
               </DialogDescription>
             </div>
           </div>
@@ -495,117 +447,114 @@ export default function NewTradeDialog({
             {/* Basic Tab */}
             {activeTab === "basic" && (
               <div className="max-w-3xl mx-auto space-y-14 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="space-y-10">
-                  <div className="space-y-6">
-                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                      Symbol Identification
-                    </label>
-                    <SymbolSearch
-                      key="symbol-search"
-                      value={form.symbol}
-                      assetType={form.assetType}
-                      onSymbolSelect={(symbol, assetType) => {
-                        console.log("Symbol selected:", symbol, assetType);
-                        setForm((prev: any) => ({ ...prev, symbol, assetType }));
-                      }}
-                      onAssetTypeChange={(assetType) => {
-                        console.log("Asset type changed:", assetType);
-                        setForm((prev: any) => ({ ...prev, assetType }));
-                      }}
-                      placeholder="Search symbols (e.g. EURUSD, AAPL, BTCUSD)..."
-                      className="w-full"
-                    />
-                  </div>
+                <div className="space-y-6">
+                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                    Symbol
+                  </label>
+                  <SymbolSearch
+                    key="symbol-search"
+                    value={form.symbol}
+                    assetType={form.assetType}
+                    onSymbolSelect={(symbol, assetType) => {
+                      console.log("Symbol selected:", symbol, assetType);
+                      setForm((prev: any) => ({ ...prev, symbol, assetType }));
+                    }}
+                    onAssetTypeChange={(assetType) => {
+                      console.log("Asset type changed:", assetType);
+                      setForm((prev: any) => ({ ...prev, assetType }));
+                    }}
+                    placeholder="Search symbols (e.g. EURUSD, AAPL, BTCUSD)..."
+                    className="w-full"
+                  />
+                </div>
 
-                  <div className="space-y-6">
-                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                      Portfolio Allocation
-                    </label>
-                    <div className="flex gap-4">
-                      <select
-                        className="flex-1 bg-zinc-900/60 border border-white/10 rounded-2xl px-6 h-16 text-sm font-medium outline-none focus:border-sky-500/50 transition-all cursor-pointer hover:bg-zinc-900/80"
-                        value={form.portfolioId}
-                        onChange={(e) =>
-                          setForm((prev: any) => ({
-                            ...prev,
-                            portfolioId: e.target.value,
-                          }))
-                        }
-                      >
-                        <option value="all" className="bg-[#0a0a0a]">
-                          Default Trading Portfolio
+                <div className="space-y-6">
+                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                    Portfolio
+                  </label>
+                  <div className="flex gap-4">
+                    <select
+                      className="flex-1 bg-zinc-900/60 border border-white/10 rounded-2xl px-6 h-16 text-sm font-medium outline-none focus:border-sky-500/50 transition-all cursor-pointer hover:bg-zinc-900/80"
+                      value={form.portfolioId}
+                      onChange={(e) =>
+                        setForm((prev: any) => ({
+                          ...prev,
+                          portfolioId: e.target.value,
+                        }))
+                      }
+                    >
+                      <option value="all" className="bg-[#0a0a0a]">
+                        Default Trading Portfolio
+                      </option>
+                      {portfolios.map((p: any) => (
+                        <option
+                          key={p._id}
+                          value={p._id}
+                          className="bg-[#0a0a0a]"
+                        >
+                          {p.name}
                         </option>
-                        {portfolios.map((p: any) => (
-                          <option
-                            key={p._id}
-                            value={p._id}
-                            className="bg-[#0a0a0a]"
-                          >
-                            {p.name}
-                          </option>
-                        ))}
-                      </select>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-16 w-16 p-0 border-white/10 bg-zinc-900/60 hover:bg-zinc-800 rounded-2xl transition-all"
-                        onClick={() => setIsPortfolioModalOpen(true)}
-                      >
-                        <Plus size={24} className="text-white/60" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                      Operational Strategy
-                    </label>
-                    <div className="relative">
-                      <select
-                        className="w-full bg-zinc-900/60 border border-white/10 rounded-2xl px-6 h-16 text-sm font-medium outline-none focus:border-sky-500/50 transition-all cursor-pointer hover:bg-zinc-900/80 appearance-none"
-                        value={form.strategyId}
-                        onChange={(e) =>
-                          setForm((prev: any) => ({
-                            ...prev,
-                            strategyId: e.target.value,
-                          }))
-                        }
-                      >
-                        <option value="" className="bg-[#0a0a0a]">
-                          Select Strategy Architecture...
-                        </option>
-                        {strategies.map((s: any) => (
-                          <option
-                            key={s._id}
-                            value={s._id}
-                            className="bg-[#0a0a0a]"
-                          >
-                            {s.name} {s.isTemplate ? "(Blueprint)" : "(System)"}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronRight
-                        size={20}
-                        className="absolute right-6 top-1/2 -translate-y-1/2 text-white/40 rotate-90 pointer-events-none"
-                      />
-                    </div>
-                    {form.strategyId && (
-                      <div className="mt-3 p-4 bg-sky-500/5 border border-sky-500/20 rounded-xl">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-sky-500 rounded-full"></div>
-                          <span className="text-xs font-black text-sky-400 uppercase tracking-widest">
-                            Strategy Selected:{" "}
-                            {
-                              strategies.find((s: any) => s._id === form.strategyId)
-                                ?.name
-                            }
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                      ))}
+                    </select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-16 w-16 p-0 border-white/10 bg-zinc-900/60 hover:bg-zinc-800 rounded-2xl transition-all"
+                      onClick={() => setIsPortfolioModalOpen(true)}
+                    >
+                      <Plus size={24} className="text-white/60" />
+                    </Button>
                   </div>
                 </div>
 
+                <div className="space-y-6">
+                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                    Strategy
+                  </label>
+                  <div className="relative">
+                    <select
+                      className="w-full bg-zinc-900/60 border border-white/10 rounded-2xl px-6 h-16 text-sm font-medium outline-none focus:border-sky-500/50 transition-all cursor-pointer hover:bg-zinc-900/80 appearance-none"
+                      value={form.strategyId}
+                      onChange={(e) =>
+                        setForm((prev: any) => ({
+                          ...prev,
+                          strategyId: e.target.value,
+                        }))
+                      }
+                    >
+                      <option value="" className="bg-[#0a0a0a]">
+                        Select Strategy Architecture...
+                      </option>
+                      {strategies.map((s: any) => (
+                        <option
+                          key={s._id}
+                          value={s._id}
+                          className="bg-[#0a0a0a]"
+                        >
+                          {s.name} {s.isTemplate ? "(Blueprint)" : "(System)"}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronRight
+                      size={20}
+                      className="absolute right-6 top-1/2 -translate-y-1/2 text-white/40 rotate-90 pointer-events-none"
+                    />
+                  </div>
+                  {form.strategyId && (
+                    <div className="mt-3 p-4 bg-sky-500/5 border border-sky-500/20 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-sky-500 rounded-full"></div>
+                        <span className="text-xs font-black text-sky-400 uppercase tracking-widest">
+                          Strategy Selected:{" "}
+                          {
+                            strategies.find((s: any) => s._id === form.strategyId)
+                              ?.name
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 gap-8">
                   <div className="space-y-6">
                     <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
@@ -678,7 +627,7 @@ export default function NewTradeDialog({
                         </div>
                         <Input
                           type="datetime-local"
-                          value={form.timestampEntry}
+                          value={form.timestampEntry || ""}
                           onChange={(e) =>
                             setForm({ ...form, timestampEntry: e.target.value })
                           }
@@ -696,7 +645,7 @@ export default function NewTradeDialog({
                         </div>
                         <Input
                           type="datetime-local"
-                          value={form.timestampExit}
+                          value={form.timestampExit || ""}
                           onChange={(e) =>
                             setForm({ ...form, timestampExit: e.target.value })
                           }
@@ -713,9 +662,9 @@ export default function NewTradeDialog({
             {activeTab === "analysis" && (
               <div className="max-w-2xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Macro News Intensity
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      News Impact
+                    </label>
                   <div className="flex gap-2 p-1.5 bg-zinc-900/80 border border-white/10 rounded-3xl h-20">
                     {["Low", "Medium", "High"].map((i: any) => (
                       <button
@@ -743,9 +692,9 @@ export default function NewTradeDialog({
                 </div>
 
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    HTF Contextual Bias
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Market Bias
+                    </label>
                   <div className="space-y-4">
                     <CreatableSelect
                       options={[
@@ -779,28 +728,86 @@ export default function NewTradeDialog({
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Market Environment
-                  </label>
-                  <CreatableSelect
-                    multi
-                    options={availableOptions.MARKET_CONDITIONS}
-                    selected={form.marketCondition}
-                    onChange={(val) =>
-                      setForm({ ...form, marketCondition: val })
-                    }
-                    onAdd={(val) => handleAddOption("MARKET_CONDITIONS", val)}
-                    onDelete={(val) =>
-                      handleDeleteOption("MARKET_CONDITIONS", val)
-                    }
-                  />
-                </div>
+                  <div className="space-y-6">
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Environment
+                    </label>
+                    <CreatableSelect
+                      options={[
+                        "Trend",
+                        "Range",
+                        "Volatility",
+                        "Expansion",
+                        "Consolidation",
+                      ]}
+                      selected={form.marketEnvironment}
+                      onChange={(val) =>
+                        setForm({ ...form, marketEnvironment: val })
+                      }
+                      placeholder="Select market environment..."
+                    />
+                  </div>
+
+                  <div className="space-y-6">
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Market Conditions
+                    </label>
+                    <CreatableSelect
+                      multi
+                      options={availableOptions.MARKET_CONDITIONS}
+                      selected={form.marketCondition}
+                      onChange={(val) =>
+                        setForm({ ...form, marketCondition: val })
+                      }
+                      onAdd={(val) => handleAddOption("MARKET_CONDITIONS", val)}
+                      onDelete={(val) => handleDeleteOption("MARKET_CONDITIONS", val)}
+                    />
+                  </div>
+
+                  <div className="space-y-6">
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Entry Setup
+                    </label>
+                    <CreatableSelect
+                      options={[
+                        "Limit Order",
+                        "Market Execution",
+                        "Aggressive Entry",
+                        "Conservative Entry",
+                        "Breakout",
+                        "Retest",
+                      ]}
+                      selected={form.executionArchitecture || ""}
+                      onChange={(val) =>
+                        setForm({ ...form, executionArchitecture: val })
+                      }
+                      placeholder="Select entry setup..."
+                    />
+                  </div>
+
+                  <div className="space-y-6">
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Trigger
+                    </label>
+                    <CreatableSelect
+                      options={[
+                        "Fair Value Gap",
+                        "Order Block",
+                        "Breaker Block",
+                        "Liquidity Sweep",
+                        "MTF Alignment",
+                      ]}
+                      selected={form.signalTrigger || ""}
+                      onChange={(val) => setForm({ ...form, signalTrigger: val })}
+                      placeholder="Select trigger..."
+                    />
+                  </div>
+
 
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Execution Archetype
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Entry Archetype
+                    </label>
                   <CreatableSelect
                     options={availableOptions.TRADE_TYPES}
                     selected={form.tradeType}
@@ -812,8 +819,21 @@ export default function NewTradeDialog({
 
                 <div className="space-y-6">
                   <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Active Session Corridor
+                    Entry Timeframe
                   </label>
+                  <CreatableSelect
+                    options={availableOptions.TIMEFRAMES}
+                    selected={form.entryTimeframe}
+                    onChange={(val) => setForm({ ...form, entryTimeframe: val })}
+                    onAdd={(val) => handleAddOption("TIMEFRAMES", val)}
+                    onDelete={(val) => handleDeleteOption("TIMEFRAMES", val)}
+                  />
+                </div>
+
+                <div className="space-y-6">
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Session
+                    </label>
                   <CreatableSelect
                     multi
                     options={availableOptions.SESSIONS}
@@ -825,9 +845,9 @@ export default function NewTradeDialog({
                 </div>
 
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Core Signal Trigger
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Entry Signals
+                    </label>
                   <CreatableSelect
                     multi
                     options={availableOptions.ENTRY_SIGNALS}
@@ -853,9 +873,9 @@ export default function NewTradeDialog({
                 </div>
 
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Liquidity & Supply/Demand Levels
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Levels
+                    </label>
                   <CreatableSelect
                     multi
                     options={availableOptions.KEY_LEVELS}
@@ -872,9 +892,9 @@ export default function NewTradeDialog({
             {activeTab === "execution" && (
               <div className="max-w-2xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Order Execution Protocol
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Order Type
+                    </label>
                   <div className="flex gap-2 p-1.5 bg-zinc-900/60 border border-white/5 rounded-3xl h-16">
                     {["Market", "Limit", "Stop"].map((t: any) => (
                       <button
@@ -893,12 +913,12 @@ export default function NewTradeDialog({
                 </div>
 
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Entry Price Point
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Entry Price
+                    </label>
                   <Input
                     type="number"
-                    value={form.entryPrice}
+                    value={form.entryPrice || ""}
                     onChange={(e) =>
                       setForm({ ...form, entryPrice: e.target.value })
                     }
@@ -908,13 +928,13 @@ export default function NewTradeDialog({
                 </div>
 
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Stop Loss Price Point
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Stop Loss
+                    </label>
                   <Input
                     type="number"
                     step="0.00001"
-                    value={form.stopLoss}
+                    value={form.stopLoss || ""}
                     onChange={(e) =>
                       setForm({ ...form, stopLoss: e.target.value })
                     }
@@ -924,13 +944,13 @@ export default function NewTradeDialog({
                 </div>
 
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Take Profit Price Point
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Take Profit
+                    </label>
                   <Input
                     type="number"
                     step="0.00001"
-                    value={form.takeProfit}
+                    value={form.takeProfit || ""}
                     onChange={(e) =>
                       setForm({ ...form, takeProfit: e.target.value })
                     }
@@ -940,12 +960,12 @@ export default function NewTradeDialog({
                 </div>
 
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Position Sizing (Lots)
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Quantity (Lots)
+                    </label>
                   <Input
                     type="number"
-                    value={form.quantity}
+                    value={form.quantity || ""}
                     onChange={(e) =>
                       setForm({ ...form, quantity: e.target.value })
                     }
@@ -955,13 +975,13 @@ export default function NewTradeDialog({
                 </div>
 
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Exit Price Point
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Exit Price
+                    </label>
                   <Input
                     type="number"
                     step="0.00001"
-                    value={form.exitPrice}
+                    value={form.exitPrice || ""}
                     onChange={(e) =>
                       setForm({ ...form, exitPrice: e.target.value })
                     }
@@ -971,9 +991,9 @@ export default function NewTradeDialog({
                 </div>
 
                 <div className="space-y-6">
-                  <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Leverage Ratio
-                  </label>
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Leverage
+                    </label>
                   <select
                     value={form.leverage || "1:1"}
                     onChange={(e) =>
@@ -995,13 +1015,28 @@ export default function NewTradeDialog({
                 </div>
 
                 <div className="space-y-6">
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Exchange
+                    </label>
+                  <Input
+                    type="text"
+                    value={form.exchange || ""}
+                    onChange={(e) =>
+                      setForm({ ...form, exchange: e.target.value })
+                    }
+                    className="bg-zinc-900/40 border-white/5 h-14 rounded-2xl px-8 text-base focus:ring-1 ring-sky-500/30 font-mono"
+                    placeholder="e.g. NASDAQ, Binance, OANDA"
+                  />
+                </div>
+
+                <div className="space-y-6">
                   <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
                     Allocated Account Risk %
                   </label>
                   <div className="relative">
                     <Input
                       type="number"
-                      value={form.accountRisk}
+                      value={form.accountRisk || ""}
                       onChange={(e) =>
                         setForm({ ...form, accountRisk: e.target.value })
                       }
@@ -1143,7 +1178,7 @@ export default function NewTradeDialog({
               <div className="max-w-2xl mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="space-y-6">
                   <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Active SL Management
+                    Stop Loss Management
                   </label>
                   <CreatableSelect
                     multi
@@ -1157,7 +1192,7 @@ export default function NewTradeDialog({
 
                 <div className="space-y-6">
                   <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    TP Distribution Strategy
+                    Take Profit Management
                   </label>
                   <CreatableSelect
                     multi
@@ -1171,7 +1206,7 @@ export default function NewTradeDialog({
 
                 <div className="space-y-12">
                   <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                    Risk-To-Reward Intel
+                    Risk to Reward
                   </label>
                   <div className="grid grid-cols-1 gap-8">
                     <div className="flex flex-col sm:flex-row items-center gap-6 lg:gap-12 bg-zinc-900/60 p-8 lg:p-12 rounded-[2.5rem] lg:rounded-[3rem] border border-white/10 shadow-3xl relative overflow-hidden group">
@@ -1183,7 +1218,7 @@ export default function NewTradeDialog({
                         <div className="relative">
                           <Input
                             type="number"
-                            value={form.targetRR}
+                            value={form.targetRR || ""}
                             onChange={(e) =>
                               setForm({ ...form, targetRR: e.target.value })
                             }
@@ -1215,7 +1250,7 @@ export default function NewTradeDialog({
                         <div className="relative">
                           <Input
                             type="number"
-                            value={form.actualRR}
+                            value={form.actualRR || ""}
                             onChange={(e) =>
                               setForm({ ...form, actualRR: e.target.value })
                             }
@@ -1250,14 +1285,14 @@ export default function NewTradeDialog({
               <div className="max-w-4xl mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="space-y-10">
                   <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block text-center">
-                    Final P&L Reconciliation
+                    Profit and Loss
                   </label>
                   <div className="max-w-2xl mx-auto space-y-8">
                     <div className="bg-zinc-900/60 p-10 rounded-[3rem] border border-white/10 space-y-5 shadow-2xl relative overflow-hidden group">
                       <div className="absolute inset-0 bg-white/[0.01] opacity-0 group-hover:opacity-100 transition-opacity" />
                       <div className="flex justify-between items-center relative z-10">
                         <span className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                          Gross Yield
+                          Gross
                         </span>
                         {form.entryPrice && form.exitPrice && form.quantity && (
                           <div className="flex items-center gap-2">
@@ -1270,7 +1305,7 @@ export default function NewTradeDialog({
                       </div>
                       <Input
                         type="number"
-                        value={form.grossPnl}
+                        value={form.grossPnl || ""}
                         onChange={(e) =>
                           setForm({ ...form, grossPnl: e.target.value })
                         }
@@ -1290,7 +1325,7 @@ export default function NewTradeDialog({
                       </span>
                       <Input
                         type="number"
-                        value={form.fees}
+                        value={form.fees || "0"}
                         onChange={(e) =>
                           setForm({ ...form, fees: e.target.value })
                         }
@@ -1302,7 +1337,7 @@ export default function NewTradeDialog({
                       <div className="absolute inset-0 bg-emerald-500/[0.02] opacity-50" />
                       <div className="flex justify-between items-center relative z-10">
                         <span className="text-xs font-black text-emerald-500/70 uppercase tracking-[0.25em]">
-                          Net Realized P&L
+                          Net Profit
                         </span>
                         <div className="flex items-center gap-4">
                           {form.grossPnl && form.fees && (
@@ -1331,7 +1366,7 @@ export default function NewTradeDialog({
                       </div>
                       <Input
                         type="number"
-                        value={form.pnl}
+                        value={form.pnl || ""}
                         onChange={(e) =>
                           setForm({ ...form, pnl: e.target.value })
                         }
@@ -1346,7 +1381,7 @@ export default function NewTradeDialog({
                 <div className="max-w-2xl mx-auto space-y-12">
                   <div className="space-y-6">
                     <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                      Trade Resolution
+                      Outcome
                     </label>
                     <CreatableSelect
                       options={availableOptions.OUTCOMES}
@@ -1358,7 +1393,7 @@ export default function NewTradeDialog({
                   </div>
                   <div className="space-y-8">
                     <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
-                      Execution Quality Score
+                      Trade Grade
                     </label>
                     <div className="flex gap-8">
                       {[1, 2, 3, 4, 5].map((star: any) => (
@@ -1481,6 +1516,32 @@ export default function NewTradeDialog({
                         setForm({ ...form, noteToSelf: e.target.value })
                       }
                       placeholder="What is the one lesson to take from this execution?"
+                    />
+                  </div>
+                  <div className="space-y-6">
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Operational Tags
+                    </label>
+                    <CreatableSelect
+                      multi
+                      options={["News Trade", "Trend Follower", "Counter Trend", "Range Bound", "Institutional Alignment", "A+ Setup"]}
+                      selected={form.tags}
+                      onChange={(val) => setForm({ ...form, tags: val })}
+                      placeholder="Add operational tags..."
+                    />
+                  </div>
+
+                  <div className="space-y-6">
+                    <label className="text-xs font-black text-white/70 uppercase tracking-[0.2em] block">
+                      Comprehensive Trade Notes
+                    </label>
+                    <textarea
+                      className="w-full bg-zinc-900/40 border border-white/5 rounded-3xl p-8 text-base outline-none focus:ring-1 ring-white/10 h-64 resize-none transition-all placeholder:text-white/30 font-mono"
+                      value={form.notes}
+                      onChange={(e) =>
+                        setForm({ ...form, notes: e.target.value })
+                      }
+                      placeholder="Detailed entry rationale, management plan, and market context..."
                     />
                   </div>
                 </div>

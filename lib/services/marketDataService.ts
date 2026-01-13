@@ -39,9 +39,24 @@ class MarketDataService {
       const symbolMap: { [key: string]: string } = {
         'forex': symbol.length === 6 ? `${symbol.slice(0, 3)}/${symbol.slice(3)}` : symbol,
         'crypto': symbol.includes('USD') ? symbol : `${symbol}/USD`,
+        'stock': symbol,
         'stocks': symbol,
-        'indices': symbol,
-        'cfd': symbol,
+        'indices': {
+          'US100': 'NDX',
+          'NAS100': 'NDX',
+          'SPX500': 'SPX',
+          'US30': 'DJI',
+          'GER40': 'DAX',
+          'UK100': 'FTSE',
+        }[symbol.toUpperCase()] || symbol,
+        'cfd': {
+          'XAUUSD': 'XAU/USD',
+          'XAGUSD': 'XAG/USD',
+          'XPTUSD': 'XPT/USD',
+          'XPALUSD': 'XPD/USD',
+          'USOIL': 'WTI/USD',
+          'UKOIL': 'BRENT/USD',
+        }[symbol.toUpperCase()] || symbol,
         'futures': symbol
       };
 
@@ -83,7 +98,7 @@ class MarketDataService {
     try {
       await this.waitForRateLimit();
       
-      if (assetType !== 'stocks' && assetType !== 'crypto') {
+      if (assetType !== 'stocks' && assetType !== 'stock' && assetType !== 'crypto') {
         return null; // Finhub mainly for stocks and crypto
       }
 
@@ -112,7 +127,7 @@ class MarketDataService {
           close: data.c[data.c.length - 1],
           volume: data.v[data.v.length - 1]
         };
-      } else if (assetType === 'stocks' && data.c) {
+      } else if ((assetType === 'stocks' || assetType === 'stock') && data.c) {
         return {
           symbol: symbol.toUpperCase(),
           assetType,
@@ -133,81 +148,20 @@ class MarketDataService {
     }
   }
 
-  // Fallback to mock data for demo purposes
-  private generateMockData(symbol: string, assetType: string): MarketDataPoint {
-    const basePrice = this.getBasePriceForSymbol(symbol, assetType);
-    const variation = (Math.random() - 0.5) * 0.02; // ±1% variation
-    const price = basePrice * (1 + variation);
-    
-    return {
-      symbol: symbol.toUpperCase(),
-      assetType,
-      price: parseFloat(price.toFixed(5)),
-      change: parseFloat((basePrice * variation).toFixed(5)),
-      changePercent: parseFloat((variation * 100).toFixed(2))
-    };
-  }
-
-  private getBasePriceForSymbol(symbol: string, assetType: string): number {
-    // Mock base prices for common symbols
-    const basePrices: { [key: string]: number } = {
-      // Forex
-      'EURUSD': 1.0850,
-      'GBPUSD': 1.2650,
-      'USDJPY': 149.50,
-      'AUDUSD': 0.6580,
-      'USDCAD': 1.3720,
-      'USDCHF': 0.8950,
-      'NZDUSD': 0.5920,
-      'EURGBP': 0.8580,
-      
-      // Crypto
-      'BTCUSD': 43500,
-      'ETHUSD': 2650,
-      'ADAUSD': 0.48,
-      'SOLUSD': 98.50,
-      'DOTUSD': 7.20,
-      
-      // Stocks
-      'AAPL': 195.50,
-      'GOOGL': 142.80,
-      'MSFT': 378.90,
-      'TSLA': 248.50,
-      'AMZN': 153.40,
-      
-      // Indices
-      'SPX500': 4580.50,
-      'NAS100': 16250.30,
-      'US30': 37200.80,
-      'GER40': 16800.20,
-      
-      // Default
-      'DEFAULT': 100.00
-    };
-
-    return basePrices[symbol.toUpperCase()] || basePrices['DEFAULT'];
-  }
-
   async fetchMarketData(symbol: string, assetType: string): Promise<MarketDataPoint | null> {
     try {
-      // Try Twelve Data first
+      // Primary: Twelve Data
       let data = await this.fetchFromTwelveData(symbol, assetType);
       
-      // Fallback to Finhub for stocks/crypto
-      if (!data && (assetType === 'stocks' || assetType === 'crypto')) {
+      // Secondary Fallback: Finhub (only for stocks/crypto if Twelve Data fails)
+      if (!data && (assetType === 'stocks' || assetType === 'stock' || assetType === 'crypto')) {
         data = await this.fetchFromFinhub(symbol, assetType);
       }
       
-      // Fallback to mock data for demo
-      if (!data) {
-        console.log(`Using mock data for ${symbol} (${assetType})`);
-        data = this.generateMockData(symbol, assetType);
-      }
-
       return data;
     } catch (error) {
-      console.error(`Error fetching market data for ${symbol}:`, error);
-      return this.generateMockData(symbol, assetType);
+      console.error(`Critical error fetching market data for ${symbol}:`, error);
+      return null;
     }
   }
 
@@ -255,20 +209,20 @@ class MarketDataService {
   }
 
   async updateMultipleSymbols(symbols: { symbol: string; assetType: string }[]): Promise<void> {
-    console.log(`Updating ${symbols.length} symbols...`);
+    console.log(`Updating ${symbols.length} symbols via Real-Time API...`);
     
     for (const { symbol, assetType } of symbols) {
       try {
         const data = await this.fetchMarketData(symbol, assetType);
         if (data) {
           await this.saveMarketData(data);
-          console.log(`Updated ${symbol}: $${data.price}`);
+          console.log(`Live Update Success | ${symbol}: $${data.price}`);
         }
         
-        // Rate limiting delay
-        await new Promise(resolve => setTimeout(resolve, 1200)); // 1.2 seconds between requests
+        // Rate limiting delay for API compliance
+        await new Promise(resolve => setTimeout(resolve, 1500)); 
       } catch (error) {
-        console.error(`Failed to update ${symbol}:`, error);
+        console.error(`Failed live update for ${symbol}:`, error);
       }
     }
   }

@@ -2,7 +2,7 @@
 export interface SymbolData {
   symbol: string;
   name: string;
-  assetType: 'forex' | 'crypto' | 'cfd' | 'futures' | 'stocks' | 'indices';
+  assetType: 'forex' | 'crypto' | 'cfd' | 'futures' | 'stock' | 'indices';
   exchange?: string;
   description?: string;
 }
@@ -44,25 +44,26 @@ export const SYMBOLS_DATABASE: SymbolData[] = [
   { symbol: 'XRPUSD', name: 'Ripple / US Dollar', assetType: 'crypto', description: 'Ripple' },
 
   // Major US Stocks
-  { symbol: 'AAPL', name: 'Apple Inc.', assetType: 'stocks', exchange: 'NASDAQ', description: 'Apple Inc.' },
-  { symbol: 'MSFT', name: 'Microsoft Corporation', assetType: 'stocks', exchange: 'NASDAQ', description: 'Microsoft' },
-  { symbol: 'GOOGL', name: 'Alphabet Inc.', assetType: 'stocks', exchange: 'NASDAQ', description: 'Google' },
-  { symbol: 'AMZN', name: 'Amazon.com Inc.', assetType: 'stocks', exchange: 'NASDAQ', description: 'Amazon' },
-  { symbol: 'TSLA', name: 'Tesla Inc.', assetType: 'stocks', exchange: 'NASDAQ', description: 'Tesla' },
-  { symbol: 'META', name: 'Meta Platforms Inc.', assetType: 'stocks', exchange: 'NASDAQ', description: 'Meta (Facebook)' },
-  { symbol: 'NVDA', name: 'NVIDIA Corporation', assetType: 'stocks', exchange: 'NASDAQ', description: 'NVIDIA' },
-  { symbol: 'NFLX', name: 'Netflix Inc.', assetType: 'stocks', exchange: 'NASDAQ', description: 'Netflix' },
-  { symbol: 'AMD', name: 'Advanced Micro Devices', assetType: 'stocks', exchange: 'NASDAQ', description: 'AMD' },
-  { symbol: 'INTC', name: 'Intel Corporation', assetType: 'stocks', exchange: 'NASDAQ', description: 'Intel' },
-  { symbol: 'JPM', name: 'JPMorgan Chase & Co.', assetType: 'stocks', exchange: 'NYSE', description: 'JPMorgan' },
-  { symbol: 'BAC', name: 'Bank of America Corp.', assetType: 'stocks', exchange: 'NYSE', description: 'Bank of America' },
-  { symbol: 'WMT', name: 'Walmart Inc.', assetType: 'stocks', exchange: 'NYSE', description: 'Walmart' },
-  { symbol: 'JNJ', name: 'Johnson & Johnson', assetType: 'stocks', exchange: 'NYSE', description: 'Johnson & Johnson' },
-  { symbol: 'PG', name: 'Procter & Gamble Co.', assetType: 'stocks', exchange: 'NYSE', description: 'Procter & Gamble' },
+  { symbol: 'AAPL', name: 'Apple Inc.', assetType: 'stock', exchange: 'NASDAQ', description: 'Apple Inc.' },
+  { symbol: 'MSFT', name: 'Microsoft Corporation', assetType: 'stock', exchange: 'NASDAQ', description: 'Microsoft' },
+  { symbol: 'GOOGL', name: 'Alphabet Inc.', assetType: 'stock', exchange: 'NASDAQ', description: 'Google' },
+  { symbol: 'AMZN', name: 'Amazon.com Inc.', assetType: 'stock', exchange: 'NASDAQ', description: 'Amazon' },
+  { symbol: 'TSLA', name: 'Tesla Inc.', assetType: 'stock', exchange: 'NASDAQ', description: 'Tesla' },
+  { symbol: 'META', name: 'Meta Platforms Inc.', assetType: 'stock', exchange: 'NASDAQ', description: 'Meta (Facebook)' },
+  { symbol: 'NVDA', name: 'NVIDIA Corporation', assetType: 'stock', exchange: 'NASDAQ', description: 'NVIDIA' },
+  { symbol: 'NFLX', name: 'Netflix Inc.', assetType: 'stock', exchange: 'NASDAQ', description: 'Netflix' },
+  { symbol: 'AMD', name: 'Advanced Micro Devices', assetType: 'stock', exchange: 'NASDAQ', description: 'AMD' },
+  { symbol: 'INTC', name: 'Intel Corporation', assetType: 'stock', exchange: 'NASDAQ', description: 'Intel' },
+  { symbol: 'JPM', name: 'JPMorgan Chase & Co.', assetType: 'stock', exchange: 'NYSE', description: 'JPMorgan' },
+  { symbol: 'BAC', name: 'Bank of America Corp.', assetType: 'stock', exchange: 'NYSE', description: 'Bank of America' },
+  { symbol: 'WMT', name: 'Walmart Inc.', assetType: 'stock', exchange: 'NYSE', description: 'Walmart' },
+  { symbol: 'JNJ', name: 'Johnson & Johnson', assetType: 'stock', exchange: 'NYSE', description: 'Johnson & Johnson' },
+  { symbol: 'PG', name: 'Procter & Gamble Co.', assetType: 'stock', exchange: 'NYSE', description: 'Procter & Gamble' },
 
   // Major Indices
   { symbol: 'SPX500', name: 'S&P 500 Index', assetType: 'indices', description: 'S&P 500' },
   { symbol: 'NAS100', name: 'NASDAQ 100 Index', assetType: 'indices', description: 'NASDAQ 100' },
+  { symbol: 'US100', name: 'NASDAQ 100 Index', assetType: 'indices', description: 'NASDAQ 100 (US100)' },
   { symbol: 'US30', name: 'Dow Jones Industrial Average', assetType: 'indices', description: 'Dow Jones' },
   { symbol: 'GER40', name: 'DAX 40 Index', assetType: 'indices', description: 'German DAX' },
   { symbol: 'UK100', name: 'FTSE 100 Index', assetType: 'indices', description: 'UK FTSE 100' },

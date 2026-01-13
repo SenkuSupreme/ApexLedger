@@ -18,7 +18,7 @@ const SESSIONS = [
     localLabel: "03:45 - 12:45",
     timezone: "Australia/Sydney",
     details:
-      "Lower volatility. Good for AUD, NZD pairs. Market liquidity forms.",
+      "Lower liquidity compared with London/New York, but active for AUD/NZD and Asian currency pairs.",
   },
   {
     id: "tokyo",
@@ -29,29 +29,29 @@ const SESSIONS = [
     localLabel: "05:45 - 14:45",
     timezone: "Asia/Tokyo",
     details:
-      "Moderate volatility. Best pairs: JPY (USDJPY, EURJPY). Range-bound unless news.",
+      "Markets in Japan and wider Asia begin active trading. Great for JPY and Asian-related pairs.",
   },
   {
     id: "london",
     name: "London",
-    startOffset: 600,
+    startOffset: 540,
     duration: 540,
     color: "bg-orange-500",
-    localLabel: "13:45 - 22:45",
+    localLabel: "12:45 - 21:45",
     timezone: "Europe/London",
     details:
-      "Highest liquidity. Strong directional moves. Best: EURUSD, GBPUSD, XAUUSD.",
+      "One of the most liquid sessions globally, especially for EUR, GBP, and major crosses.",
   },
   {
     id: "newyork",
     name: "New York",
     startOffset: 900,
-    duration: 540,
+    duration: 405,
     color: "bg-emerald-500",
-    localLabel: "18:45 - 03:45",
+    localLabel: "18:45 - 01:30",
     timezone: "America/New_York",
     details:
-      "High volatility. USD pairs dominate. Major US economic news releases.",
+      "Heavy volume and volatility, especially when U.S. economic news releases occur.",
   },
 ];
 
@@ -127,27 +127,37 @@ const ForexSessionNavbar = React.memo(function ForexSessionNavbar() {
 
   return (
     <div className="w-full h-full flex flex-col p-4">
-      <div className="flex justify-between items-end mb-4 relative ">
-        <div>
-          <h2 className="text-xs font-bold text-muted-foreground/50 uppercase tracking-[0.2em] mb-2">
-            Global Market Sessions
-          </h2>
-          <div className="text-4xl font-black text-foreground font-mono tracking-tight">
-            {currentTimeFormatted} <span className="text-xs font-bold text-muted-foreground/60 ml-3 uppercase tracking-widest">Local (NPT)</span>
+      <div className="flex flex-col gap-6 mb-10 pb-8 border-b border-foreground/[0.03] group/header">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_12px_rgba(59,130,246,0.6)]" />
+            <div className="absolute inset-0 w-2 h-2 rounded-full bg-blue-500 animate-ping opacity-20" />
+          </div>
+          <div className="flex items-baseline gap-3">
+            <div className="text-4xl font-black text-foreground font-mono tracking-tighter leading-none italic">
+              {currentTimeFormatted}
+            </div>
+            <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.4em] whitespace-nowrap">
+              Local (NPT)
+            </span>
           </div>
         </div>
-        <div className="flex gap-3 relative ">
+        
+        <div className="flex flex-wrap gap-2">
           {SESSIONS.map((s) => (
             <div
               key={s.id}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-500 hover:scale-105 ${
                 activeSessions.includes(s.id) 
-                  ? "bg-foreground/10 border-foreground/20 text-foreground shadow-lg backdrop-blur-md" 
-                  : "bg-foreground/[0.02] border-border text-muted-foreground/30"
+                  ? "bg-foreground/10 border-foreground/20 text-foreground shadow-[0_0_25px_rgba(0,0,0,0.3)] backdrop-blur-md" 
+                  : "bg-foreground/[0.02] border-border/40 text-muted-foreground/20"
               }`}
             >
-              <div className={`w-2 h-2 rounded-full ${s.color} ${activeSessions.includes(s.id) ? "animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.5)]" : "opacity-40"}`} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">{s.name}</span>
+              <div className={`w-1.5 h-1.5 rounded-full ${s.color} ${activeSessions.includes(s.id) ? "animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.4)]" : "opacity-20"}`} />
+              <span className="text-[10px] font-black uppercase tracking-widest">{s.name}</span>
+              {activeSessions.includes(s.id) && (
+                <div className="ml-1 text-[8px] font-black text-emerald-500/80 tracking-tighter uppercase">Live</div>
+              )}
             </div>
           ))}
         </div>

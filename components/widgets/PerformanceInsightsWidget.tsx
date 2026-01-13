@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, Zap, ShieldAlert, Activity, Award } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface PerformanceInsightsWidgetProps {
   stats: any;
@@ -12,150 +13,166 @@ export default function PerformanceInsightsWidget({
   stats,
   className = "",
 }: PerformanceInsightsWidgetProps) {
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className={`h-full ${className}`}>
-      <div className="flex items-center justify-between mb-8 border-b border-border pb-6">
+    <div className={`h-full relative overflow-hidden group/insights ${className}`}>
+      {/* Ambient background glow */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-[70px] rounded-full pointer-events-none group-hover/insights:bg-emerald-500/10 transition-colors duration-700" />
+      
+      <div className="relative z-10 flex items-center justify-between mb-10 pb-8 border-b border-white/[0.03]">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/60 dark:text-muted-foreground">Key Trading Highlights</span>
+          <div className="flex items-center gap-3 mb-2.5">
+            <div className="relative">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.8)]" />
+              <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping opacity-20" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/40 italic">Strategic Analysis</span>
           </div>
-          <h3 className="text-2xl font-black text-foreground dark:text-foreground italic tracking-tighter uppercase">Performance Insights</h3>
+          <h3 className="text-3xl font-black text-foreground italic tracking-tight uppercase leading-none">Performance Insights</h3>
         </div>
-        <div className="p-3 bg-foreground/5 rounded-2xl border border-border text-emerald-500/80">
-          <TrendingUp size={20} />
+        <div className="w-12 h-12 bg-white/[0.03] border border-white/[0.05] rounded-2xl flex items-center justify-center text-emerald-500 shadow-2xl group-hover/insights:scale-110 transition-transform duration-500">
+          <Activity size={22} className="opacity-80" />
         </div>
       </div>
 
-      <div className="space-y-4">
+      <motion.div 
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="space-y-6"
+      >
+        {/* Peak Session Card */}
         {stats?.bestDay && stats.bestDay.pnl !== -Infinity ? (
-          <div className="relative overflow-hidden p-4 bg-gradient-to-r from-emerald-500/20 to-emerald-600/10 border border-emerald-500/30 rounded-2xl group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full -translate-y-10 translate-x-10 blur-xl" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                <p className="text-xs text-emerald-300 font-bold uppercase tracking-wider">
-                  Best Trading Day
-                </p>
+          <motion.div variants={item} className="relative group/card overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-emerald-500/5 to-transparent rounded-3xl border border-emerald-500/30 group-hover/card:border-emerald-500/50 transition-all duration-500" />
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover/card:bg-emerald-500/20 transition-all duration-500" />
+            
+            <div className="relative z-10 p-5">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                  <Award size={14} className="text-emerald-400" />
+                </div>
+                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300 italic">Peak Execution Session</span>
               </div>
+              
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="text-sm text-emerald-200 font-semibold">
-                    {new Date(stats.bestDay.date).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                  <p className="text-sm text-foreground/80 font-bold uppercase tracking-tight mb-1">
+                    {new Date(stats.bestDay.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                   </p>
-                  <p className="text-xs text-emerald-400/90 font-medium">
-                    {stats.bestDay.count || 1} trade
-                    {(stats.bestDay.count || 1) !== 1 ? "s" : ""}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-lg bg-emerald-500/5 border border-emerald-500/10 text-[9px] font-black text-emerald-400/80 uppercase tracking-widest">
+                      {stats.bestDay.count || 1} EXECUTIONS
+                    </span>
+                  </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-emerald-400 tabular-nums">
-                    +${stats.bestDay.pnl.toFixed(2)}
+                  <p className="text-3xl font-black text-emerald-400 tabular-nums italic tracking-tighter leading-none mb-1">
+                    +${stats.bestDay.pnl.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </p>
-                  <p className="text-xs text-emerald-400/70 font-medium uppercase tracking-wider">profit</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-500/60">Profit Secured</p>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         ) : (
-          <div className="p-4 bg-foreground/5 border border-border rounded-2xl">
-            <p className="text-sm text-foreground/70 dark:text-muted-foreground text-center font-medium">
-              No profitable days recorded yet
-            </p>
+          <div className="p-5 bg-white/[0.01] border border-dashed border-white/[0.1] rounded-3xl text-center">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/20 italic">No peak session data</span>
           </div>
         )}
 
+        {/* Drawdown Session Card */}
         {stats?.worstDay && stats.worstDay.pnl !== Infinity ? (
-          <div className="relative overflow-hidden p-4 bg-gradient-to-r from-rose-500/20 to-rose-600/10 border border-rose-500/30 rounded-2xl">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full -translate-y-10 translate-x-10 blur-xl" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 bg-rose-500 rounded-full shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
-                <p className="text-xs text-rose-300 font-bold uppercase tracking-wider">
-                  Worst Trading Day
-                </p>
+          <motion.div variants={item} className="relative group/card overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-rose-500/20 via-rose-500/5 to-transparent rounded-3xl border border-rose-500/30 group-hover/card:border-rose-500/50 transition-all duration-500" />
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl transition-all duration-500" />
+            
+            <div className="relative z-10 p-5">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                  <ShieldAlert size={14} className="text-rose-400" />
+                </div>
+                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-rose-300 italic">Critical Risk Event</span>
               </div>
+              
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="text-sm text-rose-200 font-semibold">
-                    {new Date(stats.worstDay.date).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                  <p className="text-sm text-foreground/80 font-bold uppercase tracking-tight mb-1">
+                    {new Date(stats.worstDay.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                   </p>
-                  <p className="text-xs text-rose-400/90 font-medium">
-                    {stats.worstDay.count || 1} trade
-                    {(stats.worstDay.count || 1) !== 1 ? "s" : ""}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-lg bg-rose-500/5 border border-rose-500/10 text-[9px] font-black text-rose-400/80 uppercase tracking-widest">
+                      {stats.worstDay.count || 1} EXECUTIONS
+                    </span>
+                  </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-rose-400 tabular-nums">
-                    ${stats.worstDay.pnl.toFixed(2)}
+                  <p className="text-3xl font-black text-rose-400 tabular-nums italic tracking-tighter leading-none mb-1">
+                    ${stats.worstDay.pnl.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </p>
-                  <p className="text-xs text-rose-400/70 font-medium uppercase tracking-wider">loss</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-rose-500/60">Risk Exposure</p>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         ) : (
-          <div className="p-4 bg-foreground/5 border border-border rounded-2xl">
-            <p className="text-sm text-foreground/70 dark:text-muted-foreground text-center font-medium">
-              No losing days recorded yet
-            </p>
+          <div className="p-5 bg-white/[0.01] border border-dashed border-white/[0.1] rounded-3xl text-center">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/20 italic">No drawdown session data</span>
           </div>
         )}
 
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          <div className="p-4 bg-foreground/5 rounded-2xl border border-border hover:border-border transition-colors">
-            <div className="text-xl font-bold text-white tabular-nums">
-              {stats?.profitFactor?.toFixed(2) || "0.00"}
-            </div>
-            <div className="text-[10px] text-foreground/60 dark:text-muted-foreground uppercase tracking-[0.3em] font-black mt-1">Profit Factor</div>
-          </div>
-          <div className="p-4 bg-foreground/5 rounded-2xl border border-border hover:border-border transition-colors">
-            <div className="text-xl font-bold text-white tabular-nums">
-              {stats?.averageR?.toFixed(2) || "0.00"}R
-            </div>
-            <div className="text-[10px] text-foreground/60 dark:text-muted-foreground uppercase tracking-[0.3em] font-black mt-1">Avg Reward</div>
-          </div>
-          <div className="p-4 bg-foreground/5 rounded-2xl border border-border hover:border-border transition-colors">
-            <div className="text-xl font-bold text-white tabular-nums">
-              {stats?.averageWin > 0
-                ? `$${stats.averageWin.toFixed(0)}`
-                : "$0"}
-            </div>
-            <div className="text-[10px] text-foreground/60 dark:text-muted-foreground uppercase tracking-[0.3em] font-black mt-1">Avg Win</div>
-          </div>
-          <div className="p-4 bg-foreground/5 rounded-2xl border border-border hover:border-border transition-colors">
-            <div className="text-xl font-bold text-white tabular-nums">
-              {stats?.averageLoss > 0
-                ? `$${stats.averageLoss.toFixed(0)}`
-                : "$0"}
-            </div>
-            <div className="text-[10px] text-foreground/60 dark:text-muted-foreground uppercase tracking-[0.3em] font-black mt-1">Avg Loss</div>
-          </div>
+        {/* Intelligence Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            { label: "Profit Factor", value: stats?.profitFactor?.toFixed(2) || "0.00", icon: <TrendingUp size={12} />, color: "emerald" },
+            { label: "Expectancy", value: `$${stats?.expectancy?.toFixed(2) || "0.00"}`, icon: <Target size={12} />, color: "blue" },
+            { label: "Average Win", value: `$${stats?.averageWin?.toFixed(0) || "0"}`, icon: <Zap size={12} />, color: "emerald" },
+            { label: "Average Loss", value: `$${stats?.averageLoss?.toFixed(0) || "0"}`, icon: <TrendingDown size={12} />, color: "rose" },
+          ].map((intel, idx) => (
+            <motion.div
+              key={idx}
+              variants={item}
+              className="relative p-4 rounded-[2rem] bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.1] hover:bg-white/[0.04] transition-all duration-300 overflow-hidden group/intel"
+            >
+              <div className={`absolute top-0 right-0 w-12 h-12 rounded-full blur-xl -translate-y-6 translate-x-6 transition-all duration-500 
+                ${intel.color === 'emerald' ? 'bg-emerald-500/10 group-hover/intel:bg-emerald-500/20' : 
+                  intel.color === 'rose' ? 'bg-rose-500/10 group-hover/intel:bg-rose-500/20' : 
+                  'bg-blue-500/10 group-hover/intel:bg-blue-500/20'}`} 
+              />
+              
+              <div className="relative z-10">
+                <div className={`w-6 h-6 rounded-lg flex items-center justify-center mb-4 
+                  ${intel.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400' : 
+                    intel.color === 'rose' ? 'bg-rose-500/10 text-rose-400' : 
+                    'bg-blue-500/10 text-blue-400'}`}>
+                  {intel.icon}
+                </div>
+                <p className="text-xl font-black text-foreground italic tabular-nums tracking-tighter mb-1 uppercase">
+                  {intel.value}
+                </p>
+                <span className="text-[9px] font-black uppercase tracking-[0.25em] text-foreground/30">
+                  {intel.label}
+                </span>
+              </div>
+            </motion.div>
+          ))}
         </div>
-
-        {stats?.expectancy !== undefined && (
-          <div className="p-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-500/20 rounded-2xl flex items-center justify-between">
-            <div>
-              <p className="text-[10px] text-blue-300 uppercase tracking-widest font-bold">Expectancy</p>
-              <p className="text-xs text-foreground/90 dark:text-foreground font-medium">Value per trade</p>
-            </div>
-            <div className="text-right">
-              <p className={`text-2xl font-bold ${stats.expectancy >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {stats.expectancy >= 0 ? '+' : ''}${stats.expectancy.toFixed(2)}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+      </motion.div>
     </div>
   );
 }
+

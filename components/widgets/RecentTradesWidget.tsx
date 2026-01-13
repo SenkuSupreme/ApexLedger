@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Activity } from "lucide-react";
+import { Activity, ArrowUpRight, ArrowDownRight, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface RecentTradesWidgetProps {
   stats: any;
@@ -12,79 +13,91 @@ export default function RecentTradesWidget({
   stats,
   className = "",
 }: RecentTradesWidgetProps) {
-  // Use recent trades from stats instead of making separate API call
   const recentTrades = stats?.recentTrades || [];
 
   return (
-    <div className={`h-full ${className}`}>
-      <div className="flex items-center justify-between mb-8 border-b border-border pb-6">
+    <div className={`h-full relative overflow-hidden group/recent ${className}`}>
+      {/* Background Glow */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none group-hover/recent:bg-blue-500/10 transition-colors duration-700" />
+
+      <div className="relative z-10 flex items-center justify-between mb-10 pb-8 border-b border-white/[0.03]">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/60 dark:text-muted-foreground">Latest Activity</span>
+          <div className="flex items-center gap-3 mb-2.5">
+            <div className="relative">
+              <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_12px_rgba(59,130,246,0.8)]" />
+              <div className="absolute inset-0 w-2 h-2 rounded-full bg-blue-500 animate-ping opacity-20" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/40 italic">Activity Stream</span>
           </div>
-          <h3 className="text-2xl font-black text-foreground dark:text-foreground italic tracking-tighter uppercase">Recent Trades</h3>
+          <h3 className="text-3xl font-black text-foreground italic tracking-tight uppercase leading-none">Recent Trades</h3>
         </div>
-        <div className="p-3 bg-foreground/5 rounded-2xl border border-border text-blue-500/80">
-          <Activity size={20} />
+        <div className="w-12 h-12 bg-white/[0.03] border border-white/[0.05] rounded-2xl flex items-center justify-center text-blue-400 shadow-2xl group-hover/recent:rotate-12 transition-transform duration-500">
+          <Activity size={22} className="opacity-80" />
         </div>
       </div>
 
-      <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
-        {recentTrades.length > 0
-          ? recentTrades.map((trade: any, index: number) => (
-              <div
+      <div className="space-y-3 max-h-[340px] overflow-y-auto pr-2 custom-scrollbar">
+        <AnimatePresence mode="popLayout">
+          {recentTrades.length > 0 ? (
+            recentTrades.map((trade: any, index: number) => (
+              <motion.div
                 key={trade._id || index}
-                className="flex items-center justify-between p-4 bg-foreground/[0.02] border border-border rounded-2xl hover:bg-white/[0.04] hover:border-border transition-all duration-300"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="group/item relative flex items-center justify-between p-5 bg-white/[0.01] hover:bg-white/[0.03] border border-white/[0.03] hover:border-white/[0.1] rounded-[2rem] transition-all duration-300 cursor-default"
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      trade.pnl >= 0 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
-                    }`}
-                  />
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-500
+                    ${trade.direction?.toLowerCase() === 'long' 
+                      ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400 group-hover/item:bg-emerald-500/10' 
+                      : 'bg-rose-500/5 border-rose-500/20 text-rose-400 group-hover/item:bg-rose-500/10'}
+                  `}>
+                    {trade.direction?.toLowerCase() === 'long' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
+                  </div>
+                  
                   <div>
-                    <div className="text-sm font-black text-foreground dark:text-foreground uppercase tracking-tight">
+                    <div className="text-lg font-black text-foreground uppercase tracking-tight italic leading-none mb-1">
                       {trade.symbol || "N/A"}
                     </div>
-                    <div className="text-[10px] text-foreground/70 dark:text-muted-foreground font-black uppercase tracking-wider">
-                      {trade.direction || "long"} •{" "}
-                      {new Date(
-                        trade.timestampEntry || trade.createdAt
-                      ).toLocaleDateString()}
+                    <div className="flex items-center gap-2">
+                       <span className="text-[9px] text-foreground/30 font-black uppercase tracking-widest">
+                        {new Date(trade.timestampEntry || trade.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </span>
+                      <div className="w-1 h-1 rounded-full bg-foreground/10" />
+                      <span className={`text-[9px] font-black uppercase tracking-widest ${trade.pnl >= 0 ? 'text-emerald-500/60' : 'text-rose-500/60'}`}>
+                        {trade.direction || "Long"}
+                      </span>
                     </div>
                   </div>
                 </div>
+
                 <div className="text-right">
-                  <div
-                    className={`text-sm font-bold ${
-                      trade.pnl >= 0 ? "text-emerald-400" : "text-rose-400"
-                    }`}
-                  >
-                    {trade.pnl >= 0 ? "+" : ""}$
-                    {trade.pnl?.toFixed(2) || "0.00"}
+                  <div className={`text-xl font-black italic tracking-tighter leading-none mb-1 tabular-nums ${
+                    trade.pnl >= 0 ? "text-emerald-400" : "text-rose-400"
+                  }`}>
+                    {trade.pnl >= 0 ? "+" : ""}{trade.pnl?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </div>
-                  <div className="text-xs text-foreground/80 dark:text-muted-foreground font-mono font-medium">
-                    {trade.rMultiple
-                      ? `${trade.rMultiple.toFixed(1)}R`
-                      : "0.0R"}
+                  <div className="flex items-center justify-end gap-1.5">
+                    <Zap size={10} className="text-foreground/20" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground/30 tabular-nums">
+                      {trade.rMultiple ? trade.rMultiple.toFixed(2) : "0.00"}R
+                    </span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))
-          : [1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-4 bg-foreground/[0.03] border border-border rounded-xl"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-white/20" />
-                  <div className="text-sm text-foreground/70 dark:text-muted-foreground font-medium">No trades recorded</div>
-                </div>
-                <span className="text-xs text-foreground/50 dark:text-muted-foreground/50 font-mono">--</span>
-              </div>
-            ))}
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 px-4 bg-white/[0.01] border border-dashed border-white/[0.05] rounded-[2.5rem]">
+              <Activity size={32} className="text-foreground/10 mb-4" />
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/20 text-center">
+                Quiet Session / No Trades
+              </p>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 }
+

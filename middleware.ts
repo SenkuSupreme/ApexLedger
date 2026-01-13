@@ -43,8 +43,8 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number; viola
 
 const RATE_LIMIT = {
   windowMs: 60 * 1000, // 1 minute
-  maxRequests: 60, // 60 requests per minute
-  maxViolations: 3, // Ban after 3 violations
+  maxRequests: 120, // 120 requests per minute (more reasonable for SPAs)
+  maxViolations: 5, // Ban after 5 violations (less aggressive)
   banDurationMs: 3600 * 1000, // 1 hour ban
 };
 
@@ -98,6 +98,22 @@ export function middleware(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 
              request.headers.get('x-real-ip') || 
              'unknown';
+
+  // Exempt localhost/development from ALL rate limiting and bot checks
+  // This prevents development environments from being rate limited or banned
+  const isLocalhost = ip === '::1' || 
+                      ip === '127.0.0.1' || 
+                      ip === 'localhost' ||
+                      ip === 'unknown' ||
+                      process.env.NODE_ENV === 'development';
+
+  if (isLocalhost) {
+    // Clear any existing rate limit records for localhost IPs
+    if (rateLimitStore.has(ip)) {
+      rateLimitStore.delete(ip);
+    }
+    return NextResponse.next();
+  }
 
   // Allow legitimate SEO bots (bypass rate limiting)
   if (isAllowedBot(userAgent)) {

@@ -135,15 +135,36 @@ let currentKeyIndex = 0;
 async function fetchWithRotation(symbol: string, interval: string): Promise<Candle[]> {
     if (TWELVE_DATA_KEYS.length === 0) throw new Error("No Twelve Data API keys configured");
 
-    let cleanSym = symbol.toUpperCase().replace('-', '');
-    if (cleanSym.length === 6 && !cleanSym.includes('/')) {
-        cleanSym = `${cleanSym.substring(0, 3)}/${cleanSym.substring(3, 6)}`;
+    const sym = symbol.toUpperCase();
+    
+    // Institutional Mapping for Twelve Data Compliance
+    const symbolMapper: Record<string, string> = {
+        'US100': 'NDX',
+        'NAS100': 'NDX',
+        'SPX500': 'SPX',
+        'US30': 'DJI',
+        'GER40': 'DAX',
+        'UK100': 'FTSE',
+        'XAUUSD': 'XAU/USD',
+        'XAGUSD': 'XAG/USD',
+        'USOIL': 'WTI/USD',
+        'UKOIL': 'BRENT/USD'
+    };
+
+    let mappedSym = symbolMapper[sym] || sym;
+
+    // Automatic Forex Formatting (EURUSD -> EUR/USD)
+    if (mappedSym.length === 6 && !mappedSym.includes('/') && !symbolMapper[sym]) {
+        mappedSym = `${mappedSym.substring(0, 3)}/${mappedSym.substring(3, 6)}`;
     }
 
     for (let i = 0; i < TWELVE_DATA_KEYS.length; i++) {
         const key = TWELVE_DATA_KEYS[currentKeyIndex];
+        // Increment index for next call immediately to distribute load
+        currentKeyIndex = (currentKeyIndex + 1) % TWELVE_DATA_KEYS.length;
+
         try {
-            const url = `https://api.twelvedata.com/time_series?symbol=${cleanSym}&interval=${interval}&apikey=${key}&outputsize=100`;
+            const url = `https://api.twelvedata.com/time_series?symbol=${mappedSym}&interval=${interval}&apikey=${key}&outputsize=100`;
             const res = await fetch(url);
             const data = await res.json();
 
@@ -156,12 +177,61 @@ async function fetchWithRotation(symbol: string, interval: string): Promise<Cand
                     close: parseFloat(v.close),
                     volume: parseFloat(v.volume || '0')
                 })).sort((a: any, b: any) => new Date(a.time).getTime() - new Date(b.time).getTime());
+            } else if (data.status === 'error') {
+                if (data.message?.includes('Grow plan') || data.message?.includes('pro plan')) {
+                    console.warn(`[TWELVE_DATA] Symbol ${mappedSym} restricted by current plan. Attempting Finhub fallback...`);
+                    break; // Exit loop to try fallback
+                }
+                if (data.message?.includes('API credits')) {
+                    console.warn(`[TWELVE_DATA] Rate limit hit on key[${(currentKeyIndex-1+TWELVE_DATA_KEYS.length)%TWELVE_DATA_KEYS.length}]. Rotating...`);
+                    // Continue loop to try next key
+                    continue;
+                }
+                console.warn(`[TWELVE_DATA API] Error for ${mappedSym}: ${data.message}`);
             }
-            currentKeyIndex = (currentKeyIndex + 1) % TWELVE_DATA_KEYS.length;
         } catch (e) {
-            currentKeyIndex = (currentKeyIndex + 1) % TWELVE_DATA_KEYS.length;
+            console.error(`[TWELVE_DATA FETCH] Error:`, e);
         }
     }
+
+    // Fallback: Finhub Candles for restricted symbols (Indices/Commodities)
+    try {
+        const finhubKey = process.env.FINHUB_API_KEY || 'demo';
+        // Map common symbols to Finhub format (OANDA is a good generic provider for free tier)
+        const finhubMapper: Record<string, string> = {
+            'XAU/USD': 'OANDA:XAU_USD',
+            'XAG/USD': 'OANDA:XAG_USD',
+            'WTI/USD': 'OANDA:WTICO_USD',
+            'BRENT/USD': 'OANDA:BCO_USD',
+            'NDX': 'OANDA:NAS100_USD',
+            'SPX': 'OANDA:SPX500_USD',
+            'DJI': 'OANDA:US30_USD'
+        };
+        const finhubSym = finhubMapper[mappedSym] || mappedSym;
+        const resolutionMap: Record<string, string> = { '1min': '1', '5min': '5', '15min': '15', '4h': '240', '1day': 'D' };
+        const resltn = resolutionMap[interval] || '15';
+        
+        const to = Math.floor(Date.now() / 1000);
+        const from = to - (resltn === '240' ? 86400 * 30 : 86400 * 5); // 1 month for 4H, 5 days for others
+        
+        const url = `https://finnhub.io/api/v1/forex/candle?symbol=${finhubSym}&resolution=${resltn}&from=${from}&to=${to}&token=${finhubKey}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data.s === 'ok') {
+            return data.t.map((timestamp: number, idx: number) => ({
+                time: new Date(timestamp * 1000).toISOString(),
+                open: data.o[idx],
+                high: data.h[idx],
+                low: data.l[idx],
+                close: data.c[idx],
+                volume: data.v[idx]
+            }));
+        }
+    } catch (e) {
+        console.error(`[FINHUB FALLBACK] Error for ${mappedSym}:`, e);
+    }
+
     return [];
 }
 
@@ -172,27 +242,51 @@ export async function fetchMarketData(symbol: string, interval: string = '60min'
 export async function fetchCurrentPrice(symbol: string): Promise<number> {
     if (TWELVE_DATA_KEYS.length === 0) return 0;
     
-    // Try to get 1min price as it's the most current
+    const sym = symbol.toUpperCase();
+    const symbolMapper: Record<string, string> = {
+        'US100': 'NDX',
+        'NAS100': 'NDX',
+        'SPX500': 'SPX',
+        'US30': 'DJI',
+        'GER40': 'DAX',
+        'UK100': 'FTSE',
+        'XAUUSD': 'XAU/USD',
+        'XAGUSD': 'XAG/USD',
+        'USOIL': 'WTI/USD',
+        'UKOIL': 'BRENT/USD'
+    };
+
+    let mappedSym = symbolMapper[sym] || sym;
+    if (mappedSym.length === 6 && !mappedSym.includes('/') && !symbolMapper[sym]) {
+        mappedSym = `${mappedSym.substring(0, 3)}/${mappedSym.substring(3, 6)}`;
+    }
+
     for (let i = 0; i < TWELVE_DATA_KEYS.length; i++) {
         const key = TWELVE_DATA_KEYS[currentKeyIndex];
-        let cleanSym = symbol.toUpperCase().replace('-', '');
-        if (cleanSym.length === 6 && !cleanSym.includes('/')) {
-            cleanSym = `${cleanSym.substring(0, 3)}/${cleanSym.substring(3, 6)}`;
-        }
-
+        currentKeyIndex = (currentKeyIndex + 1) % TWELVE_DATA_KEYS.length;
+        
         try {
-            const url = `https://api.twelvedata.com/time_series?symbol=${cleanSym}&interval=1min&apikey=${key}&outputsize=1`;
+            const url = `https://api.twelvedata.com/price?symbol=${mappedSym}&apikey=${key}`;
             const res = await fetch(url);
             const data = await res.json();
 
-            if (data.status === 'ok' && data.values && data.values[0]) {
-                return parseFloat(data.values[0].close);
+            if (data.price) {
+                return parseFloat(data.price);
             }
-            currentKeyIndex = (currentKeyIndex + 1) % TWELVE_DATA_KEYS.length;
         } catch (e) {
-            currentKeyIndex = (currentKeyIndex + 1) % TWELVE_DATA_KEYS.length;
+            // Silently try next key
         }
     }
+
+    // Try Finhub for price as last resort
+    try {
+        const finhubKey = process.env.FINHUB_API_KEY || 'demo';
+        const url = `https://finnhub.io/api/v1/quote?symbol=${mappedSym}&token=${finhubKey}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.c) return data.c;
+    } catch (e) {}
+
     return 0;
 }
 

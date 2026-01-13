@@ -10,7 +10,8 @@ import {
   Tooltip,
   Cell,
 } from "recharts";
-import { Clock } from "lucide-react";
+import { Clock, Zap, Target, BarChart3, Activity } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface TimeAnalysisWidgetProps {
   stats: any;
@@ -21,31 +22,18 @@ export default function TimeAnalysisWidget({
   stats,
   className = "",
 }: TimeAnalysisWidgetProps) {
-  // Extract time analysis from all trades, not just recent ones
   const timeData = React.useMemo(() => {
-    // Use all trades if available, fallback to recentTrades
     const trades = stats?.allTrades || stats?.recentTrades || [];
-
-    if (trades.length === 0) {
-      return [];
-    }
+    if (trades.length === 0) return [];
 
     const hourMap = new Map();
-
     trades.forEach((trade: any) => {
       const timestamp = trade.timestampEntry || trade.createdAt;
       if (!timestamp) return;
 
       const date = new Date(timestamp);
       const hour = date.getHours();
-      const hourLabel =
-        hour === 0
-          ? "12AM"
-          : hour < 12
-          ? `${hour}AM`
-          : hour === 12
-          ? "12PM"
-          : `${hour - 12}PM`;
+      const hourLabel = hour === 0 ? "12AM" : hour < 12 ? `${hour}AM` : hour === 12 ? "12PM" : `${hour - 12}PM`;
 
       if (!hourMap.has(hourLabel)) {
         hourMap.set(hourLabel, {
@@ -53,26 +41,15 @@ export default function TimeAnalysisWidget({
           hourValue: hour,
           pnl: 0,
           trades: 0,
-          wins: 0,
-          losses: 0,
         });
       }
 
       const hourStats = hourMap.get(hourLabel);
-      const pnl = trade.pnl || 0;
-      hourStats.pnl += pnl;
+      hourStats.pnl += trade.pnl || 0;
       hourStats.trades += 1;
-
-      if (pnl > 0) {
-        hourStats.wins += 1;
-      } else if (pnl < 0) {
-        hourStats.losses += 1;
-      }
     });
 
-    return Array.from(hourMap.values()).sort(
-      (a, b) => a.hourValue - b.hourValue
-    );
+    return Array.from(hourMap.values()).sort((a, b) => a.hourValue - b.hourValue);
   }, [stats?.allTrades, stats?.recentTrades]);
 
   const bestHour = timeData.reduce(
@@ -86,91 +63,132 @@ export default function TimeAnalysisWidget({
   );
 
   return (
-    <div className={`h-full ${className}`}>
-      <div className="flex items-center justify-between mb-6">
+    <div className={`h-full relative overflow-hidden group/time ${className}`}>
+      {/* Background Accent */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[60px] rounded-full pointer-events-none group-hover/time:bg-primary/10 transition-colors duration-700" />
+
+      <div className="relative z-10 flex items-center justify-between mb-10 pb-8 border-b border-white/[0.03]">
         <div>
-          <h3 className="text-lg font-bold text-white">Time Analysis</h3>
-          <p className="text-xs text-foreground/80 dark:text-muted-foreground font-mono uppercase tracking-widest">
-            Performance by Hour
-          </p>
+          <div className="flex items-center gap-3 mb-2.5">
+            <div className="relative">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_12px_rgba(var(--primary),0.8)]" />
+              <div className="absolute inset-0 w-2 h-2 rounded-full bg-primary animate-ping opacity-20" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/40 italic">Temporal Logic</span>
+          </div>
+          <h3 className="text-3xl font-black text-foreground italic tracking-tight uppercase leading-none">Time Analysis</h3>
         </div>
-        <Clock size={20} className="text-foreground/80 dark:text-muted-foreground" />
+        <div className="w-12 h-12 bg-white/[0.03] border border-white/[0.05] rounded-2xl flex items-center justify-center text-primary shadow-2xl group-hover/time:rotate-12 transition-transform duration-500">
+          <Clock size={22} className="opacity-80" />
+        </div>
       </div>
 
-      <div className="h-48">
+      <div className="h-56 relative group/chart">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={timeData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-          >
+          <BarChart data={timeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <XAxis
               dataKey="hour"
-              stroke="#666"
-              tick={{ fill: "#888", fontSize: 10 }}
-              tickLine={false}
-              axisLine={false}
+              stroke="transparent"
+              tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 9, fontWeight: 900 }}
+              interval={Math.ceil(timeData.length / 6)}
             />
             <YAxis
-              stroke="#666"
-              tick={{ fill: "#888", fontSize: 10 }}
-              tickLine={false}
-              axisLine={false}
+              stroke="transparent"
+              tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 9, fontWeight: 900 }}
             />
             <Tooltip
-              contentStyle={{
-                backgroundColor: "#000",
-                border: "1px solid #333",
-                borderRadius: "8px",
-                color: "#fff",
+              cursor={{ fill: "rgba(255,255,255,0.02)" }}
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-black/90 border border-white/10 backdrop-blur-xl p-4 rounded-2xl shadow-2xl min-w-[140px]">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-2">{data.hour}</p>
+                      <div className="flex items-center justify-between gap-4 mb-1">
+                        <span className="text-[10px] font-black uppercase text-foreground/30">PnL</span>
+                        <span className={`text-sm font-black italic tabular-nums ${data.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {data.pnl >= 0 ? '+' : ''}${data.pnl.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-[10px] font-black uppercase text-foreground/30">Executions</span>
+                        <span className="text-sm font-black italic tabular-nums text-foreground">{data.trades}</span>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
               }}
-              formatter={(value: any, name: any) => [
-                name === "pnl" ? `$${value}` : `${value} trades`,
-                name === "pnl" ? "P&L" : "Trades",
-              ]}
             />
-            <Bar dataKey="pnl" radius={[2, 2, 0, 0]}>
+            <Bar dataKey="pnl" radius={[4, 4, 2, 2]}>
               {timeData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={entry.pnl >= 0 ? "#10b981" : "#ef4444"}
+                  fill={entry.pnl >= 0 ? "url(#winBarGradient)" : "url(#lossBarGradient)"}
+                  className="transition-all duration-500 hover:opacity-80"
                 />
               ))}
             </Bar>
+            <defs>
+              <linearGradient id="winBarGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#34d399" stopOpacity={0.8} />
+                <stop offset="100%" stopColor="#34d399" stopOpacity={0.2} />
+              </linearGradient>
+              <linearGradient id="lossBarGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f87171" stopOpacity={0.8} />
+                <stop offset="100%" stopColor="#f87171" stopOpacity={0.2} />
+              </linearGradient>
+            </defs>
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-3">
-        <div className="p-3 bg-foreground/5 rounded-lg text-center">
-          <div className="text-lg font-bold text-green-400">
-            {bestHour.hour !== "N/A" ? bestHour.hour : "--"}
-          </div>
-          <div className="text-xs text-foreground/80 dark:text-muted-foreground">Best Hour</div>
-          <div className="text-xs text-green-400/60">
-            {bestHour.pnl > -Infinity ? `$${bestHour.pnl.toFixed(2)}` : "--"}
-          </div>
-        </div>
-        <div className="p-3 bg-foreground/5 rounded-lg text-center">
-          <div className="text-lg font-bold text-red-400">
-            {worstHour.hour !== "N/A" ? worstHour.hour : "--"}
-          </div>
-          <div className="text-xs text-foreground/80 dark:text-muted-foreground">Worst Hour</div>
-          <div className="text-xs text-red-400/60">
-            {worstHour.pnl < Infinity ? `$${worstHour.pnl.toFixed(2)}` : "--"}
-          </div>
-        </div>
-        <div className="p-3 bg-foreground/5 rounded-lg text-center">
-          <div className="text-lg font-bold text-white">
-            {timeData.length > 0
-              ? timeData.reduce((sum, h) => sum + h.trades, 0)
-              : 0}
-          </div>
-          <div className="text-xs text-foreground/80 dark:text-muted-foreground">Total Trades</div>
-          <div className="text-xs text-foreground/60 dark:text-muted-foreground">
-            {timeData.length} hours active
-          </div>
-        </div>
+      <div className="mt-10 grid grid-cols-3 gap-4">
+        {[
+          { label: "Optimal Hour", value: bestHour.hour, pnl: bestHour.pnl, icon: <Zap size={14} />, color: "emerald" },
+          { label: "Critical Hour", value: worstHour.hour, pnl: worstHour.pnl, icon: <Target size={14} />, color: "rose" },
+          { 
+            label: "Total Flow", 
+            value: timeData.reduce((sum, h) => sum + h.trades, 0).toString(), 
+            sub: `${timeData.length} active slots`, 
+            icon: <Activity size={14} />, 
+            color: "blue" 
+          }
+        ].map((item, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1 }}
+            className="p-4 bg-white/[0.01] hover:bg-white/[0.03] rounded-[2rem] border border-white/[0.03] hover:border-white/[0.08] transition-all duration-300 group/tile"
+          >
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 scale-90 group-hover/tile:scale-100 transition-transform
+              ${item.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400' : 
+                item.color === 'rose' ? 'bg-rose-500/10 text-rose-400' : 
+                'bg-blue-500/10 text-blue-400'}`}
+            >
+              {item.icon}
+            </div>
+            <div className="text-xl font-black text-foreground italic tabular-nums leading-none tracking-tighter mb-1 uppercase">
+              {item.value === "N/A" ? "--" : item.value}
+            </div>
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/30">
+              {item.label}
+            </p>
+            {item.pnl !== undefined && (
+               <p className={`text-[10px] font-black italic mt-1 tabular-nums ${item.pnl >= 0 ? 'text-emerald-500/60' : 'text-rose-500/60'}`}>
+                {item.pnl > -Infinity && item.pnl < Infinity ? `${item.pnl >= 0 ? '+' : ''}$${item.pnl.toFixed(0)}` : '--'}
+              </p>
+            )}
+            {item.sub && (
+              <p className="text-[10px] font-black italic mt-1 text-foreground/20 uppercase tracking-widest">
+                {item.sub}
+              </p>
+            )}
+          </motion.div>
+        ))}
       </div>
     </div>
   );
 }
+

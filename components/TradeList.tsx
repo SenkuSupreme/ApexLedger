@@ -59,9 +59,11 @@ interface Column {
 export default function TradeList({
   initialPortfolioId = "",
   initialDateRange = { start: "", end: "" },
+  onAddTrade,
 }: {
   initialPortfolioId?: string;
   initialDateRange?: { start: string; end: string };
+  onAddTrade?: () => void;
 }) {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
@@ -678,12 +680,21 @@ export default function TradeList({
                 No trading records match your current filters. Try adjusting
                 your search criteria or add your first trade.
               </p>
-              <Link
-                href="/journal/new"
-                className="inline-flex items-center px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium"
-              >
-                Add First Trade
-              </Link>
+              {onAddTrade ? (
+                <button
+                  onClick={onAddTrade}
+                  className="inline-flex items-center px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium"
+                >
+                  Add First Trade
+                </button>
+              ) : (
+                <Link
+                  href="/journal/new"
+                  className="inline-flex items-center px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium"
+                >
+                  Add First Trade
+                </Link>
+              )}
             </div>
           </div>
         )}

@@ -103,6 +103,7 @@ export default function JournalPage() {
                 key={refreshKey}
                 initialPortfolioId={selectedPortfolioId}
                 initialDateRange={dateRange}
+                onAddTrade={() => setIsNewTradeOpen(true)}
               />
             </div>
         </div>

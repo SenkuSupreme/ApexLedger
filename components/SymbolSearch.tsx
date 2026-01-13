@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, TrendingUp, Hash } from "lucide-react";
+import { Search, TrendingUp, Hash, Plus } from "lucide-react";
 import {
   searchSymbols,
   getAssetTypeForSymbol,
@@ -81,6 +81,10 @@ export default function SymbolSearch({
         e.preventDefault();
         if (selectedIndex >= 0 && results[selectedIndex]) {
           handleSymbolSelect(results[selectedIndex]);
+        } else if (query.length > 0) {
+          // If no selection but query exists, use query as a custom symbol
+          onSymbolSelect(query, assetType);
+          setIsOpen(false);
         }
         break;
       case "Escape":
@@ -125,7 +129,7 @@ export default function SymbolSearch({
         />
       </div>
 
-      {isOpen && results.length > 0 && (
+      {isOpen && (results.length > 0 || (query.length > 0 && !results.find(r => r.symbol === query))) && (
         <div
           ref={dropdownRef}
           className="absolute top-full left-0 right-0 mt-2 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 z-50 max-h-80 overflow-y-auto"
@@ -172,6 +176,29 @@ export default function SymbolSearch({
               </div>
             </div>
           ))}
+          
+          {query.length > 0 && !results.find(r => r.symbol === query) && (
+            <div
+              onClick={() => {
+                onSymbolSelect(query, assetType);
+                setIsOpen(false);
+              }}
+              className="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-colors border-t border-white/5"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-sky-500/10 flex items-center justify-center">
+                  <Plus size={18} className="text-sky-400" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white">Use "{query}" as custom symbol</div>
+                  <div className="text-xs text-white/40">Not found in database - will use Twelve Data for pricing</div>
+                </div>
+              </div>
+              <div className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-white/5 border border-white/10 text-white/40">
+                Custom
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
