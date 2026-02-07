@@ -181,12 +181,13 @@
     color: white;
   }
   html {
+    font-size: 14px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
   body {
-    @apply bg-background text-foreground transition-colors duration-300;
+    @apply bg-background text-foreground transition-colors duration-300 leading-snug;
     letter-spacing: -0.015em;
     position: relative;
   }
