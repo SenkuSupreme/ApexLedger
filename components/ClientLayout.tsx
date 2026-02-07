@@ -48,7 +48,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <Sidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={handleSidebarCollapse} />
       <div 
         ref={mainScrollRef} 
-        className={`flex-1 flex flex-col h-screen overflow-y-auto scrollbar-hide transition-all duration-500 ease-in-out ${isSidebarCollapsed ? 'ml-[80px]' : 'ml-[250px]'}`}
+        className={`flex-1 flex flex-col h-screen overflow-y-auto scrollbar-hide transition-all duration-500 ease-in-out ${isSidebarCollapsed ? 'ml-[70px]' : 'ml-[220px]'}`}
       >
         <Header />
         <main className="relative flex-1">

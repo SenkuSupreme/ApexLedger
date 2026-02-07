@@ -201,23 +201,23 @@ const Sidebar = React.memo(function Sidebar({
   return (
     <motion.aside
       initial={false}
-      animate={{ width: isCollapsed ? 80 : 250 }}
+      animate={{ width: isCollapsed ? 70 : 220 }}
       className="fixed left-0 top-0 h-full bg-[#050505]/95 backdrop-blur-3xl border-r border-white/5 z-40 flex flex-col transition-all duration-300 ease-in-out shadow-[30px_0_60px_rgba(0,0,0,0.8)]"
     >
       {/* Glow Effect */}
       <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
 
       {/* Logo Section */}
-      <div className="h-16 flex items-center px-6 border-b border-white/5 relative overflow-hidden shrink-0 bg-black">
+      <div className="h-14 flex items-center px-4 border-b border-white/5 relative overflow-hidden shrink-0 bg-black">
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none" />
         <div className="flex items-center justify-center w-full relative z-10 transition-all duration-300">
         <div className="flex items-center justify-center w-full relative z-10 transition-all duration-300">
           {!isCollapsed ? (
             <div className="flex flex-col items-center">
-              <span className="font-black text-2xl tracking-tighter text-white italic leading-none">
+              <span className="font-black text-xl tracking-tighter text-white italic leading-none">
                 APEX<span className="text-white/30">LEDGER</span>
               </span>
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/20 mt-1">Elite Terminal Core</span>
+              <span className="text-[7px] font-black uppercase tracking-[0.3em] text-white/20 mt-1">Elite Terminal Core</span>
             </div>
           ) : (
              <div className="relative w-10 h-10 bg-black flex items-center justify-center">
@@ -249,13 +249,13 @@ const Sidebar = React.memo(function Sidebar({
       </button>
 
       {/* Navigation Body */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide py-8 px-3 space-y-4 relative z-10 bg-black">
+      <div className="flex-1 overflow-y-auto scrollbar-hide py-6 px-2 space-y-2 relative z-10 bg-black">
         
         {/* AI Chat Button */}
         {/* AI Chat Button */}
-        <Link href="/chat-with-ai" className="block mb-6 relative group/ai">
+        <Link href="/chat-with-ai" className="block mb-4 relative group/ai">
           <div className={`
-            relative flex items-center gap-3 px-4 py-4 rounded-3xl transition-all duration-500 overflow-hidden border
+            relative flex items-center gap-2.5 px-3 py-3 rounded-3xl transition-all duration-500 overflow-hidden border
             ${pathname === '/chat-with-ai' 
               ? 'bg-gradient-to-br from-indigo-500/20 via-purple-500/5 to-transparent border-indigo-500/30 shadow-[0_0_40px_-10px_rgba(99,102,241,0.3)]' 
               : 'bg-zinc-900/40 hover:bg-zinc-800/60 text-white/40 hover:text-white border-white/5 hover:border-white/10'}
@@ -270,20 +270,20 @@ const Sidebar = React.memo(function Sidebar({
              
             <div className={`shrink-0 relative z-10 ${isCollapsed ? 'mx-auto' : ''}`}>
                <div className={`p-2 rounded-xl transition-all duration-500 ${pathname === '/chat-with-ai' ? 'bg-indigo-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]' : 'bg-white/5 text-white/30 group-hover/ai:text-indigo-300 group-hover/ai:bg-indigo-500/20 group-hover/ai:scale-110 group-hover/ai:rotate-12'}`}>
-                   <Sparkles size={18} strokeWidth={2} className={pathname === '/chat-with-ai' ? 'animate-pulse' : ''} />
+                   <Sparkles size={16} strokeWidth={2} className={pathname === '/chat-with-ai' ? 'animate-pulse' : ''} />
                </div>
             </div>
             
             {!isCollapsed && (
               <div className="flex flex-col relative z-10">
                 <div className="flex items-center gap-2">
-                    <span className={`text-[13px] font-black tracking-wider uppercase ${pathname === '/chat-with-ai' ? 'text-white' : 'text-white/60 group-hover/ai:text-white transition-colors'}`}>
+                    <span className={`text-xs font-black tracking-wider uppercase ${pathname === '/chat-with-ai' ? 'text-white' : 'text-white/60 group-hover/ai:text-white transition-colors'}`}>
                       AI Companion
                     </span>
                     {/* Status Dot */}
                     <div className={`w-1.5 h-1.5 rounded-full ${pathname === '/chat-with-ai' ? 'bg-indigo-400 animate-ping' : 'bg-emerald-500/50 group-hover/ai:bg-emerald-400 transition-colors'}`} />
                 </div>
-                <span className={`text-[9px] font-bold uppercase tracking-[0.2em] ${pathname === '/chat-with-ai' ? 'text-indigo-300/80' : 'text-white/20 group-hover/ai:text-white/40 transition-colors'}`}>
+                <span className={`text-[8px] font-bold uppercase tracking-[0.2em] ${pathname === '/chat-with-ai' ? 'text-indigo-300/80' : 'text-white/20 group-hover/ai:text-white/40 transition-colors'}`}>
                     Neural Architecture
                 </span>
               </div>
@@ -295,7 +295,7 @@ const Sidebar = React.memo(function Sidebar({
         </Link>
         <div className="h-px bg-white/5 my-4" />
 
-        <Reorder.Group axis="y" as="div" values={groups} onReorder={setGroups} className="space-y-4">
+        <Reorder.Group axis="y" as="div" values={groups} onReorder={setGroups} className="space-y-2">
           {groups.map((group) => {
             const isExpanded = expandedGroups.includes(group.label);
             return (
@@ -303,7 +303,7 @@ const Sidebar = React.memo(function Sidebar({
                 {!isCollapsed && (
                   <button
                     onClick={() => toggleGroup(group.label)}
-                    className="w-full flex items-center justify-between px-4 py-2 text-xs font-black text-white/90 uppercase tracking-[0.4em] hover:text-white transition-all group select-none cursor-grab active:cursor-grabbing"
+                    className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-black text-white/90 uppercase tracking-[0.4em] hover:text-white transition-all group select-none cursor-grab active:cursor-grabbing"
                   >
                     <span className="group-hover:translate-x-1 transition-transform">{group.label}</span>
                     <ChevronDown 
@@ -327,7 +327,7 @@ const Sidebar = React.memo(function Sidebar({
                           as="div"
                           values={group.items} 
                           onReorder={(newItems) => handleItemReorder(group.label, newItems)}
-                          className="space-y-1"
+                          className="space-y-0.5"
                        >
                           {group.items.map((item) => (
                             <Reorder.Item key={item.href} as="div" value={item}>
@@ -346,7 +346,7 @@ const Sidebar = React.memo(function Sidebar({
                   )}
                 </AnimatePresence>
                 
-                {!isCollapsed && <div className="h-4" />}
+                {!isCollapsed && <div className="h-2" />}
               </Reorder.Item>
             );
           })}
@@ -361,7 +361,7 @@ const Sidebar = React.memo(function Sidebar({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10 }}
             style={{ top: hoveredItem.y }}
-            className="fixed left-[85px] pointer-events-none z-50"
+            className="fixed left-[75px] pointer-events-none z-50"
           >
             <div className="bg-[#0a0a0a] border border-white/10 px-4 py-3 rounded-2xl shadow-[15px_15px_40px_rgba(0,0,0,0.9)] flex items-center gap-3 whitespace-nowrap min-w-[140px] border-l-white/20 backdrop-blur-xl">
               <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse shadow-[0_0_10px_white]" />
@@ -404,7 +404,7 @@ function NavItem({ href, icon: Icon, label, active, isCollapsed, onHover }: any)
       <div
         ref={itemRef}
         className={`
-                relative flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all group
+                relative flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all group
                 ${
                   active
                     ? "bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.2)] scale-[1.02] z-10"
@@ -413,13 +413,13 @@ function NavItem({ href, icon: Icon, label, active, isCollapsed, onHover }: any)
             `}
       >
         <Icon
-          size={18}
+          size={16}
           strokeWidth={active ? 3 : 2}
           className={`shrink-0 transition-transform duration-300 ${isCollapsed ? 'mx-auto' : ''} group-hover:scale-110`}
         />
         {!isCollapsed && (
           <span
-            className={`text-sm tracking-tight ${
+            className={`text-xs tracking-tight ${
               active ? "font-black uppercase italic" : "font-bold"
             }`}
           >
